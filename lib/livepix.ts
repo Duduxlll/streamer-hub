@@ -66,6 +66,7 @@ async function getClientToken(): Promise<string> {
       grant_type:    "client_credentials",
       client_id:     process.env.LIVEPIX_CLIENT_ID     ?? "",
       client_secret: process.env.LIVEPIX_CLIENT_SECRET ?? "",
+      audience:      "https://api.livepix.gg",
     }),
     cache: "no-store",
   });
