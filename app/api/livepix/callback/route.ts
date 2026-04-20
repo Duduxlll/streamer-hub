@@ -1,26 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { setLivePixUserToken } from "@/lib/store";
 import { getSiteUrl } from "@/lib/site-url";
-
-const TOKEN_FILE = path.join(process.cwd(), ".livepix-token.json");
-
-export interface LivePixUserToken {
-  access_token: string;
-  refresh_token: string;
-  expires_at: number;
-}
-
-export function saveUserToken(t: LivePixUserToken) {
-  fs.writeFileSync(TOKEN_FILE, JSON.stringify(t), "utf-8");
-}
-
-export function loadUserToken(): LivePixUserToken | null {
-  try {
-    if (fs.existsSync(TOKEN_FILE)) return JSON.parse(fs.readFileSync(TOKEN_FILE, "utf-8"));
-  } catch { /* ignora */ }
-  return null;
-}
 
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
@@ -50,7 +30,7 @@ export async function GET(req: NextRequest) {
   }
 
   const data = await res.json();
-  saveUserToken({
+  await setLivePixUserToken({
     access_token:  data.access_token,
     refresh_token: data.refresh_token ?? "",
     expires_at:    Date.now() + (data.expires_in ?? 3600) * 1000,

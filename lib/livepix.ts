@@ -4,17 +4,10 @@
    Sender + message: GET /v2/messages/{id}
 ────────────────────────────────────────────────────────────── */
 
-import fs from "fs";
-import path from "path";
+import { getLivePixUserToken, setLivePixUserToken, type LivePixUserToken } from "@/lib/store";
 
 interface TokenCache {
   access_token: string;
-  expires_at: number;
-}
-
-interface UserToken {
-  access_token: string;
-  refresh_token: string;
   expires_at: number;
 }
 
@@ -23,26 +16,11 @@ declare global {
   var __livepix_token: TokenCache | undefined;
 }
 
-const USER_TOKEN_FILE = path.join(process.cwd(), ".livepix-token.json");
-
 export function isConfigured(): boolean {
   return !!(process.env.LIVEPIX_CLIENT_ID && process.env.LIVEPIX_CLIENT_SECRET);
 }
 
-function loadUserToken(): UserToken | null {
-  try {
-    if (fs.existsSync(USER_TOKEN_FILE)) {
-      return JSON.parse(fs.readFileSync(USER_TOKEN_FILE, "utf-8")) as UserToken;
-    }
-  } catch { /* ignora */ }
-  return null;
-}
-
-function saveUserToken(t: UserToken) {
-  try { fs.writeFileSync(USER_TOKEN_FILE, JSON.stringify(t), "utf-8"); } catch { /* ignora */ }
-}
-
-async function refreshUserToken(refreshToken: string): Promise<UserToken | null> {
+async function refreshUserToken(refreshToken: string): Promise<LivePixUserToken | null> {
   const res = await fetch("https://oauth.livepix.gg/oauth2/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -56,17 +34,17 @@ async function refreshUserToken(refreshToken: string): Promise<UserToken | null>
   });
   if (!res.ok) return null;
   const data = await res.json();
-  const t: UserToken = {
+  const t: LivePixUserToken = {
     access_token:  data.access_token,
     refresh_token: data.refresh_token ?? refreshToken,
     expires_at:    Date.now() + (data.expires_in ?? 3600) * 1000,
   };
-  saveUserToken(t);
+  await setLivePixUserToken(t);
   return t;
 }
 
 async function getUserToken(): Promise<string | null> {
-  let t = loadUserToken();
+  let t = await getLivePixUserToken();
   if (!t) return null;
   if (t.expires_at < Date.now() + 60_000) {
     t = await refreshUserToken(t.refresh_token);
@@ -128,4 +106,9 @@ export async function getMessage(messageId: string): Promise<LivePixMessage> {
   if (!res.ok) throw new Error(`LivePix getMessage ${res.status}`);
   const json = await res.json();
   return json.data ?? json;
+}
+
+export async function isUserConnected(): Promise<boolean> {
+  const t = await getLivePixUserToken();
+  return !!t;
 }

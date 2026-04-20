@@ -234,6 +234,24 @@ export default function AdminJackpotPage() {
             </span>
             <h1 className="text-3xl font-black text-white">Jackpot</h1>
           </div>
+          {/* LivePix connect */}
+          <a
+            href="/api/livepix/connect"
+            className="flex items-center justify-between px-4 py-3 rounded-2xl border mb-3 transition-all hover:bg-[#f59e0b]/10"
+            style={{ background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.2)" }}
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-base">🔗</span>
+              <div>
+                <p className="text-xs font-black text-amber-400">Conectar LivePix</p>
+                <p className="text-[10px] text-gray-600">Necessário para entrada automática via pagamento</p>
+              </div>
+            </div>
+            <svg className="w-3.5 h-3.5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+          </a>
+
           <div className="rounded-2xl border border-white/10 p-6" style={{ background: "rgba(8,10,20,0.95)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-5">Criar Sessão</p>
             <div className="space-y-3 mb-5">

@@ -42,13 +42,22 @@ interface StoreState {
 const STORE_KEY = "streamer-hub:palpites:v1";
 // Chave separada para a fila — evita race condition com addOrUpdatePalpite
 const QUEUE_KEY = "streamer-hub:palpites:queue:v1";
+const LIVEPIX_TOKEN_KEY = "livepix:user-token:v1";
 const STORE_TABLE = "app_store";
 const LOCAL_FILE = path.join(process.cwd(), ".data", "palpites-store.json");
 const LOCAL_QUEUE_FILE = path.join(process.cwd(), ".data", "palpites-queue.json");
+const LOCAL_LIVEPIX_TOKEN_FILE = path.join(process.cwd(), ".livepix-token.json");
 
 declare global {
   var __palpitesFallbackState: StoreState | undefined;
   var __palpitesFallbackQueue: string[] | undefined;
+  var __livepixUserToken: LivePixUserToken | undefined;
+}
+
+export interface LivePixUserToken {
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
 }
 
 export interface StoreDiagnostics {
@@ -384,6 +393,50 @@ export async function drainChatMessages(): Promise<string[]> {
   const msgs = globalThis.__palpitesFallbackQueue ?? [];
   globalThis.__palpitesFallbackQueue = [];
   return msgs;
+}
+
+/* ─── Token OAuth do LivePix (persistido no Turso para sobreviver restarts) ─── */
+
+export async function getLivePixUserToken(): Promise<LivePixUserToken | null> {
+  const client = getTursoClient();
+  if (client) {
+    await ensureTursoSchema();
+    const result = await client.execute({
+      sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`,
+      args: [LIVEPIX_TOKEN_KEY],
+    });
+    const raw = result.rows[0]?.value;
+    if (!raw) return null;
+    try { return JSON.parse(raw as string) as LivePixUserToken; } catch { return null; }
+  }
+  if (shouldUseLocalFile()) {
+    try { return JSON.parse(await fs.readFile(LOCAL_LIVEPIX_TOKEN_FILE, "utf-8")) as LivePixUserToken; } catch { return null; }
+  }
+  return globalThis.__livepixUserToken ?? null;
+}
+
+export async function setLivePixUserToken(t: LivePixUserToken | null): Promise<void> {
+  const client = getTursoClient();
+  if (client) {
+    await ensureTursoSchema();
+    if (t === null) {
+      await client.execute({ sql: `DELETE FROM ${STORE_TABLE} WHERE key = ?`, args: [LIVEPIX_TOKEN_KEY] });
+    } else {
+      await client.execute({
+        sql: `INSERT INTO ${STORE_TABLE} (key, value, updated_at)
+              VALUES (?, ?, CURRENT_TIMESTAMP)
+              ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+        args: [LIVEPIX_TOKEN_KEY, JSON.stringify(t)],
+      });
+    }
+    return;
+  }
+  if (shouldUseLocalFile()) {
+    if (t === null) { try { await fs.unlink(LOCAL_LIVEPIX_TOKEN_FILE); } catch { /**/ } }
+    else { await fs.writeFile(LOCAL_LIVEPIX_TOKEN_FILE, JSON.stringify(t), "utf-8"); }
+    return;
+  }
+  globalThis.__livepixUserToken = t ?? undefined;
 }
 
 /* ─── Diagnóstico ─── */

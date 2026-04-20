@@ -38,6 +38,13 @@ export async function POST(req: NextRequest) {
 
     /* ── Fase aguardando: adiciona jogador automaticamente ── */
     if (jackpot.status === "aguardando") {
+      // Filtra por valor de entrada — pagamento precisa ser exatamente o valorEntrada
+      const valorPago = msg.amount / 100;
+      if (valorPago !== jackpot.valorEntrada) {
+        console.log(`⚠️ Valor ignorado: R$ ${valorPago} !== entrada R$ ${jackpot.valorEntrada}`);
+        return NextResponse.json({ ok: true, skipped: `valor ${valorPago} !== entrada ${jackpot.valorEntrada}` });
+      }
+
       // Evita duplicata pelo mesmo usuário
       const jaExiste = jackpot.jogadores.some(
         j => j.nome.toLowerCase() === msg.username.toLowerCase()
