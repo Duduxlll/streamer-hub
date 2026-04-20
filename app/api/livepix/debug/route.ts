@@ -60,24 +60,37 @@ export async function GET() {
     apiTestUser = { status: apiRes.status, body: apiBody.slice(0, 500) };
   }
 
+  // Testa usando o client_secret diretamente como bearer (API key direto)
+  const secretAsBearer = await fetch("https://api.livepix.gg/v2/messages?limit=1", {
+    headers: { Authorization: `Bearer ${clientSecret}`, Accept: "application/json" },
+    cache: "no-store",
+  });
+  const sabBody = await secretAsBearer.text().catch(() => "");
+
+  // Testa usando client_id como bearer
+  const idAsBearer = await fetch("https://api.livepix.gg/v2/messages?limit=1", {
+    headers: { Authorization: `Bearer ${clientId}`, Accept: "application/json" },
+    cache: "no-store",
+  });
+  const iabBody = await idAsBearer.text().catch(() => "");
+
   return NextResponse.json({
     callbackUrl,
     clientIdConfigured: !!process.env.LIVEPIX_CLIENT_ID,
-    clientSecretConfigured: !!process.env.LIVEPIX_CLIENT_SECRET,
     clientSecretLength: clientSecret.length,
     userToken: userToken ? {
       expiresAt: new Date(userToken.expires_at).toISOString(),
       expirado: userToken.expires_at < Date.now(),
-      accessTokenLength: userToken.access_token.length,
     } : null,
     clientCredentials: {
       status: ccRes.status,
       tokenType: ccData?.token_type,
       scope: ccData?.scope,
-      expiresIn: ccData?.expires_in,
       hasAccessToken: !!ccData?.access_token,
     },
-    apiTestWithCC: apiTestCC,
-    apiTestWithUserToken: apiTestUser,
+    apiTestWithCC:         apiTestCC,
+    apiTestWithUserToken:  apiTestUser,
+    apiTestWithSecret:     { status: secretAsBearer.status, body: sabBody.slice(0, 300) },
+    apiTestWithClientId:   { status: idAsBearer.status,     body: iabBody.slice(0, 300) },
   });
 }
