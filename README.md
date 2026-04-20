@@ -26,7 +26,7 @@ npm run bot
 
 Configure `NEXTAUTH_URL` e `SITE_URL` com a URL de produção acima.
 
-Para palpites em produção, configure um Redis/Upstash no site e no bot:
+Para palpites em produção, configure um Redis/Upstash no projeto da Vercel:
 
 ```text
 UPSTASH_REDIS_REST_URL
