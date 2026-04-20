@@ -242,7 +242,7 @@ export default function AdminJackpotPage() {
       <div className="relative min-h-[calc(100vh-4rem)]">
         <ToastContainer toasts={toasts} dismiss={dismiss} />
         {ConfirmModal}
-        <div className="max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24">
+        <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24">
           <Link href="/arena" className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-300 transition-colors mb-6">← Voltar para Arena</Link>
           <div className="mb-5">
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
@@ -327,7 +327,7 @@ export default function AdminJackpotPage() {
       <div className="relative min-h-[calc(100vh-4rem)]">
         <ToastContainer toasts={toasts} dismiss={dismiss} />
         {ConfirmModal}
-        <div className="max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-4">
+        <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-4">
           {/* Winner card */}
           <div className="rounded-2xl border border-[#f59e0b]/40 p-8 text-center" style={{ background: "rgba(245,158,11,0.06)" }}>
             <p className="text-5xl mb-3">🏆</p>
@@ -400,7 +400,7 @@ export default function AdminJackpotPage() {
       <div className="relative min-h-[calc(100vh-4rem)]">
         <ToastContainer toasts={toasts} dismiss={dismiss} />
         {ConfirmModal}
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-12 pb-24 space-y-5">
+        <div className="page-enter max-w-2xl mx-auto px-4 sm:px-6 pt-12 pb-24 space-y-5">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
@@ -545,7 +545,7 @@ export default function AdminJackpotPage() {
     <div className="relative min-h-[calc(100vh-4rem)]">
       <ToastContainer toasts={toasts} dismiss={dismiss} />
       {ConfirmModal}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-24 space-y-4">
+      <div className="page-enter max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-24 space-y-4">
 
         {/* Top bar */}
         <div className="flex items-center gap-3 flex-wrap">

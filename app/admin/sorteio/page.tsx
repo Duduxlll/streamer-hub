@@ -100,7 +100,7 @@ export default function AdminSorteioPage() {
   }
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)]">
+    <div className="page-enter relative min-h-[calc(100vh-4rem)]">
       <ToastContainer toasts={toasts} dismiss={dismiss} />
       {ConfirmModal}
       <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-12 pb-24 space-y-5">

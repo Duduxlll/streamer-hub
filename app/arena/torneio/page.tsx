@@ -55,7 +55,7 @@ export default function TorneioPage() {
   const totalParticipantes = fase ? fase.escolhas.length : 0;
 
   return (
-    <div className="relative overflow-hidden min-h-[calc(100vh-4rem)]">
+    <div className="page-enter relative overflow-hidden min-h-[calc(100vh-4rem)]">
 
 <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-14 pb-24">
 

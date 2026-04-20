@@ -201,7 +201,7 @@ export default function ArenaTransferePage() {
   // ── Tela do vencedor ─────────────────────────────────────────────────────
   if (batalha?.status === "finalizada" && batalha.vencedorFinal) {
     return (
-      <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden flex items-center justify-center">
+      <div className="page-enter relative min-h-[calc(100vh-4rem)] overflow-hidden flex items-center justify-center">
         <div className="relative text-center px-4 max-w-md">
           <p className="text-7xl mb-4 animate-bounce">🏆</p>
           <p className="text-[11px] font-black uppercase tracking-widest mb-2" style={{ color: "#ffba00" }}>
@@ -232,7 +232,7 @@ export default function ArenaTransferePage() {
   }
 
   return (
-    <div className="relative overflow-hidden min-h-[calc(100vh-4rem)]">
+    <div className="page-enter relative overflow-hidden min-h-[calc(100vh-4rem)]">
 
 <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-14 pb-24">
 

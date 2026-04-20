@@ -340,7 +340,7 @@ export default function AdminBatalhaPage() {
   // ── Winner screen ──────────────────────────────────────────────────────────
   if (batalha?.status === "finalizada" && batalha.vencedorFinal && !verChave) {
     return (
-      <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden flex items-center justify-center">
+      <div className="page-enter relative min-h-[calc(100vh-4rem)] overflow-hidden flex items-center justify-center">
         <div className="relative text-center px-4">
           <p className="text-6xl mb-4 animate-bounce">🏆</p>
           <p className="text-[11px] font-black text-yellow-500 uppercase tracking-widest mb-2">Campeão da Batalha</p>
@@ -374,7 +374,7 @@ export default function AdminBatalhaPage() {
   }
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="page-enter relative min-h-[calc(100vh-4rem)] overflow-hidden">
       <ToastContainer toasts={toasts} dismiss={dismiss} />
       {ConfirmModal}
 

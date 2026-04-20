@@ -86,7 +86,7 @@ export default function ArenaJackpotPage() {
 
   if (!jackpot || jackpot.status === "aguardando") {
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 text-center">
+      <div className="page-enter min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 text-center">
         <p className="text-5xl mb-4">🎰</p>
         <p className="text-xl font-black text-white mb-2">Jackpot</p>
         <p className="text-sm text-gray-500">Nenhuma batalha ativa no momento.<br />Aguarde o streamer iniciar uma sessão!</p>
@@ -108,7 +108,7 @@ export default function ArenaJackpotPage() {
   if (jackpot.status === "finalizado" && jackpot.vencedor) {
     const rankingSorted = [...jackpot.jogadores].sort((a, b) => (b.valor ?? -1) - (a.valor ?? -1));
     return (
-      <div className="min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16">
+      <div className="page-enter min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16">
         <div className="max-w-md w-full space-y-3">
           {/* Winner card */}
           <div className="rounded-2xl border border-[#f59e0b]/40 p-8 text-center" style={{ background: "rgba(245,158,11,0.06)" }}>
@@ -168,7 +168,7 @@ export default function ArenaJackpotPage() {
   }
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)]">
+    <div className="page-enter relative min-h-[calc(100vh-4rem)]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-10 pb-24 space-y-4">
 
         {/* Header */}

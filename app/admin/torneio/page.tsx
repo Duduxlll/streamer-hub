@@ -111,7 +111,7 @@ export default function AdminTorneioPage() {
   const st = fase ? STATUS_CFG[fase.status] : null;
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="page-enter relative min-h-[calc(100vh-4rem)] overflow-hidden">
       <ToastContainer toasts={toasts} dismiss={dismiss} />
       {ConfirmModal}
 

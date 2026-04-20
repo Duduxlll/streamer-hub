@@ -253,7 +253,7 @@ export default function AdminPalpitesPage() {
   const podDefinir = travada && resultado.trim() !== "" && !isNaN(resNum) && resNum > 0 && !loading;
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden">
+    <div className="page-enter relative min-h-[calc(100vh-4rem)] overflow-hidden">
       <ToastContainer toasts={toasts} dismiss={dismiss} />
 
 <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-5">

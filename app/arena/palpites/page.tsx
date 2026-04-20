@@ -183,7 +183,7 @@ export default function PalpitesPage() {
   }
 
   return (
-    <div className="relative overflow-hidden min-h-[calc(100vh-4rem)]">
+    <div className="page-enter relative overflow-hidden min-h-[calc(100vh-4rem)]">
 
 <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-16 pb-24">
 
