@@ -1,5 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
+import { createClient, type Client } from "@libsql/client";
 
 export interface Palpite {
   username: string;
@@ -40,6 +41,7 @@ interface StoreState {
 }
 
 const STORE_KEY = "streamer-hub:palpites:v1";
+const STORE_TABLE = "app_store";
 const LOCAL_FILE = path.join(process.cwd(), ".data", "palpites-store.json");
 
 declare global {
@@ -52,16 +54,24 @@ type RedisResult<T> = {
 };
 
 export interface StoreDiagnostics {
-  backend: "redis" | "local-file" | "memory";
+  backend: "turso" | "redis" | "local-file" | "memory";
   env: {
+    TURSO_DATABASE_URL: boolean;
+    TURSO_AUTH_TOKEN: boolean;
     UPSTASH_REDIS_REST_URL: boolean;
     UPSTASH_REDIS_REST_TOKEN: boolean;
     KV_REST_API_URL: boolean;
     KV_REST_API_TOKEN: boolean;
     REDIS_REST_API_URL: boolean;
     REDIS_REST_API_TOKEN: boolean;
+    RENDER: boolean;
     VERCEL: boolean;
     NODE_ENV: string | undefined;
+  };
+  turso: {
+    configured: boolean;
+    ready: boolean;
+    error: string | null;
   };
   redis: {
     configured: boolean;
@@ -75,6 +85,16 @@ export interface StoreDiagnostics {
   };
   historico: number;
   queue: number;
+}
+
+let tursoClient: Client | null = null;
+let tursoSchemaReady: Promise<void> | null = null;
+
+function tursoConfig() {
+  const url = process.env.TURSO_DATABASE_URL;
+  const authToken = process.env.TURSO_AUTH_TOKEN;
+
+  return url ? { url, authToken } : null;
 }
 
 function redisConfig() {
@@ -100,13 +120,81 @@ function emptyState(): StoreState {
 }
 
 function shouldUseLocalFile() {
-  return !redisConfig() && process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1";
+  return !tursoConfig() && !redisConfig() && process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1";
 }
 
 function getBackend(): StoreDiagnostics["backend"] {
+  if (tursoConfig()) return "turso";
   if (redisConfig()) return "redis";
   if (shouldUseLocalFile()) return "local-file";
   return "memory";
+}
+
+function getTursoClient() {
+  const config = tursoConfig();
+  if (!config) return null;
+
+  if (!tursoClient) {
+    tursoClient = createClient({
+      url: config.url,
+      authToken: config.authToken,
+    });
+  }
+
+  return tursoClient;
+}
+
+async function ensureTursoSchema(): Promise<void> {
+  const client = getTursoClient();
+  if (!client) return;
+
+  if (!tursoSchemaReady) {
+    tursoSchemaReady = client
+      .execute(`
+        CREATE TABLE IF NOT EXISTS ${STORE_TABLE} (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+      .then(() => undefined)
+      .catch((err) => {
+        tursoSchemaReady = null;
+        throw err;
+      });
+  }
+
+  await tursoSchemaReady;
+}
+
+async function loadTursoState(): Promise<StoreState> {
+  const client = getTursoClient();
+  if (!client) return emptyState();
+
+  await ensureTursoSchema();
+  const result = await client.execute({
+    sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`,
+    args: [STORE_KEY],
+  });
+
+  return parseState(result.rows[0]?.value);
+}
+
+async function saveTursoState(raw: string): Promise<void> {
+  const client = getTursoClient();
+  if (!client) return;
+
+  await ensureTursoSchema();
+  await client.execute({
+    sql: `
+      INSERT INTO ${STORE_TABLE} (key, value, updated_at)
+      VALUES (?, ?, CURRENT_TIMESTAMP)
+      ON CONFLICT(key) DO UPDATE SET
+        value = excluded.value,
+        updated_at = CURRENT_TIMESTAMP
+    `,
+    args: [STORE_KEY, raw],
+  });
 }
 
 async function redisCommand<T>(command: unknown[]) {
@@ -150,6 +238,10 @@ function parseState(raw: unknown): StoreState {
 }
 
 async function loadState(): Promise<StoreState> {
+  if (tursoConfig()) {
+    return loadTursoState();
+  }
+
   if (redisConfig()) {
     const raw = await redisCommand<string>(["GET", STORE_KEY]);
     return parseState(raw);
@@ -175,6 +267,11 @@ async function saveState(state: StoreState): Promise<void> {
   };
 
   const raw = JSON.stringify(normalized);
+
+  if (tursoConfig()) {
+    await saveTursoState(raw);
+    return;
+  }
 
   if (redisConfig()) {
     await redisCommand(["SET", STORE_KEY, raw]);
@@ -317,14 +414,26 @@ export async function drainChatMessages(): Promise<string[]> {
 }
 
 export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
+  let tursoReady = false;
+  let tursoError: string | null = null;
   let ping: string | null = null;
-  let error: string | null = null;
+  let redisError: string | null = null;
+
+  if (tursoConfig()) {
+    try {
+      await ensureTursoSchema();
+      await getTursoClient()?.execute("SELECT 1");
+      tursoReady = true;
+    } catch (err) {
+      tursoError = err instanceof Error ? err.message : "Erro desconhecido no Turso";
+    }
+  }
 
   if (redisConfig()) {
     try {
       ping = await redisCommand<string>(["PING"]) ?? null;
     } catch (err) {
-      error = err instanceof Error ? err.message : "Erro desconhecido no Redis";
+      redisError = err instanceof Error ? err.message : "Erro desconhecido no Redis";
     }
   }
 
@@ -333,19 +442,27 @@ export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
   return {
     backend: getBackend(),
     env: {
+      TURSO_DATABASE_URL: !!process.env.TURSO_DATABASE_URL,
+      TURSO_AUTH_TOKEN: !!process.env.TURSO_AUTH_TOKEN,
       UPSTASH_REDIS_REST_URL: !!process.env.UPSTASH_REDIS_REST_URL,
       UPSTASH_REDIS_REST_TOKEN: !!process.env.UPSTASH_REDIS_REST_TOKEN,
       KV_REST_API_URL: !!process.env.KV_REST_API_URL,
       KV_REST_API_TOKEN: !!process.env.KV_REST_API_TOKEN,
       REDIS_REST_API_URL: !!process.env.REDIS_REST_API_URL,
       REDIS_REST_API_TOKEN: !!process.env.REDIS_REST_API_TOKEN,
+      RENDER: process.env.RENDER === "true",
       VERCEL: process.env.VERCEL === "1",
       NODE_ENV: process.env.NODE_ENV,
+    },
+    turso: {
+      configured: !!tursoConfig(),
+      ready: tursoReady,
+      error: tursoError,
     },
     redis: {
       configured: !!redisConfig(),
       ping,
-      error,
+      error: redisError,
     },
     rodadaAtual: {
       exists: !!state.rodada,

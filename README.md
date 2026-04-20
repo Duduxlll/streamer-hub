@@ -17,16 +17,20 @@ npm run bot
 
 ## Deploy
 
-- Site: Vercel
-- Bot: Railway
+- Site: Render Web Service ou Vercel
+- Bot: Render Background Worker ou Railway
 
-Configure `NEXTAUTH_URL`, `AUTH_URL` e `SITE_URL` com o domínio atual de produção da Vercel.
+Configure `NEXTAUTH_URL`, `AUTH_URL` e `SITE_URL` com o domínio atual de produção.
 
-Para palpites em produção, configure um Redis/Upstash no projeto da Vercel:
+## Banco dos palpites
+
+Para palpites em produção, configure Turso no site e no bot:
 
 ```text
-UPSTASH_REDIS_REST_URL
-UPSTASH_REDIS_REST_TOKEN
+TURSO_DATABASE_URL
+TURSO_AUTH_TOKEN
 ```
 
-Sem essas variáveis, o projeto usa `.data/palpites-store.json` apenas no desenvolvimento local.
+O app cria automaticamente a tabela `app_store` no Turso com `CREATE TABLE IF NOT EXISTS` quando o storage de palpites e usado. A rota admin `/api/palpites/debug` tambem aciona esse diagnostico e mostra se o Turso esta configurado.
+
+Sem essas variáveis, o projeto usa `.data/palpites-store.json` apenas no desenvolvimento local. Em produção, configure Turso para manter rodadas e historico salvos entre deploys/reinicios.
