@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
 
-  const result = addOrUpdatePalpite(username, valor);
+  const result = await addOrUpdatePalpite(username, valor);
 
   if (!result.ok) {
     return NextResponse.json({ error: "Sem rodada aberta" }, { status: 409 });

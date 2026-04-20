@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   const result = registrarEscolha(body.username, body.displayName, body.time);
 
   if (result.ok && BOT_USER_RESPONDS()) {
-    queueChatMessage(
+    await queueChatMessage(
       result.atualizado
         ? `@${body.displayName} trocou para o time ${body.time}! ✅`
         : `@${body.displayName} entrou no time ${body.time}! ✅`

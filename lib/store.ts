@@ -1,3 +1,6 @@
+import fs from "fs/promises";
+import path from "path";
+
 export interface Palpite {
   username: string;
   valor: number;
@@ -30,69 +33,198 @@ export interface ResultadoRodada {
   encerradaEm: number;
 }
 
+interface StoreState {
+  rodada: Rodada | null;
+  historico: ResultadoRodada[];
+  msgQueue: string[];
+}
+
+const STORE_KEY = "streamer-hub:palpites:v1";
+const LOCAL_FILE = path.join(process.cwd(), ".data", "palpites-store.json");
+
 declare global {
-  // eslint-disable-next-line no-var
-  var __rodada:   Rodada | null | undefined;
-  // eslint-disable-next-line no-var
-  var __msgQueue: string[] | undefined;
-  // eslint-disable-next-line no-var
-  var __historico: ResultadoRodada[] | undefined;
+  var __palpitesFallbackState: StoreState | undefined;
 }
 
-if (typeof globalThis.__rodada    === "undefined") globalThis.__rodada    = null;
-if (typeof globalThis.__msgQueue  === "undefined") globalThis.__msgQueue  = [];
-if (typeof globalThis.__historico === "undefined") globalThis.__historico = [];
+type RedisResult<T> = {
+  result?: T;
+  error?: string;
+};
 
-/* ── Rodada ── */
+function redisConfig() {
+  const url =
+    process.env.UPSTASH_REDIS_REST_URL ??
+    process.env.KV_REST_API_URL ??
+    process.env.REDIS_REST_API_URL;
 
-export function getRodada(): Rodada | null {
-  return globalThis.__rodada ?? null;
+  const token =
+    process.env.UPSTASH_REDIS_REST_TOKEN ??
+    process.env.KV_REST_API_TOKEN ??
+    process.env.REDIS_REST_API_TOKEN;
+
+  return url && token ? { url: url.replace(/\/+$/, ""), token } : null;
 }
 
-export function abrirRodada(buyIn: number, numVencedores: number): Rodada {
+function emptyState(): StoreState {
+  return {
+    rodada: null,
+    historico: [],
+    msgQueue: [],
+  };
+}
+
+function shouldUseLocalFile() {
+  return !redisConfig() && process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1";
+}
+
+async function redisCommand<T>(command: unknown[]) {
+  const config = redisConfig();
+  if (!config) return undefined;
+
+  const res = await fetch(config.url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(command),
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Redis ${command[0]} failed: ${res.status} ${await res.text()}`);
+  }
+
+  const data = await res.json() as RedisResult<T>;
+  if (data.error) throw new Error(`Redis ${command[0]} failed: ${data.error}`);
+  return data.result;
+}
+
+function parseState(raw: unknown): StoreState {
+  if (!raw) return emptyState();
+
+  try {
+    const value = typeof raw === "string" ? JSON.parse(raw) : raw;
+    const state = value as Partial<StoreState>;
+
+    return {
+      rodada: state.rodada ?? null,
+      historico: Array.isArray(state.historico) ? state.historico : [],
+      msgQueue: Array.isArray(state.msgQueue) ? state.msgQueue : [],
+    };
+  } catch {
+    return emptyState();
+  }
+}
+
+async function loadState(): Promise<StoreState> {
+  if (redisConfig()) {
+    const raw = await redisCommand<string>(["GET", STORE_KEY]);
+    return parseState(raw);
+  }
+
+  if (shouldUseLocalFile()) {
+    try {
+      const raw = await fs.readFile(LOCAL_FILE, "utf-8");
+      return parseState(raw);
+    } catch {
+      return emptyState();
+    }
+  }
+
+  return globalThis.__palpitesFallbackState ?? emptyState();
+}
+
+async function saveState(state: StoreState): Promise<void> {
+  const normalized: StoreState = {
+    rodada: state.rodada ?? null,
+    historico: state.historico.slice(0, 10),
+    msgQueue: state.msgQueue,
+  };
+
+  const raw = JSON.stringify(normalized);
+
+  if (redisConfig()) {
+    await redisCommand(["SET", STORE_KEY, raw]);
+    return;
+  }
+
+  if (shouldUseLocalFile()) {
+    await fs.mkdir(path.dirname(LOCAL_FILE), { recursive: true });
+    await fs.writeFile(LOCAL_FILE, raw, "utf-8");
+    return;
+  }
+
+  globalThis.__palpitesFallbackState = normalized;
+}
+
+/* Rodada */
+
+export async function getRodada(): Promise<Rodada | null> {
+  const state = await loadState();
+  return state.rodada ?? null;
+}
+
+export async function abrirRodada(buyIn: number, numVencedores: number): Promise<Rodada> {
+  const state = await loadState();
+  const now = Date.now();
   const rodada: Rodada = {
-    id: Date.now().toString(),
+    id: now.toString(),
     status: "aberta",
     buyIn,
     numVencedores,
     palpites: [],
-    createdAt: Date.now(),
+    createdAt: now,
   };
-  globalThis.__rodada = rodada;
+
+  state.rodada = rodada;
+  await saveState(state);
   return rodada;
 }
 
-export function travarPalpites(): void {
-  if (globalThis.__rodada) globalThis.__rodada.status = "travada";
+export async function travarPalpites(): Promise<void> {
+  const state = await loadState();
+  if (state.rodada) {
+    state.rodada.status = "travada";
+    await saveState(state);
+  }
 }
 
-export function fecharRodada(): void {
-  globalThis.__rodada = null;
+export async function fecharRodada(): Promise<void> {
+  const state = await loadState();
+  state.rodada = null;
+  await saveState(state);
 }
 
-export function addOrUpdatePalpite(
+export async function addOrUpdatePalpite(
   username: string,
   valor: number
-): { ok: boolean; updated: boolean } {
-  const r = globalThis.__rodada;
+): Promise<{ ok: boolean; updated: boolean }> {
+  const state = await loadState();
+  const r = state.rodada;
   if (!r || r.status !== "aberta") return { ok: false, updated: false };
 
   const idx = r.palpites.findIndex(
     (p) => p.username.toLowerCase() === username.toLowerCase()
   );
+
   if (idx >= 0) {
     r.palpites[idx].valor = valor;
     r.palpites[idx].createdAt = Date.now();
+    await saveState(state);
     return { ok: true, updated: true };
   }
+
   r.palpites.push({ username, valor, createdAt: Date.now() });
+  await saveState(state);
   return { ok: true, updated: false };
 }
 
-/* ── Histórico de resultados ── */
+/* Historico de resultados */
 
-export function saveResultado(resultado?: number): ResultadoRodada | null {
-  const r = globalThis.__rodada;
+export async function saveResultado(resultado?: number): Promise<ResultadoRodada | null> {
+  const state = await loadState();
+  const r = state.rodada;
   if (!r) return null;
 
   let vencedores: VencedorInfo[] = [];
@@ -120,28 +252,34 @@ export function saveResultado(resultado?: number): ResultadoRodada | null {
     encerradaEm: Date.now(),
   };
 
-  (globalThis.__historico ??= []).unshift(entry);
-  globalThis.__historico = globalThis.__historico.slice(0, 10);
-
+  state.historico = [entry, ...state.historico].slice(0, 10);
+  await saveState(state);
   return entry;
 }
 
-export function getHistorico(): ResultadoRodada[] {
-  return globalThis.__historico ?? [];
+export async function getHistorico(): Promise<ResultadoRodada[]> {
+  const state = await loadState();
+  return state.historico;
 }
 
-export function clearHistorico(): void {
-  globalThis.__historico = [];
+export async function clearHistorico(): Promise<void> {
+  const state = await loadState();
+  state.historico = [];
+  await saveState(state);
 }
 
-/* ── Fila de mensagens para o bot ── */
+/* Fila de mensagens para o bot */
 
-export function queueChatMessage(msg: string): void {
-  (globalThis.__msgQueue ??= []).push(msg);
+export async function queueChatMessage(msg: string): Promise<void> {
+  const state = await loadState();
+  state.msgQueue.push(msg);
+  await saveState(state);
 }
 
-export function drainChatMessages(): string[] {
-  const msgs = globalThis.__msgQueue ?? [];
-  globalThis.__msgQueue = [];
+export async function drainChatMessages(): Promise<string[]> {
+  const state = await loadState();
+  const msgs = state.msgQueue;
+  state.msgQueue = [];
+  await saveState(state);
   return msgs;
 }

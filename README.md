@@ -25,3 +25,12 @@ npm run bot
 - Bot: Railway
 
 Configure `NEXTAUTH_URL` e `SITE_URL` com a URL de produção acima.
+
+Para palpites em produção, configure um Redis/Upstash no site e no bot:
+
+```text
+UPSTASH_REDIS_REST_URL
+UPSTASH_REDIS_REST_TOKEN
+```
+
+Sem essas variáveis, o projeto usa `.data/palpites-store.json` apenas no desenvolvimento local.

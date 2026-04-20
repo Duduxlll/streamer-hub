@@ -7,5 +7,5 @@ export async function GET(req: Request) {
   if (!secret || secret !== process.env.BOT_SECRET) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
-  return NextResponse.json(drainChatMessages());
+  return NextResponse.json(await drainChatMessages());
 }

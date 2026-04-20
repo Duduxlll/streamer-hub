@@ -23,6 +23,8 @@
 # misc
 .DS_Store
 *.pem
+.data/
+.livepix-token.json
 
 # debug
 npm-debug.log*
