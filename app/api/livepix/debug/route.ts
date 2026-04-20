@@ -21,7 +21,7 @@ export async function GET() {
   oauthUrl.searchParams.set("response_type", "code");
   oauthUrl.searchParams.set("client_id", clientId);
   oauthUrl.searchParams.set("redirect_uri", callbackUrl);
-  oauthUrl.searchParams.set("scope", "reads:payments");
+  oauthUrl.searchParams.set("scope", "payments");
 
   return NextResponse.json({
     clientId,

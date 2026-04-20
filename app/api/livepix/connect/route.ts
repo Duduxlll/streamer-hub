@@ -16,7 +16,7 @@ export async function GET() {
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", callbackUrl);
-  url.searchParams.set("scope", "reads:payments");
+  url.searchParams.set("scope", "payments");
 
   return NextResponse.redirect(url.toString());
 }
