@@ -6,9 +6,10 @@ import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { isAdmin } from "@/lib/admins";
 
-function NavLink({ href, label, from, to }: { href: string; label: string; from: string; to: string }) {
+function NavLink({ href, label, from, to, alsoActiveOn }: { href: string; label: string; from: string; to: string; alsoActiveOn?: string[] }) {
   const pathname = usePathname();
-  const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+  const active = href === "/" ? pathname === "/" :
+    pathname.startsWith(href) || (alsoActiveOn?.some(p => pathname.startsWith(p)) ?? false);
   return (
     <Link
       href={href}
@@ -203,7 +204,7 @@ export default function Navbar() {
           {/* Links desktop */}
           <div className="hidden md:flex items-center gap-2">
             <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />
-            <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" />
+            <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" alsoActiveOn={["/admin"]} />
             <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" />
           </div>
 
@@ -250,7 +251,7 @@ export default function Navbar() {
               <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
-              <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" />
+              <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" alsoActiveOn={["/admin"]} />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
               <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" />
