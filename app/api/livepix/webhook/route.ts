@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMessageByReference } from "@/lib/livepix";
+import { getMessage } from "@/lib/livepix";
 import { getLivePixUserToken } from "@/lib/store";
 import { getJackpot, setJackpot, type JackpotJogador } from "@/lib/jackpotStore";
 
@@ -23,8 +23,8 @@ export async function POST(req: NextRequest) {
 
   console.log("🎯 LivePix webhook:", JSON.stringify(body));
 
-  const reference = body.resource?.reference;
-  if (!reference) return NextResponse.json({ ok: true, skipped: "sem reference" });
+  const messageId = body.resource?.id;
+  if (!messageId) return NextResponse.json({ ok: true, skipped: "sem messageId" });
 
   const jackpot = getJackpot();
   console.log("🎰 Jackpot status:", jackpot?.status ?? "null");
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       : "NÃO — vai usar client_credentials"
     );
 
-    const msg = await getMessageByReference(reference);
+    const msg = await getMessage(messageId);
     console.log("💰 Mensagem LivePix:", JSON.stringify(msg));
 
     /* ── Fase aguardando: adiciona jogador automaticamente ── */

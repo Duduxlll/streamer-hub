@@ -9,6 +9,7 @@ import { getLivePixUserToken, setLivePixUserToken, type LivePixUserToken } from 
 interface TokenCache {
   access_token: string;
   expires_at: number;
+  hasScope: boolean;
 }
 
 declare global {
@@ -55,7 +56,8 @@ async function getUserToken(): Promise<string | null> {
 
 async function getClientToken(): Promise<string> {
   const cached = globalThis.__livepix_token;
-  if (cached && cached.expires_at > Date.now() + 60_000) {
+  // Invalida cache se o token foi gerado sem scope messages:read
+  if (cached && cached.expires_at > Date.now() + 60_000 && cached.hasScope) {
     return cached.access_token;
   }
 
@@ -66,7 +68,7 @@ async function getClientToken(): Promise<string> {
       grant_type:    "client_credentials",
       client_id:     process.env.LIVEPIX_CLIENT_ID     ?? "",
       client_secret: process.env.LIVEPIX_CLIENT_SECRET ?? "",
-      audience:      "https://api.livepix.gg",
+      scope:         "messages:read",
     }),
     cache: "no-store",
   });
@@ -80,6 +82,7 @@ async function getClientToken(): Promise<string> {
   globalThis.__livepix_token = {
     access_token: data.access_token,
     expires_at:   Date.now() + (data.expires_in ?? 3600) * 1000,
+    hasScope:     true,
   };
 
   return globalThis.__livepix_token.access_token;
