@@ -4,7 +4,8 @@ require("dotenv").config({ path: ".env.local" });
 
 const tmi = require("tmi.js");
 
-const FALLBACK_SITE_URL = "https://streamer-hub-delta.vercel.app";
+const FALLBACK_SITE_URL = "";
+const STALE_SITE_HOSTS = new Set(["streamer-hub-delta.vercel.app"]);
 
 function normalizeSiteUrl(value) {
   if (!value) return "";
@@ -13,11 +14,27 @@ function normalizeSiteUrl(value) {
   return withProtocol.replace(/\/+$/, "");
 }
 
+function isStaleUrl(value) {
+  try {
+    return STALE_SITE_HOSTS.has(new URL(value).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function firstValidSiteUrl(...values) {
+  for (const value of values) {
+    const url = normalizeSiteUrl(value);
+    if (url && !isStaleUrl(url)) return url;
+  }
+  return FALLBACK_SITE_URL;
+}
+
 const CHANNEL       = process.env.TWITCH_CHANNEL        || "stainzincs";
-const SITE_URL      = normalizeSiteUrl(
-  process.env.SITE_URL ||
-  process.env.NEXTAUTH_URL ||
-  process.env.AUTH_URL ||
+const SITE_URL      = firstValidSiteUrl(
+  process.env.SITE_URL,
+  process.env.NEXTAUTH_URL,
+  process.env.AUTH_URL,
   FALLBACK_SITE_URL
 );
 const BOT_SECRET    = process.env.BOT_SECRET             || "";
@@ -30,6 +47,7 @@ const CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET   || "";
 const REQUER_LIVE = process.env.REQUER_LIVE !== "false";
 
 if (!BOT_SECRET) { console.error("❌  BOT_SECRET não definido no .env.local"); process.exit(1); }
+if (!SITE_URL) { console.error("❌  SITE_URL precisa apontar para o domínio atual da Vercel"); process.exit(1); }
 
 console.log(`📺  Canal: #${CHANNEL}`);
 console.log(`📡  Requer live: ${REQUER_LIVE ? "SIM" : "NÃO (modo teste)"}`);

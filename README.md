@@ -4,11 +4,7 @@ Site Next.js e bot da Twitch para interações ao vivo.
 
 ## Produção
 
-URL do site:
-
-```text
-https://streamer-hub-delta.vercel.app
-```
+URL do site: use o domínio que aparece no botão **Visit** do deploy de produção na Vercel.
 
 ## Comandos
 
@@ -24,7 +20,7 @@ npm run bot
 - Site: Vercel
 - Bot: Railway
 
-Configure `NEXTAUTH_URL` e `SITE_URL` com a URL de produção acima.
+Configure `NEXTAUTH_URL`, `AUTH_URL` e `SITE_URL` com o domínio atual de produção da Vercel.
 
 Para palpites em produção, configure um Redis/Upstash no projeto da Vercel:
 
