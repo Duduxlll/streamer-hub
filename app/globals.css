@@ -72,10 +72,13 @@ body {
   to   { transform: rotate(360deg); }
 }
 
-/* Ficha / moeda gira no eixo Y — leve tilt em X evita borda perfeita */
+/* Ficha gira com X-tilt que aumenta nos momentos de borda (90°/270°) */
 @keyframes spin-chip {
-  from { transform: rotateX(14deg) rotateY(0deg); }
-  to   { transform: rotateX(14deg) rotateY(360deg); }
+  0%   { transform: rotateX(12deg) rotateY(0deg);   }
+  25%  { transform: rotateX(38deg) rotateY(90deg);  }
+  50%  { transform: rotateX(12deg) rotateY(180deg); }
+  75%  { transform: rotateX(38deg) rotateY(270deg); }
+  100% { transform: rotateX(12deg) rotateY(360deg); }
 }
 
 /* Dado 3D — rotação que revela todas as faces */

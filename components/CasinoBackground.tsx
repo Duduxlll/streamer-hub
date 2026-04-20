@@ -288,7 +288,7 @@ export default function CasinoBackground({ logoUrl = CHIP_LOGO_URL }: { logoUrl?
                   </div>
                 ) : item.kind==="chip" && item.pal ? (
                   /* ficha 3D — Fragment diretamente dentro do preserve-3d */
-                  <div style={{ perspective:"280px" }}>
+                  <div style={{ perspective:"380px" }}>
                     <div style={{
                       width:60, height:60, position:"relative",
                       animation:`spin-chip ${item.spinDur}s linear ${item.spinDelay}s infinite`,
