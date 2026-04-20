@@ -72,10 +72,10 @@ body {
   to   { transform: rotate(360deg); }
 }
 
-/* Ficha / moeda gira no eixo Y — perspective no wrapper JSX */
+/* Ficha / moeda gira no eixo Y — leve tilt em X evita borda perfeita */
 @keyframes spin-chip {
-  from { transform: rotateY(0deg); }
-  to   { transform: rotateY(360deg); }
+  from { transform: rotateX(14deg) rotateY(0deg); }
+  to   { transform: rotateX(14deg) rotateY(360deg); }
 }
 
 /* Dado 3D — rotação que revela todas as faces */
