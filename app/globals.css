@@ -72,13 +72,10 @@ body {
   to   { transform: rotate(360deg); }
 }
 
-/* Ficha gira com X-tilt que aumenta nos momentos de borda (90°/270°) */
+/* Ficha gira no eixo Z (como pião) com tilt em X — nunca fica de borda */
 @keyframes spin-chip {
-  0%   { transform: rotateX(12deg) rotateY(0deg);   }
-  25%  { transform: rotateX(38deg) rotateY(90deg);  }
-  50%  { transform: rotateX(12deg) rotateY(180deg); }
-  75%  { transform: rotateX(38deg) rotateY(270deg); }
-  100% { transform: rotateX(12deg) rotateY(360deg); }
+  from { transform: rotateX(24deg) rotateZ(0deg); }
+  to   { transform: rotateX(24deg) rotateZ(360deg); }
 }
 
 /* Dado 3D — rotação que revela todas as faces */
