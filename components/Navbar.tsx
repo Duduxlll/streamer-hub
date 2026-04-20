@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { isAdmin } from "@/lib/admins";
@@ -46,14 +46,55 @@ function TwitchIcon({ className }: { className?: string }) {
   );
 }
 
+function useImageColor(src: string | null | undefined): string {
+  const [color, setColor] = useState("145,70,255");
+
+  useEffect(() => {
+    if (!src) return;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = 16;
+        canvas.height = 16;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, 16, 16);
+        const data = ctx.getImageData(0, 0, 16, 16).data;
+        let r = 0, g = 0, b = 0, count = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          const pr = data[i], pg = data[i + 1], pb = data[i + 2], pa = data[i + 3];
+          if (pa < 128) continue;
+          const max = Math.max(pr, pg, pb);
+          const min = Math.min(pr, pg, pb);
+          if (max - min < 30) continue;
+          r += pr; g += pg; b += pb; count++;
+        }
+        if (count > 0) {
+          setColor(`${Math.round(r / count)},${Math.round(g / count)},${Math.round(b / count)}`);
+        }
+      } catch { }
+    };
+    img.src = src;
+  }, [src]);
+
+  return color;
+}
+
 function UserMenu({ name, image, admin }: { name: string; image?: string | null; admin: boolean }) {
   const [open, setOpen] = useState(false);
+  const color = useImageColor(image);
 
   return (
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#9146ff]/40 bg-[#9146ff]/10 hover:bg-[#9146ff]/20 transition-all"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full transition-all"
+        style={{
+          border: `1px solid rgba(${color},0.45)`,
+          background: `rgba(${color},0.12)`,
+        }}
       >
         {image ? (
           // eslint-disable-next-line @next/next/no-img-element
