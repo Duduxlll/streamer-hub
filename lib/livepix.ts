@@ -94,22 +94,43 @@ export interface LivePixMessage {
   createdAt: string;
 }
 
-export async function getMessage(messageId: string): Promise<LivePixMessage> {
-  // Usa o token do usuário (authorization_code) se disponível, senão usa client_credentials
+async function fetchWithAuth(url: string, label: string): Promise<Response> {
   const userToken = await getUserToken();
   const token = userToken ?? await getClientToken();
+  console.log(`🔐 ${label} usando: ${userToken ? "user-oauth" : "client-credentials"}`);
+  return fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+}
 
-  console.log(`🔐 getMessage usando token: ${userToken ? "user-oauth" : "client-credentials"}`);
-  const res = await fetch(`https://api.livepix.gg/v2/messages/${messageId}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-  });
+export async function getMessage(messageId: string): Promise<LivePixMessage> {
+  // Tenta primeiro por ID direto
+  const res = await fetchWithAuth(
+    `https://api.livepix.gg/v2/messages/${messageId}`,
+    `getMessage(${messageId})`
+  );
+  if (res.ok) {
+    const json = await res.json();
+    return json.data ?? json;
+  }
+  const body = await res.text().catch(() => "");
+  throw new Error(`LivePix getMessage ${res.status}: ${body}`);
+}
+
+export async function getMessageByReference(reference: string): Promise<LivePixMessage> {
+  // Busca por reference — campo correto do webhook (resource.reference)
+  const res = await fetchWithAuth(
+    `https://api.livepix.gg/v2/messages?reference=${encodeURIComponent(reference)}&limit=1`,
+    `getMessageByRef(${reference})`
+  );
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`LivePix getMessage ${res.status}: ${body}`);
+    throw new Error(`LivePix getMessageByRef ${res.status}: ${body}`);
   }
   const json = await res.json();
-  return json.data ?? json;
+  const items: LivePixMessage[] = json.data ?? json.items ?? json;
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new Error(`LivePix: mensagem não encontrada para reference=${reference}`);
+  }
+  return items[0];
 }
 
 export async function isUserConnected(): Promise<boolean> {
