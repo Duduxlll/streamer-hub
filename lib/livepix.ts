@@ -96,10 +96,32 @@ export interface LivePixMessage {
 }
 
 async function fetchWithAuth(url: string, label: string): Promise<Response> {
+  // Tenta 1: user OAuth Bearer token
   const userToken = await getUserToken();
-  const token = userToken ?? await getClientToken();
-  console.log(`🔐 ${label} usando: ${userToken ? "user-oauth" : "client-credentials"}`);
-  return fetch(url, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+  if (userToken) {
+    console.log(`🔐 ${label} tentando user-oauth...`);
+    const r1 = await fetch(url, { headers: { Authorization: `Bearer ${userToken}` }, cache: "no-store" });
+    if (r1.ok) return r1;
+    console.log(`⚠️ user-oauth falhou: ${r1.status} | WWW-Auth: ${r1.headers.get("www-authenticate") ?? "–"}`);
+  }
+
+  // Tenta 2: client_credentials Bearer token
+  try {
+    const ccToken = await getClientToken();
+    console.log(`🔐 ${label} tentando client-credentials...`);
+    const r2 = await fetch(url, { headers: { Authorization: `Bearer ${ccToken}` }, cache: "no-store" });
+    if (r2.ok) return r2;
+    console.log(`⚠️ client-credentials falhou: ${r2.status} | WWW-Auth: ${r2.headers.get("www-authenticate") ?? "–"}`);
+  } catch (e) { console.log("⚠️ client-credentials token erro:", e); }
+
+  // Tenta 3: Basic Auth com client_id:client_secret
+  const basicCred = Buffer.from(
+    `${process.env.LIVEPIX_CLIENT_ID ?? ""}:${process.env.LIVEPIX_CLIENT_SECRET ?? ""}`
+  ).toString("base64");
+  console.log(`🔐 ${label} tentando Basic Auth...`);
+  const r3 = await fetch(url, { headers: { Authorization: `Basic ${basicCred}` }, cache: "no-store" });
+  console.log(`🔐 Basic Auth resultado: ${r3.status} | WWW-Auth: ${r3.headers.get("www-authenticate") ?? "–"}`);
+  return r3;
 }
 
 export async function getMessage(messageId: string): Promise<LivePixMessage> {
