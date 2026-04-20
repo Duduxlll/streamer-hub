@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { drainChatMessages } from "@/lib/store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 /* GET — exclusivo para o bot (drena e retorna mensagens pendentes) */
 export async function GET(req: Request) {
   const secret = req.headers.get("x-bot-secret");

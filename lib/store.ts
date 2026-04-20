@@ -51,6 +51,32 @@ type RedisResult<T> = {
   error?: string;
 };
 
+export interface StoreDiagnostics {
+  backend: "redis" | "local-file" | "memory";
+  env: {
+    UPSTASH_REDIS_REST_URL: boolean;
+    UPSTASH_REDIS_REST_TOKEN: boolean;
+    KV_REST_API_URL: boolean;
+    KV_REST_API_TOKEN: boolean;
+    REDIS_REST_API_URL: boolean;
+    REDIS_REST_API_TOKEN: boolean;
+    VERCEL: boolean;
+    NODE_ENV: string | undefined;
+  };
+  redis: {
+    configured: boolean;
+    ping: string | null;
+    error: string | null;
+  };
+  rodadaAtual: {
+    exists: boolean;
+    status: Rodada["status"] | null;
+    palpites: number;
+  };
+  historico: number;
+  queue: number;
+}
+
 function redisConfig() {
   const url =
     process.env.UPSTASH_REDIS_REST_URL ??
@@ -75,6 +101,12 @@ function emptyState(): StoreState {
 
 function shouldUseLocalFile() {
   return !redisConfig() && process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1";
+}
+
+function getBackend(): StoreDiagnostics["backend"] {
+  if (redisConfig()) return "redis";
+  if (shouldUseLocalFile()) return "local-file";
+  return "memory";
 }
 
 async function redisCommand<T>(command: unknown[]) {
@@ -282,4 +314,45 @@ export async function drainChatMessages(): Promise<string[]> {
   state.msgQueue = [];
   await saveState(state);
   return msgs;
+}
+
+export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
+  let ping: string | null = null;
+  let error: string | null = null;
+
+  if (redisConfig()) {
+    try {
+      ping = await redisCommand<string>(["PING"]) ?? null;
+    } catch (err) {
+      error = err instanceof Error ? err.message : "Erro desconhecido no Redis";
+    }
+  }
+
+  const state = await loadState().catch(() => emptyState());
+
+  return {
+    backend: getBackend(),
+    env: {
+      UPSTASH_REDIS_REST_URL: !!process.env.UPSTASH_REDIS_REST_URL,
+      UPSTASH_REDIS_REST_TOKEN: !!process.env.UPSTASH_REDIS_REST_TOKEN,
+      KV_REST_API_URL: !!process.env.KV_REST_API_URL,
+      KV_REST_API_TOKEN: !!process.env.KV_REST_API_TOKEN,
+      REDIS_REST_API_URL: !!process.env.REDIS_REST_API_URL,
+      REDIS_REST_API_TOKEN: !!process.env.REDIS_REST_API_TOKEN,
+      VERCEL: process.env.VERCEL === "1",
+      NODE_ENV: process.env.NODE_ENV,
+    },
+    redis: {
+      configured: !!redisConfig(),
+      ping,
+      error,
+    },
+    rodadaAtual: {
+      exists: !!state.rodada,
+      status: state.rodada?.status ?? null,
+      palpites: state.rodada?.palpites.length ?? 0,
+    },
+    historico: state.historico.length,
+    queue: state.msgQueue.length,
+  };
 }

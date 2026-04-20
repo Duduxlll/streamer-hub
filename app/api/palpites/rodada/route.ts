@@ -3,8 +3,15 @@ import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import { getRodada, abrirRodada, travarPalpites, fecharRodada, saveResultado, queueChatMessage } from "@/lib/store";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, must-revalidate",
+};
+
 export async function GET() {
-  return NextResponse.json(await getRodada());
+  return NextResponse.json(await getRodada(), { headers: NO_STORE_HEADERS });
 }
 
 export async function POST(req: Request) {
@@ -33,14 +40,14 @@ export async function POST(req: Request) {
       `Use !p <valor> para participar! Ex: !p 230 — Quem acertar mais perto ganha! 🏆`
     );
 
-    return NextResponse.json(rodada);
+    return NextResponse.json(rodada, { headers: NO_STORE_HEADERS });
   }
 
   /* ── Travar palpites (ninguém mais muda) ── */
   if (body.action === "lock") {
     await travarPalpites();
     await queueChatMessage(`🔒 Palpites fechados! Ninguém mais pode participar. Aguardando resultado... ⏳`);
-    return NextResponse.json(await getRodada());
+    return NextResponse.json(await getRodada(), { headers: NO_STORE_HEADERS });
   }
 
   /* ── Definir vencedor e encerrar ── */
@@ -69,7 +76,7 @@ export async function POST(req: Request) {
     }
 
     await fecharRodada();
-    return NextResponse.json({ ok: true, resultado: resultadoSalvo });
+    return NextResponse.json({ ok: true, resultado: resultadoSalvo }, { headers: NO_STORE_HEADERS });
   }
 
   return NextResponse.json({ error: "Ação inválida" }, { status: 400 });
