@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMessage } from "@/lib/livepix";
-import { getLivePixUserToken } from "@/lib/store";
 import { getJackpot, setJackpot, type JackpotJogador } from "@/lib/jackpotStore";
 
-let _jid = 0;
+function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 export async function POST(req: NextRequest) {
   const secret = process.env.LIVEPIX_WEBHOOK_SECRET;
@@ -21,39 +20,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Bad Request" }, { status: 400 });
   }
 
-  console.log("🎯 LivePix webhook:", JSON.stringify(body));
-
   const messageId = body.resource?.id;
   if (!messageId) return NextResponse.json({ ok: true, skipped: "sem messageId" });
 
   const jackpot = getJackpot();
-  console.log("🎰 Jackpot status:", jackpot?.status ?? "null");
-
-  if (!jackpot) {
-    return NextResponse.json({ ok: true, skipped: "sem jackpot" });
-  }
+  if (!jackpot) return NextResponse.json({ ok: true, skipped: "sem jackpot" });
 
   try {
-    // Debug: verifica se o token está no Turso antes de chamar getMessage
-    const tokenDebug = await getLivePixUserToken();
-    console.log("🔑 Token salvo:", tokenDebug
-      ? `sim (expira ${new Date(tokenDebug.expires_at).toISOString()}, expirado: ${tokenDebug.expires_at < Date.now()})`
-      : "NÃO — vai usar client_credentials"
-    );
-
     const msg = await getMessage(messageId);
-    console.log("💰 Mensagem LivePix:", JSON.stringify(msg));
 
     /* ── Fase aguardando: adiciona jogador automaticamente ── */
     if (jackpot.status === "aguardando") {
-      // Filtra por valor de entrada — pagamento precisa ser exatamente o valorEntrada
-      const valorPago = msg.amount / 100;
-      if (valorPago !== jackpot.valorEntrada) {
-        console.log(`⚠️ Valor ignorado: R$ ${valorPago} !== entrada R$ ${jackpot.valorEntrada}`);
-        return NextResponse.json({ ok: true, skipped: `valor ${valorPago} !== entrada ${jackpot.valorEntrada}` });
+      // Compara em centavos para evitar problema de ponto flutuante
+      const pagoCentavos   = Math.round(msg.amount);
+      const entradaCentavos = Math.round(jackpot.valorEntrada * 100);
+      if (pagoCentavos !== entradaCentavos) {
+        console.log(`⚠️ Valor ignorado: R$ ${msg.amount / 100} (esperado R$ ${jackpot.valorEntrada})`);
+        return NextResponse.json({ ok: true, skipped: "valor incorreto" });
       }
 
-      // Evita duplicata pelo mesmo usuário
       const jaExiste = jackpot.jogadores.some(
         j => j.nome.toLowerCase() === msg.username.toLowerCase()
       );
@@ -62,7 +47,7 @@ export async function POST(req: NextRequest) {
       }
 
       const jogador: JackpotJogador = {
-        id: String(++_jid),
+        id: newId(),
         nome: msg.username,
         jogo: msg.message || "",
         valor: null,

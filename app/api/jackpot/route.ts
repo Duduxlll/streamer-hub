@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import { getJackpot, setJackpot, type Jackpot, type JackpotJogador } from "@/lib/jackpotStore";
 
-let _jid = 0;
+function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 export async function GET() {
   return NextResponse.json(getJackpot());
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   if (action === "add-jogador") {
     if (j.status !== "aguardando") return NextResponse.json({ error: "Já iniciado" }, { status: 400 });
     const jogador: JackpotJogador = {
-      id: String(++_jid),
+      id: newId(),
       nome: String(body.nome || "Jogador").trim(),
       jogo: String(body.jogo || "").trim(),
       valor: null,
@@ -52,6 +52,31 @@ export async function POST(req: NextRequest) {
   if (action === "remove-jogador") {
     if (j.status !== "aguardando") return NextResponse.json({ error: "Já iniciado" }, { status: 400 });
     j.jogadores = j.jogadores.filter(jg => jg.id !== String(body.id));
+    setJackpot(j);
+    return NextResponse.json(j);
+  }
+
+  if (action === "edit-jogador") {
+    if (j.status !== "aguardando") return NextResponse.json({ error: "Já iniciado" }, { status: 400 });
+    const idx = j.jogadores.findIndex(jg => jg.id === String(body.id));
+    if (idx < 0) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+    j.jogadores[idx].nome = String(body.nome || j.jogadores[idx].nome).trim();
+    j.jogadores[idx].jogo = String(body.jogo ?? j.jogadores[idx].jogo).trim();
+    setJackpot(j);
+    return NextResponse.json(j);
+  }
+
+  if (action === "edit-valor") {
+    const idx = j.jogadores.findIndex(jg => jg.id === String(body.id));
+    if (idx < 0) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+    const raw = String(body.valor ?? "0").replace(/R\$\s*/g, "").replace(/\./g, "").replace(",", ".");
+    const valor = parseFloat(raw);
+    if (isNaN(valor) || valor < 0) return NextResponse.json({ error: "Valor inválido" }, { status: 400 });
+    j.jogadores[idx].valor = valor;
+    if (j.status === "finalizado") {
+      j.vencedor = j.jogadores.reduce((best, jg) =>
+        (jg.valor ?? -1) > (best?.valor ?? -1) ? jg : best, j.jogadores[0]);
+    }
     setJackpot(j);
     return NextResponse.json(j);
   }

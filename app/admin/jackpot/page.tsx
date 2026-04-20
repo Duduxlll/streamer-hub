@@ -169,6 +169,18 @@ export default function AdminJackpotPage() {
   const [regValor, setRegValor] = useState("");
   const regRef = useRef<HTMLInputElement>(null);
 
+  // Edit player (aguardando)
+  const [editingId,   setEditingId]   = useState<string | null>(null);
+  const [editNome,    setEditNome]    = useState("");
+  const [editJogo,    setEditJogo]    = useState("");
+
+  // Edit valor (ativo/placar)
+  const [editValorId, setEditValorId] = useState<string | null>(null);
+  const [editValor,   setEditValor]   = useState("");
+
+  // Scroll to top on mount
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   useEffect(() => {
     if (status === "loading") return;
     if (!isAdmin(session?.user?.twitchLogin)) router.replace("/arena/jackpot");
@@ -436,16 +448,48 @@ export default function AdminJackpotPage() {
               </div>
               <div className="divide-y divide-white/5 max-h-64 overflow-y-auto">
                 {jackpot.jogadores.map((j, i) => (
-                  <div key={j.id} className="flex items-center gap-3 px-5 py-3">
-                    <span className="text-xs font-bold text-gray-700 w-5 text-center">{i + 1}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-white text-sm truncate">{j.nome}</p>
-                      {j.jogo && <p className="text-xs text-gray-600 truncate">{j.jogo}</p>}
-                    </div>
-                    <button
-                      onClick={() => post({ action: "remove-jogador", id: j.id })}
-                      className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                    >✕</button>
+                  <div key={j.id} className="px-5 py-3">
+                    {editingId === j.id ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          value={editNome} onChange={e => setEditNome(e.target.value)}
+                          className="flex-1 bg-white/5 border border-[#f59e0b]/50 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none"
+                          autoFocus
+                        />
+                        <input
+                          value={editJogo} onChange={e => setEditJogo(e.target.value)}
+                          className="w-32 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none"
+                          placeholder="Jogo"
+                        />
+                        <button
+                          onClick={async () => {
+                            if (!editNome.trim()) return;
+                            await post({ action: "edit-jogador", id: j.id, nome: editNome, jogo: editJogo });
+                            setEditingId(null);
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-black text-black"
+                          style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}
+                        >✓</button>
+                        <button onClick={() => setEditingId(null)} className="px-2.5 py-1.5 rounded-lg text-xs text-gray-500 hover:text-white transition-colors">✕</button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs font-bold text-gray-700 w-5 text-center">{i + 1}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-bold text-white text-sm truncate">{j.nome}</p>
+                          {j.jogo && <p className="text-xs text-gray-600 truncate">{j.jogo}</p>}
+                        </div>
+                        <button
+                          onClick={() => { setEditingId(j.id); setEditNome(j.nome); setEditJogo(j.jogo); }}
+                          className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-600 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                          title="Editar"
+                        >✏️</button>
+                        <button
+                          onClick={() => post({ action: "remove-jogador", id: j.id })}
+                          className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                        >✕</button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -684,17 +728,41 @@ export default function AdminJackpotPage() {
                     background: i === 0 ? "rgba(245,158,11,0.08)" : "rgba(255,255,255,0.03)",
                     border: `1px solid ${i === 0 ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.05)"}`,
                   }}>
-                  {i === 0 && (
-                    <span className="text-xs flex-shrink-0">🏆</span>
-                  )}
+                  {i === 0 && <span className="text-xs flex-shrink-0">🏆</span>}
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-white text-sm truncate">{j.nome}</p>
                     {j.jogo && <p className="text-[11px] text-gray-600 truncate">{j.jogo}</p>}
                   </div>
-                  <p className="font-black tabular-nums text-sm flex-shrink-0"
-                    style={{ color: i === 0 ? "#f59e0b" : "#22c55e" }}>
-                    R$ {j.valor!.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </p>
+                  {editValorId === j.id ? (
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <input
+                        value={editValor} onChange={e => setEditValor(e.target.value)}
+                        className="w-24 bg-white/5 border border-[#f59e0b]/50 rounded-lg px-2 py-1 text-white text-xs focus:outline-none"
+                        placeholder="0,00"
+                        autoFocus
+                      />
+                      <button
+                        onClick={async () => {
+                          await post({ action: "edit-valor", id: j.id, valor: editValor });
+                          setEditValorId(null);
+                        }}
+                        className="px-2 py-1 rounded-lg text-[10px] font-black text-black"
+                        style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}
+                      >✓</button>
+                      <button onClick={() => setEditValorId(null)} className="text-gray-600 hover:text-white text-xs transition-colors">✕</button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <p className="font-black tabular-nums text-sm" style={{ color: i === 0 ? "#f59e0b" : "#22c55e" }}>
+                        R$ {j.valor!.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      </p>
+                      <button
+                        onClick={() => { setEditValorId(j.id); setEditValor(String(j.valor)); }}
+                        className="text-gray-600 hover:text-amber-400 transition-colors text-xs"
+                        title="Editar valor"
+                      >✏️</button>
+                    </div>
+                  )}
                 </div>
               ))}
               {sorted.length === 0 && <p className="text-xs text-gray-700 text-center py-3">Aguardando resultados...</p>}
