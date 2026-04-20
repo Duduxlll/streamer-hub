@@ -6,7 +6,7 @@ import { getJackpot, setJackpot, type Jackpot, type JackpotJogador } from "@/lib
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 export async function GET() {
-  return NextResponse.json(getJackpot());
+  return NextResponse.json(await getJackpot());
 }
 
 export async function POST(req: NextRequest) {
@@ -29,11 +29,11 @@ export async function POST(req: NextRequest) {
       vencedor: null,
       criadoEm: Date.now(),
     };
-    setJackpot(j);
+    await setJackpot(j);
     return NextResponse.json(j);
   }
 
-  const j = getJackpot();
+  const j = await getJackpot();
   if (!j) return NextResponse.json({ error: "Sem jackpot ativo" }, { status: 400 });
 
   if (action === "add-jogador") {
@@ -45,14 +45,14 @@ export async function POST(req: NextRequest) {
       valor: null,
     };
     j.jogadores.push(jogador);
-    setJackpot(j);
+    await setJackpot(j);
     return NextResponse.json(j);
   }
 
   if (action === "remove-jogador") {
     if (j.status !== "aguardando") return NextResponse.json({ error: "Já iniciado" }, { status: 400 });
     j.jogadores = j.jogadores.filter(jg => jg.id !== String(body.id));
-    setJackpot(j);
+    await setJackpot(j);
     return NextResponse.json(j);
   }
 
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     if (idx < 0) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
     j.jogadores[idx].nome = String(body.nome || j.jogadores[idx].nome).trim();
     j.jogadores[idx].jogo = String(body.jogo ?? j.jogadores[idx].jogo).trim();
-    setJackpot(j);
+    await setJackpot(j);
     return NextResponse.json(j);
   }
 
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       j.vencedor = j.jogadores.reduce((best, jg) =>
         (jg.valor ?? -1) > (best?.valor ?? -1) ? jg : best, j.jogadores[0]);
     }
-    setJackpot(j);
+    await setJackpot(j);
     return NextResponse.json(j);
   }
 
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     if (j.jogadores.length < 2) return NextResponse.json({ error: "Mínimo 2 jogadores" }, { status: 400 });
     j.status = "ativo";
     j.jogadorAtualIdx = 0;
-    setJackpot(j);
+    await setJackpot(j);
     return NextResponse.json(j);
   }
 
@@ -102,12 +102,12 @@ export async function POST(req: NextRequest) {
       j.vencedor = j.jogadores.reduce((best, jg) =>
         (jg.valor ?? -1) > (best?.valor ?? -1) ? jg : best, j.jogadores[0]);
     }
-    setJackpot(j);
+    await setJackpot(j);
     return NextResponse.json(j);
   }
 
   if (action === "cancelar") {
-    setJackpot(null);
+    await setJackpot(null);
     return NextResponse.json({ ok: true });
   }
 

@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json() as { username: string; displayName: string; time: string };
-  const result = registrarEscolha(body.username, body.displayName, body.time);
+  const result = await registrarEscolha(body.username, body.displayName, body.time);
 
   if (result.ok && BOT_USER_RESPONDS()) {
     await queueChatMessage(

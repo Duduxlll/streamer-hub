@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { dbGet, dbSet } from "@/lib/store";
 
 export interface JackpotJogador {
   id: string;
@@ -19,43 +18,33 @@ export interface Jackpot {
   criadoEm: number;
 }
 
-declare global {
-  // eslint-disable-next-line no-var
-  var __jackpot: Jackpot | null | undefined;
-}
+const KEY = "jackpot:v1";
 
-const FILE = path.join(process.cwd(), ".jackpot.json");
+let _state: Jackpot | null = null;
+let _initialized = false;
 
-function loadFromFile(): Jackpot | null {
+async function ensureLoaded(): Promise<void> {
+  if (_initialized) return;
+  _initialized = true;
   try {
-    if (fs.existsSync(FILE)) {
-      const raw = fs.readFileSync(FILE, "utf-8");
-      return JSON.parse(raw) as Jackpot;
-    }
-  } catch { /* ignora erro de leitura */ }
-  return null;
+    const raw = await dbGet(KEY);
+    _state = raw ? (JSON.parse(raw) as Jackpot) : null;
+  } catch {
+    _state = null;
+  }
 }
 
-function saveToFile(j: Jackpot | null): void {
-  try {
-    if (j === null) {
-      if (fs.existsSync(FILE)) fs.unlinkSync(FILE);
-    } else {
-      fs.writeFileSync(FILE, JSON.stringify(j), "utf-8");
-    }
-  } catch { /* ignora erro de escrita */ }
+async function save(): Promise<void> {
+  await dbSet(KEY, _state ? JSON.stringify(_state) : null);
 }
 
-// Inicializa da memória ou do arquivo
-if (globalThis.__jackpot === undefined) {
-  globalThis.__jackpot = loadFromFile();
+export async function getJackpot(): Promise<Jackpot | null> {
+  await ensureLoaded();
+  return _state;
 }
 
-export function getJackpot(): Jackpot | null {
-  return globalThis.__jackpot ?? null;
-}
-
-export function setJackpot(j: Jackpot | null): void {
-  globalThis.__jackpot = j;
-  saveToFile(j);
+export async function setJackpot(j: Jackpot | null): Promise<void> {
+  await ensureLoaded();
+  _state = j;
+  await save();
 }

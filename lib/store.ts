@@ -439,6 +439,30 @@ export async function setLivePixUserToken(t: LivePixUserToken | null): Promise<v
   globalThis.__livepixUserToken = t ?? undefined;
 }
 
+/* ─── Helpers genéricos para outros stores ─── */
+
+export async function dbGet(key: string): Promise<string | null> {
+  const client = getTursoClient();
+  if (!client) return null;
+  await ensureTursoSchema();
+  const result = await client.execute({ sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`, args: [key] });
+  return (result.rows[0]?.value as string) ?? null;
+}
+
+export async function dbSet(key: string, value: string | null): Promise<void> {
+  const client = getTursoClient();
+  if (!client) return;
+  await ensureTursoSchema();
+  if (value === null) {
+    await client.execute({ sql: `DELETE FROM ${STORE_TABLE} WHERE key = ?`, args: [key] });
+  } else {
+    await client.execute({
+      sql: `INSERT INTO ${STORE_TABLE} (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+      args: [key, value],
+    });
+  }
+}
+
 /* ─── Diagnóstico ─── */
 
 export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {

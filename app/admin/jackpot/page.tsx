@@ -156,6 +156,7 @@ export default function AdminJackpotPage() {
   const [loading, setLoading] = useState(false);
   const [waitingToSpin, setWaitingToSpin] = useState(true);
   const [spinning,      setSpinning]      = useState(false);
+  const [livepixOk,     setLivepixOk]     = useState<boolean | null>(null);
 
   // Setup form
   const [formNome,  setFormNome]  = useState("");
@@ -180,6 +181,10 @@ export default function AdminJackpotPage() {
 
   // Scroll to top on mount
   useEffect(() => { window.scrollTo(0, 0); }, []);
+
+  useEffect(() => {
+    fetch("/api/livepix/status").then(r => r.json()).then(d => setLivepixOk(!!d.connected)).catch(() => setLivepixOk(false));
+  }, []);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -250,18 +255,27 @@ export default function AdminJackpotPage() {
           <a
             href="/api/livepix/connect"
             className="flex items-center justify-between px-4 py-3 rounded-2xl border mb-3 transition-all hover:bg-[#f59e0b]/10"
-            style={{ background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.2)" }}
+            style={{
+              background: livepixOk ? "rgba(34,197,94,0.05)" : "rgba(245,158,11,0.05)",
+              border: `1px solid ${livepixOk ? "rgba(34,197,94,0.25)" : "rgba(245,158,11,0.2)"}`,
+            }}
           >
             <div className="flex items-center gap-2">
-              <span className="text-base">🔗</span>
+              <span className="text-base">{livepixOk ? "✅" : "🔗"}</span>
               <div>
-                <p className="text-xs font-black text-amber-400">Conectar LivePix</p>
-                <p className="text-[10px] text-gray-600">Necessário para entrada automática via pagamento</p>
+                <p className="text-xs font-black" style={{ color: livepixOk ? "#4ade80" : "#fbbf24" }}>
+                  {livepixOk ? "LivePix Conectado" : "Conectar LivePix"}
+                </p>
+                <p className="text-[10px] text-gray-600">
+                  {livepixOk ? "Entrada automática via pagamento ativa" : "Necessário para entrada automática via pagamento"}
+                </p>
               </div>
             </div>
-            <svg className="w-3.5 h-3.5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-            </svg>
+            {!livepixOk && (
+              <svg className="w-3.5 h-3.5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+            )}
           </a>
 
           <div className="rounded-2xl border border-white/10 p-6" style={{ background: "rgba(8,10,20,0.95)" }}>

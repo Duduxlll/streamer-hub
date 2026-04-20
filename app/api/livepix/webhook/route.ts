@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const messageId = body.resource?.id;
   if (!messageId) return NextResponse.json({ ok: true, skipped: "sem messageId" });
 
-  const jackpot = getJackpot();
+  const jackpot = await getJackpot();
   if (!jackpot) return NextResponse.json({ ok: true, skipped: "sem jackpot" });
 
   try {
@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
 
     /* ── Fase aguardando: adiciona jogador automaticamente ── */
     if (jackpot.status === "aguardando") {
-      // Compara em centavos para evitar problema de ponto flutuante
       const pagoCentavos   = Math.round(msg.amount);
       const entradaCentavos = Math.round(jackpot.valorEntrada * 100);
       if (pagoCentavos !== entradaCentavos) {
@@ -53,7 +52,7 @@ export async function POST(req: NextRequest) {
         valor: null,
       };
       jackpot.jogadores.push(jogador);
-      setJackpot(jackpot);
+      await setJackpot(jackpot);
       console.log(`✅ Jogador adicionado: ${jogador.nome} | jogo: ${jogador.jogo}`);
       return NextResponse.json({ ok: true, acao: "jogador-adicionado", jogador: jogador.nome });
     }
@@ -75,7 +74,7 @@ export async function POST(req: NextRequest) {
           (jg.valor ?? -1) > (best?.valor ?? -1) ? jg : best, jackpot.jogadores[0]);
       }
 
-      setJackpot(jackpot);
+      await setJackpot(jackpot);
       console.log(`✅ Valor registrado: ${jogadorAtual.nome} → R$ ${valor}`);
       return NextResponse.json({ ok: true, acao: "valor-registrado", jogador: jogadorAtual.nome, valor });
     }

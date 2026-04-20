@@ -10,11 +10,11 @@ export async function POST(req: NextRequest) {
   const { username, displayName } = await req.json();
   if (!username) return NextResponse.json({ error: "username obrigatório" }, { status: 400 });
 
-  const batalha = getBatalha();
+  const batalha = await getBatalha();
   if (!batalha || batalha.status !== "inscricao") {
     return NextResponse.json({ ok: false, motivo: "Inscrições não estão abertas." });
   }
 
-  const result = entrarBatalha(username, displayName ?? username);
+  const result = await entrarBatalha(username, displayName ?? username);
   return NextResponse.json(result);
 }

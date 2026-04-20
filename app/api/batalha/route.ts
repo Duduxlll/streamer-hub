@@ -8,7 +8,7 @@ import {
 } from "@/lib/batalhaStore";
 
 export async function GET() {
-  return NextResponse.json(getBatalha());
+  return NextResponse.json(await getBatalha());
 }
 
 export async function POST(req: NextRequest) {
@@ -25,30 +25,30 @@ export async function POST(req: NextRequest) {
     if (!nome || !vagas || !comando) {
       return NextResponse.json({ error: "Campos obrigatórios faltando" }, { status: 400 });
     }
-    return NextResponse.json(criarBatalha(nome, vagas as VagasOptions, premiacao ?? 0, comando));
+    return NextResponse.json(await criarBatalha(nome, vagas as VagasOptions, premiacao ?? 0, comando));
   }
 
   if (action === "iniciar") {
-    const result = iniciarBatalha();
+    const result = await iniciarBatalha();
     if (!result.ok) return NextResponse.json({ error: result.motivo }, { status: 400 });
-    return NextResponse.json(getBatalha());
+    return NextResponse.json(await getBatalha());
   }
 
   if (action === "set-jogo") {
     const { roundIdx, matchIdx, slot, jogoNome, jogoValor } = body;
-    setJogo(roundIdx, matchIdx, slot, jogoNome ?? "", jogoValor ?? 0);
-    return NextResponse.json(getBatalha());
+    await setJogo(roundIdx, matchIdx, slot, jogoNome ?? "", jogoValor ?? 0);
+    return NextResponse.json(await getBatalha());
   }
 
   if (action === "set-vencedor") {
     const { roundIdx, matchIdx, winner } = body;
-    const result = setVencedor(roundIdx, matchIdx, winner);
+    const result = await setVencedor(roundIdx, matchIdx, winner);
     if (!result.ok) return NextResponse.json({ error: "Não foi possível definir vencedor" }, { status: 400 });
-    return NextResponse.json(getBatalha());
+    return NextResponse.json(await getBatalha());
   }
 
   if (action === "finalizar") {
-    finalizarBatalha();
+    await finalizarBatalha();
     return NextResponse.json({ ok: true });
   }
 
@@ -57,9 +57,9 @@ export async function POST(req: NextRequest) {
     const nomes = ["Zeus","Ares","Hermes","Poseidon","Hades","Apollo","Artemis","Athena","Hephaestus","Dionysus","Eros","Nike","Iris","Tyche","Nemesis","Persephone","Demeter","Hestia","Hera","Kronos","Rhea","Gaia","Uranus","Chaos","Nyx","Erebus","Hemera","Aether","Chronos","Ananke","Phanes","Protogenos"];
     for (let i = 0; i < count; i++) {
       const n = nomes[i % nomes.length];
-      entrarBatalha(n.toLowerCase(), n);
+      await entrarBatalha(n.toLowerCase(), n);
     }
-    return NextResponse.json(getBatalha());
+    return NextResponse.json(await getBatalha());
   }
 
   return NextResponse.json({ error: "Ação inválida" }, { status: 400 });

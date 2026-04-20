@@ -1,3 +1,5 @@
+import { dbGet, dbSet } from "@/lib/store";
+
 export interface EscolhaParticipante {
   username: string;
   displayName: string;
@@ -22,30 +24,45 @@ export interface Torneio {
   status: "ativo" | "finalizado";
   faseAtual: number;
   fases: Fase[];
-  classificados: string[] | null; // null = fase 1, sem restrição
+  classificados: string[] | null;
   vencedoresFinais: string[];
   criadoEm: number;
   finalizadoEm?: number;
 }
 
-declare global {
-  // eslint-disable-next-line no-var
-  var __torneio: Torneio | null | undefined;
+const KEY = "torneio:v1";
+
+let _state: Torneio | null = null;
+let _initialized = false;
+
+async function ensureLoaded(): Promise<void> {
+  if (_initialized) return;
+  _initialized = true;
+  try {
+    const raw = await dbGet(KEY);
+    _state = raw ? (JSON.parse(raw) as Torneio) : null;
+  } catch {
+    _state = null;
+  }
 }
 
-if (typeof globalThis.__torneio === "undefined") globalThis.__torneio = null;
-
-export function getTorneio(): Torneio | null {
-  return globalThis.__torneio ?? null;
+async function save(): Promise<void> {
+  await dbSet(KEY, _state ? JSON.stringify(_state) : null);
 }
 
-export function getFaseAtual(): Fase | null {
-  const t = globalThis.__torneio;
-  if (!t) return null;
-  return t.fases.find(f => f.numero === t.faseAtual) ?? null;
+export async function getTorneio(): Promise<Torneio | null> {
+  await ensureLoaded();
+  return _state;
 }
 
-export function criarTorneio(nome: string, times: string[]): Torneio {
+export async function getFaseAtual(): Promise<Fase | null> {
+  await ensureLoaded();
+  if (!_state) return null;
+  return _state.fases.find(f => f.numero === _state!.faseAtual) ?? null;
+}
+
+export async function criarTorneio(nome: string, times: string[]): Promise<Torneio> {
+  await ensureLoaded();
   const fase: Fase = {
     numero: 1,
     status: "aberta",
@@ -53,7 +70,7 @@ export function criarTorneio(nome: string, times: string[]): Torneio {
     escolhas: [],
     abertaEm: Date.now(),
   };
-  const torneio: Torneio = {
+  _state = {
     id: Date.now().toString(),
     nome,
     status: "ativo",
@@ -63,23 +80,24 @@ export function criarTorneio(nome: string, times: string[]): Torneio {
     vencedoresFinais: [],
     criadoEm: Date.now(),
   };
-  globalThis.__torneio = torneio;
-  return torneio;
+  await save();
+  return _state;
 }
 
-export function fecharFase(): Torneio | null {
-  const t = globalThis.__torneio;
-  const fase = getFaseAtual();
-  if (!t || !fase || fase.status !== "aberta") return null;
+export async function fecharFase(): Promise<Torneio | null> {
+  await ensureLoaded();
+  const fase = await getFaseAtual();
+  if (!_state || !fase || fase.status !== "aberta") return null;
   fase.status = "fechada";
   fase.fechadaEm = Date.now();
-  return t;
+  await save();
+  return _state;
 }
 
-export function decidirFase(timeVencedor: string): Torneio | null {
-  const t = globalThis.__torneio;
-  const fase = getFaseAtual();
-  if (!t || !fase || fase.status !== "fechada") return null;
+export async function decidirFase(timeVencedor: string): Promise<Torneio | null> {
+  await ensureLoaded();
+  const fase = await getFaseAtual();
+  if (!_state || !fase || fase.status !== "fechada") return null;
 
   const timeReal = fase.times.find(tm => tm.toLowerCase() === timeVencedor.toLowerCase());
   if (!timeReal) return null;
@@ -92,52 +110,56 @@ export function decidirFase(timeVencedor: string): Torneio | null {
     .filter(e => e.time.toLowerCase() === timeReal.toLowerCase())
     .map(e => e.username.toLowerCase());
 
-  if (t.classificados === null) {
-    t.classificados = vencedoresNaFase;
+  if (_state.classificados === null) {
+    _state.classificados = vencedoresNaFase;
   } else {
-    t.classificados = t.classificados.filter(u => vencedoresNaFase.includes(u));
+    _state.classificados = _state.classificados.filter(u => vencedoresNaFase.includes(u));
   }
 
-  return t;
+  await save();
+  return _state;
 }
 
-export function abrirProximaFase(times: string[]): Torneio | null {
-  const t = globalThis.__torneio;
-  const faseAtual = getFaseAtual();
-  if (!t || !faseAtual || faseAtual.status !== "decidida") return null;
+export async function abrirProximaFase(times: string[]): Promise<Torneio | null> {
+  await ensureLoaded();
+  const faseAtual = await getFaseAtual();
+  if (!_state || !faseAtual || faseAtual.status !== "decidida") return null;
 
   const novaFase: Fase = {
-    numero: t.faseAtual + 1,
+    numero: _state.faseAtual + 1,
     status: "aberta",
     times,
     escolhas: [],
     abertaEm: Date.now(),
   };
-  t.fases.push(novaFase);
-  t.faseAtual = novaFase.numero;
-  return t;
+  _state.fases.push(novaFase);
+  _state.faseAtual = novaFase.numero;
+  await save();
+  return _state;
 }
 
-export function finalizarTorneio(): Torneio | null {
-  const t = globalThis.__torneio;
-  if (!t) return null;
-  t.status = "finalizado";
-  t.vencedoresFinais = t.classificados ?? [];
-  t.finalizadoEm = Date.now();
-  globalThis.__torneio = null;
-  return t;
+export async function finalizarTorneio(): Promise<Torneio | null> {
+  await ensureLoaded();
+  if (!_state) return null;
+  _state.status = "finalizado";
+  _state.vencedoresFinais = _state.classificados ?? [];
+  _state.finalizadoEm = Date.now();
+  const resultado = { ..._state };
+  _state = null;
+  await save();
+  return resultado;
 }
 
-export function registrarEscolha(
+export async function registrarEscolha(
   username: string,
   displayName: string,
   time: string
-): { ok: boolean; atualizado: boolean; motivo?: string } {
-  const t = globalThis.__torneio;
-  if (!t || t.status !== "ativo")
+): Promise<{ ok: boolean; atualizado: boolean; motivo?: string }> {
+  await ensureLoaded();
+  if (!_state || _state.status !== "ativo")
     return { ok: false, atualizado: false, motivo: "Nenhum torneio ativo" };
 
-  const fase = getFaseAtual();
+  const fase = await getFaseAtual();
   if (!fase)
     return { ok: false, atualizado: false, motivo: "Nenhuma fase ativa" };
   if (fase.status !== "aberta")
@@ -147,16 +169,18 @@ export function registrarEscolha(
   if (!timeReal)
     return { ok: false, atualizado: false, motivo: `Time inválido. Escolha: ${fase.times.join(", ")}` };
 
-  if (t.classificados !== null && !t.classificados.includes(username.toLowerCase()))
+  if (_state.classificados !== null && !_state.classificados.includes(username.toLowerCase()))
     return { ok: false, atualizado: false, motivo: "Você foi eliminado do torneio" };
 
   const idx = fase.escolhas.findIndex(e => e.username.toLowerCase() === username.toLowerCase());
   if (idx >= 0) {
     fase.escolhas[idx].time = timeReal;
     fase.escolhas[idx].atualizadaEm = Date.now();
+    await save();
     return { ok: true, atualizado: true };
   }
 
   fase.escolhas.push({ username, displayName, time: timeReal, atualizadaEm: Date.now() });
+  await save();
   return { ok: true, atualizado: false };
 }

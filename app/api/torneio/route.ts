@@ -8,7 +8,7 @@ import {
 import { queueChatMessage } from "@/lib/store";
 
 export async function GET() {
-  return NextResponse.json(getTorneio());
+  return NextResponse.json(await getTorneio());
 }
 
 export async function POST(req: Request) {
@@ -28,14 +28,14 @@ export async function POST(req: Request) {
     const times = (body.times ?? []).map(t => t.trim()).filter(Boolean);
     if (!body.nome?.trim() || times.length < 2)
       return NextResponse.json({ error: "Nome e pelo menos 2 times são obrigatórios" }, { status: 400 });
-    const torneio = criarTorneio(body.nome.trim(), times);
+    const torneio = await criarTorneio(body.nome.trim(), times);
     const cmds = times.map(t => `!time ${t}`).join(" | ");
     await queueChatMessage(`🏆 TORNEIO "${torneio.nome}" COMEÇOU! Fase 1 aberta! Escolha: ${cmds} 🎯`);
     return NextResponse.json(torneio);
   }
 
   if (body.action === "fechar-fase") {
-    const torneio = fecharFase();
+    const torneio = await fecharFase();
     if (!torneio) return NextResponse.json({ error: "Nenhuma fase aberta" }, { status: 400 });
     await queueChatMessage(`🔒 Fase ${torneio.faseAtual} FECHADA! Ninguém mais pode participar. Aguardando resultado...`);
     return NextResponse.json(torneio);
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
 
   if (body.action === "decidir") {
     if (!body.time) return NextResponse.json({ error: "Time obrigatório" }, { status: 400 });
-    const torneio = decidirFase(body.time);
+    const torneio = await decidirFase(body.time);
     if (!torneio) return NextResponse.json({ error: "Não foi possível decidir (fase não está fechada ou time inválido)" }, { status: 400 });
     const vivos = torneio.classificados?.length ?? 0;
     await queueChatMessage(
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
   if (body.action === "abrir-fase") {
     const times = (body.times ?? []).map(t => t.trim()).filter(Boolean);
     if (times.length < 2) return NextResponse.json({ error: "Pelo menos 2 times" }, { status: 400 });
-    const torneio = abrirProximaFase(times);
+    const torneio = await abrirProximaFase(times);
     if (!torneio) return NextResponse.json({ error: "Fase atual não foi decidida" }, { status: 400 });
     const cmds = times.map(t => `!time ${t}`).join(" | ");
     await queueChatMessage(
@@ -66,7 +66,7 @@ export async function POST(req: Request) {
   }
 
   if (body.action === "finalizar") {
-    const torneio = finalizarTorneio();
+    const torneio = await finalizarTorneio();
     if (!torneio) return NextResponse.json({ error: "Nenhum torneio ativo" }, { status: 400 });
     const vencedores = torneio.vencedoresFinais.map(u => `@${u}`).join(", ") || "Nenhum";
     await queueChatMessage(`🎊 TORNEIO "${torneio.nome}" FINALIZADO! Vencedores: ${vencedores} — Parabéns! 🏆`);
