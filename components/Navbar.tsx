@@ -205,7 +205,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-2">
             <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />
             <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" alsoActiveOn={["/admin/palpites", "/admin/torneio", "/admin/batalha", "/admin/jackpot"]} />
-            <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" alsoActiveOn={["/admin/sorteio"]} />
+            <NavLink href={admin ? "/admin/sorteio" : "/sorteio"} label="Sorteio" from="#ffba00" to="#e6a000" alsoActiveOn={["/admin/sorteio", "/sorteio"]} />
           </div>
 
           {/* Auth desktop */}
@@ -254,7 +254,7 @@ export default function Navbar() {
               <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" alsoActiveOn={["/admin/palpites", "/admin/torneio", "/admin/batalha", "/admin/jackpot"]} />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
-              <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" alsoActiveOn={["/admin/sorteio"]} />
+              <NavLink href={admin ? "/admin/sorteio" : "/sorteio"} label="Sorteio" from="#ffba00" to="#e6a000" alsoActiveOn={["/admin/sorteio", "/sorteio"]} />
             </div>
             <a
               href="https://twitch.tv/stainzincs"
