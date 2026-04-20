@@ -1,5 +1,6 @@
 export const ADMINS: string[] = [
   "dudufpss",
+  "dudufpsssss",
 ];
 
 export function isAdmin(twitchLogin?: string | null): boolean {
