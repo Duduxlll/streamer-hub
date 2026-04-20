@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMessage } from "@/lib/livepix";
+import { getLivePixUserToken } from "@/lib/store";
 import { getJackpot, setJackpot, type JackpotJogador } from "@/lib/jackpotStore";
 
 let _jid = 0;
@@ -33,6 +34,13 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Debug: verifica se o token está no Turso antes de chamar getMessage
+    const tokenDebug = await getLivePixUserToken();
+    console.log("🔑 Token salvo:", tokenDebug
+      ? `sim (expira ${new Date(tokenDebug.expires_at).toISOString()}, expirado: ${tokenDebug.expires_at < Date.now()})`
+      : "NÃO — vai usar client_credentials"
+    );
+
     const msg = await getMessage(messageId);
     console.log("💰 Mensagem LivePix:", JSON.stringify(msg));
 

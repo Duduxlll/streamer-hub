@@ -99,11 +99,15 @@ export async function getMessage(messageId: string): Promise<LivePixMessage> {
   const userToken = await getUserToken();
   const token = userToken ?? await getClientToken();
 
+  console.log(`🔐 getMessage usando token: ${userToken ? "user-oauth" : "client-credentials"}`);
   const res = await fetch(`https://api.livepix.gg/v2/messages/${messageId}`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: "no-store",
   });
-  if (!res.ok) throw new Error(`LivePix getMessage ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`LivePix getMessage ${res.status}: ${body}`);
+  }
   const json = await res.json();
   return json.data ?? json;
 }
