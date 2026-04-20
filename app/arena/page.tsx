@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import { isAdmin } from "@/lib/admins";
 
 interface RodadaInfo  { status: string; }
 interface TorneioInfo { nome: string; faseAtual: number; fases: { numero: number; status: string }[]; }
@@ -16,6 +18,7 @@ const FEATURES = [
     description: "Competição ao vivo no chat. Para entrar, use !time [nome do time] no chat da Twitch durante a live.",
     color: "#3b82f6",
     href: "/arena/torneio",
+    adminHref: "/admin/torneio",
     available: true,
   },
   {
@@ -25,6 +28,7 @@ const FEATURES = [
     description: "Preveja o resultado das rodadas. Use !p [valor] no chat da Twitch para registrar seu palpite.",
     color: "#10b981",
     href: "/arena/palpites",
+    adminHref: "/admin/palpites",
     available: true,
   },
   {
@@ -34,6 +38,7 @@ const FEATURES = [
     description: "Bracket com 8, 16 ou 32 jogadores. Quando aberto, use o comando divulgado no chat da Twitch para entrar.",
     color: "#9146ff",
     href: "/arena/batalha",
+    adminHref: "/admin/batalha",
     available: true,
   },
   {
@@ -43,11 +48,14 @@ const FEATURES = [
     description: "Disputa de bônus ao vivo. Cada jogador registra seu resultado e o maior valor vence o prêmio total.",
     color: "#f59e0b",
     href: "/arena/jackpot",
+    adminHref: "/admin/jackpot",
     available: true,
   },
 ] as const;
 
 export default function ArenaPage() {
+  const { data: session } = useSession();
+  const admin = isAdmin(session?.user?.twitchLogin);
   const [rodada,  setRodada]  = useState<RodadaInfo  | null>(null);
   const [torneio, setTorneio] = useState<TorneioInfo | null>(null);
   const [batalha, setBatalha] = useState<BatalhaInfo | null>(null);
@@ -195,7 +203,7 @@ export default function ArenaPage() {
             return (
               <Link
                 key={f.id}
-                href={f.href}
+                href={admin ? f.adminHref : f.href}
                 className={`group relative rounded-2xl p-6 border transition-all duration-300 animate-in overflow-hidden ${
                   f.available ? "hover:-translate-y-2 hover:shadow-2xl" : "opacity-50 cursor-default"
                 }`}
