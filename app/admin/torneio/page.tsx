@@ -359,7 +359,18 @@ export default function AdminTorneioPage() {
                                 type="text"
                                 value={valoresTimes[time] ?? ""}
                                 onChange={e => setValorTime(time, e.target.value)}
-                                onBlur={e => setValorTime(time, e.target.value.trim() ? fmtValor(e.target.value) : "")}
+                                onBlur={e => {
+                                  const formatted = e.target.value.trim() ? fmtValor(e.target.value) : "";
+                                  setValorTime(time, formatted);
+                                  if (torneio) {
+                                    const n = parseValor(formatted);
+                                    fetch("/api/torneio", {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({ action: "set-valor", time, faseNum: torneio.faseAtual, valor: n }),
+                                    });
+                                  }
+                                }}
                                 placeholder="R$ 0,00"
                                 disabled={isElim}
                                 className="w-full rounded-lg px-3 py-2 text-sm font-black text-center placeholder-gray-700 focus:outline-none transition-all tabular-nums"

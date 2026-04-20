@@ -13,6 +13,7 @@ export interface Fase {
   times: string[];
   vencedor?: string;
   escolhas: EscolhaParticipante[];
+  valoresBonus?: Record<string, number>;
   abertaEm: number;
   fechadaEm?: number;
   decidaEm?: number;
@@ -148,6 +149,21 @@ export async function finalizarTorneio(): Promise<Torneio | null> {
   _state = null;
   await save();
   return resultado;
+}
+
+export async function setValorBonus(faseNum: number, time: string, valor: number): Promise<Torneio | null> {
+  await ensureLoaded();
+  if (!_state) return null;
+  const fase = _state.fases.find(f => f.numero === faseNum);
+  if (!fase) return null;
+  if (!fase.valoresBonus) fase.valoresBonus = {};
+  if (valor <= 0) {
+    delete fase.valoresBonus[time];
+  } else {
+    fase.valoresBonus[time] = valor;
+  }
+  await save();
+  return _state;
 }
 
 export async function registrarEscolha(

@@ -165,7 +165,7 @@ export default function ArenaPage() {
               </div>
 
               {/* Items ao vivo */}
-              <div className="p-4 flex flex-col sm:flex-row gap-3">
+              <div className={`p-4 grid gap-3 ${liveItems.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"}`}>
                 {liveItems.map(item => (
                   <a
                     key={item.href}

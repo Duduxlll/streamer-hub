@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import {
   getTorneio, criarTorneio, fecharFase, decidirFase,
-  abrirProximaFase, finalizarTorneio,
+  abrirProximaFase, finalizarTorneio, setValorBonus,
 } from "@/lib/torneioStore";
 import { queueChatMessage } from "@/lib/store";
 
@@ -22,6 +22,8 @@ export async function POST(req: Request) {
     nome?: string;
     times?: string[];
     time?: string;
+    faseNum?: number;
+    valor?: number;
   };
 
   if (body.action === "criar") {
@@ -62,6 +64,13 @@ export async function POST(req: Request) {
     await queueChatMessage(
       `🏆 Fase ${torneio.faseAtual} aberta! Apenas classificados podem participar. Escolha: ${cmds} 🎯`
     );
+    return NextResponse.json(torneio);
+  }
+
+  if (body.action === "set-valor") {
+    if (!body.time || body.faseNum == null) return NextResponse.json({ error: "time e faseNum obrigatórios" }, { status: 400 });
+    const torneio = await setValorBonus(body.faseNum, body.time, body.valor ?? 0);
+    if (!torneio) return NextResponse.json({ error: "Fase não encontrada" }, { status: 400 });
     return NextResponse.json(torneio);
   }
 

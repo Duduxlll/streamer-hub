@@ -205,6 +205,15 @@ export default function TorneioPage() {
                               {participantes.length !== 1 ? "participantes" : "participante"}
                             </span>
                           </div>
+                          {fase.valoresBonus?.[time] != null && fase.valoresBonus[time] > 0 && (
+                            <div className="mt-2 px-3 py-1.5 rounded-lg text-center"
+                              style={{ background: isVenc ? "rgba(251,191,36,0.12)" : `${cor.bg}`, border: `1px solid ${cor.border}` }}>
+                              <p className="text-[9px] font-black uppercase tracking-widest mb-0.5" style={{ color: cor.text, opacity: 0.7 }}>Bônus</p>
+                              <p className="text-lg font-black tabular-nums" style={{ color: cor.text }}>
+                                R$ {fase.valoresBonus[time].toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                              </p>
+                            </div>
+                          )}
                         </div>
 
                         {/* Divisor */}
