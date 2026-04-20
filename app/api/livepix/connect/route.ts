@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
+import { getSiteUrl } from "@/lib/site-url";
 
 export async function GET() {
   const session = await auth();
@@ -9,7 +10,7 @@ export async function GET() {
   }
 
   const clientId    = process.env.LIVEPIX_CLIENT_ID ?? "";
-  const callbackUrl = `${process.env.NEXTAUTH_URL}/api/livepix/callback`;
+  const callbackUrl = `${getSiteUrl()}/api/livepix/callback`;
 
   const url = new URL("https://oauth.livepix.gg/oauth2/auth");
   url.searchParams.set("response_type", "code");

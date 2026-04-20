@@ -1,5 +1,8 @@
 import NextAuth from "next-auth";
 import Twitch from "next-auth/providers/twitch";
+import { applyAuthUrlFallback } from "@/lib/site-url";
+
+applyAuthUrlFallback();
 
 declare module "next-auth" {
   interface Session {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { getSiteUrl } from "@/lib/site-url";
 
 const TOKEN_FILE = path.join(process.cwd(), ".livepix-token.json");
 
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
 
   const clientId     = process.env.LIVEPIX_CLIENT_ID     ?? "";
   const clientSecret = process.env.LIVEPIX_CLIENT_SECRET ?? "";
-  const callbackUrl  = `${process.env.NEXTAUTH_URL}/api/livepix/callback`;
+  const callbackUrl  = `${getSiteUrl()}/api/livepix/callback`;
 
   const res = await fetch("https://oauth.livepix.gg/oauth2/token", {
     method: "POST",

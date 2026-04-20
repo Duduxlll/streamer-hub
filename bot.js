@@ -4,8 +4,22 @@ require("dotenv").config({ path: ".env.local" });
 
 const tmi = require("tmi.js");
 
+const FALLBACK_SITE_URL = "https://streamer-hub-delta.vercel.app";
+
+function normalizeSiteUrl(value) {
+  if (!value) return "";
+
+  const withProtocol = /^https?:\/\//i.test(value) ? value : `https://${value}`;
+  return withProtocol.replace(/\/+$/, "");
+}
+
 const CHANNEL       = process.env.TWITCH_CHANNEL        || "stainzincs";
-const SITE_URL      = process.env.SITE_URL               || "http://localhost:3000";
+const SITE_URL      = normalizeSiteUrl(
+  process.env.SITE_URL ||
+  process.env.NEXTAUTH_URL ||
+  process.env.AUTH_URL ||
+  FALLBACK_SITE_URL
+);
 const BOT_SECRET    = process.env.BOT_SECRET             || "";
 const BOT_USER      = process.env.BOT_USERNAME           || "";
 const BOT_OAUTH     = process.env.BOT_OAUTH              || "";
