@@ -66,6 +66,7 @@ export default function AdminTorneioPage() {
   const [novoNome, setNovoNome] = useState("");
   const [novosTimes, setNovosTimes] = useState(["", ""]);
   const [proximosTimes, setProximosTimes] = useState(["", ""]);
+  const [valoresTimes, setValoresTimes] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (status === "loading") return;
@@ -109,6 +110,21 @@ export default function AdminTorneioPage() {
 
   const fase = torneio?.fases.find(f => f.numero === torneio.faseAtual);
   const st = fase ? STATUS_CFG[fase.status] : null;
+
+  function setValorTime(time: string, valor: string) {
+    setValoresTimes(prev => ({ ...prev, [time]: valor }));
+  }
+
+  function parseValor(v: string): number {
+    return parseFloat(v.replace(/R\$\s*/g, "").replace(/\./g, "").replace(",", ".")) || 0;
+  }
+
+  function fmtValor(v: string): string {
+    const n = parseFloat(v.replace(/R\$\s*/g, "").replace(/\./g, "").replace(",", "."));
+    if (!isNaN(n) && n > 0)
+      return `R$ ${n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    return v;
+  }
 
   return (
     <div className="page-enter relative min-h-[calc(100vh-4rem)] overflow-hidden">
@@ -170,7 +186,7 @@ export default function AdminTorneioPage() {
 
         {!torneio ? (
           /* ── Criar torneio ── */
-          <div className="rounded-2xl border border-white/12 p-6" style={{ background: "rgba(5,7,16,0.90)" }}>
+          <div className="rounded-2xl border border-white/12 p-6" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-5">Criar Torneio</p>
             <div className="mb-4">
               <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Nome do Torneio</label>
@@ -208,7 +224,7 @@ export default function AdminTorneioPage() {
 
             {/* ── Comandos do chat ── */}
             {fase && (
-              <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,16,0.90)" }}>
+              <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Comandos do Chat</p>
                   <button
@@ -232,7 +248,7 @@ export default function AdminTorneioPage() {
 
             {/* ── Controle da fase ── */}
             {fase && (
-              <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,16,0.90)" }}>
+              <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">
                   Controle · Fase {torneio.faseAtual}
                 </p>
@@ -325,15 +341,52 @@ export default function AdminTorneioPage() {
                           </span>
                         </div>
 
+                        {/* Campo valor do bônus */}
+                        {!isElim && (
+                          <div className="mb-3">
+                            <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: isVenc ? "#fbbf24" : tc.text, opacity: 0.7 }}>
+                              Valor do Bônus
+                            </p>
+                            {isVenc && valoresTimes[time] ? (
+                              <div className="px-3 py-2 rounded-lg text-center"
+                                style={{ background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.3)" }}>
+                                <p className="text-base font-black text-yellow-300 tabular-nums">
+                                  {fmtValor(valoresTimes[time])}
+                                </p>
+                              </div>
+                            ) : (
+                              <input
+                                type="text"
+                                value={valoresTimes[time] ?? ""}
+                                onChange={e => setValorTime(time, e.target.value)}
+                                onBlur={e => setValorTime(time, e.target.value.trim() ? fmtValor(e.target.value) : "")}
+                                placeholder="R$ 0,00"
+                                disabled={isElim}
+                                className="w-full rounded-lg px-3 py-2 text-sm font-black text-center placeholder-gray-700 focus:outline-none transition-all tabular-nums"
+                                style={{
+                                  background: "rgba(0,0,0,0.35)",
+                                  border: `1px solid ${isVenc ? "rgba(251,191,36,0.4)" : cardBdr}`,
+                                  color: isVenc ? "#fbbf24" : tc.text,
+                                }}
+                              />
+                            )}
+                          </div>
+                        )}
+
                         {/* Botão definir vencedor */}
                         {fase.status === "fechada" && (
                           <button
-                            onClick={() => post({ action: "decidir", time })}
+                            onClick={() => {
+                              setValoresTimes({});
+                              post({ action: "decidir", time });
+                            }}
                             disabled={loading}
                             className="w-full py-2 rounded-lg text-xs font-black mb-3 transition-all hover:scale-[1.02] disabled:opacity-50"
                             style={{ background: "linear-gradient(135deg, #ffba00, #e6a000)", color: "#000" }}
                           >
-                            ✓ Definir Vencedor
+                            {valoresTimes[time]
+                              ? `✓ Vencedor · ${fmtValor(valoresTimes[time])}`
+                              : "✓ Definir Vencedor"}
                           </button>
                         )}
 
@@ -364,7 +417,7 @@ export default function AdminTorneioPage() {
             )}
 
             {/* ── Classificados ── */}
-            <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,16,0.90)" }}>
+            <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
               <div className="flex items-center gap-2.5 mb-3">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">
                   Classificados

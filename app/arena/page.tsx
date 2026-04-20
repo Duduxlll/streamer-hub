@@ -60,6 +60,7 @@ export default function ArenaPage() {
   const [torneio, setTorneio] = useState<TorneioInfo | null>(null);
   const [batalha, setBatalha] = useState<BatalhaInfo | null>(null);
   const [jackpot, setJackpot] = useState<JackpotInfo | null>(null);
+  const [loaded,  setLoaded]  = useState(false);
 
   const fetchStatus = useCallback(async () => {
     const [r, t, b, j] = await Promise.all([
@@ -72,6 +73,7 @@ export default function ArenaPage() {
     setTorneio(t);
     setBatalha(b?.status === "inscricao" || b?.status === "ativa" ? b : null);
     setJackpot(j?.status === "ativo" ? j : null);
+    setLoaded(true);
   }, []);
 
   useEffect(() => {
@@ -106,6 +108,14 @@ export default function ArenaPage() {
       ? [{ icon: "🎰", label: jackpot!.nome, sub: "Jackpot em andamento — acompanhe ao vivo!", href: "/arena/jackpot", color: "#f59e0b" }]
       : []),
   ];
+
+  if (!loaded) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-[#9146ff]/40 border-t-[#9146ff] animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative overflow-hidden min-h-[calc(100vh-4rem)]">

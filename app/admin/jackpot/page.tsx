@@ -278,7 +278,7 @@ export default function AdminJackpotPage() {
             )}
           </a>
 
-          <div className="rounded-2xl border border-white/10 p-6" style={{ background: "rgba(8,10,20,0.95)" }}>
+          <div className="rounded-2xl border border-white/10 p-6" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-5">Criar Sessão</p>
             <div className="space-y-3 mb-5">
               <div>
@@ -353,7 +353,7 @@ export default function AdminJackpotPage() {
           </div>
 
           {/* Ranking scrollável */}
-          <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,10,20,0.95)" }}>
+          <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
               <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Ranking</p>
               <span className="text-[10px] font-black text-gray-700">{rankingSorted.length} participantes · {jackpot.nome}</span>
@@ -429,7 +429,7 @@ export default function AdminJackpotPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.95)" }}>
+          <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">Adicionar Jogador</p>
             <div className="flex gap-2">
               <input value={pNome} onChange={e => setPNome(e.target.value)}
@@ -455,7 +455,7 @@ export default function AdminJackpotPage() {
           </div>
 
           {total > 0 && (
-            <div className="rounded-2xl border border-white/10 overflow-hidden" style={{ background: "rgba(8,10,20,0.95)" }}>
+            <div className="rounded-2xl border border-white/10 overflow-hidden" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Jogadores ({total})</p>
                 {custo > 0 && <p className="text-xs font-black text-amber-400">Custo total: R$ {custo.toLocaleString("pt-BR")}</p>}
@@ -694,7 +694,7 @@ export default function AdminJackpotPage() {
         {/* Bottom: aguardando + placar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Aguardando */}
-          <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.95)" }}>
+          <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-3">
               Aguardando ({restantes})
             </p>
@@ -730,7 +730,7 @@ export default function AdminJackpotPage() {
           </div>
 
           {/* Placar */}
-          <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.95)" }}>
+          <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Placar ao Vivo</p>
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-500/10 text-green-400">{sorted.length}</span>

@@ -193,7 +193,7 @@ function MatchCard({
       className={`flex flex-col rounded-xl overflow-hidden border transition-all ${
         isFinished ? "border-white/10" : "border-white/18"
       }`}
-      style={{ width: MW, height: MH, background: "rgba(5,7,16,0.92)" }}
+      style={{ width: MW, height: MH, background: "rgba(5,7,18,0.97)", backdropFilter: "blur(8px)" }}
     >
       {/* Slot 1 */}
       <SlotRow
@@ -436,7 +436,7 @@ export default function AdminBatalhaPage() {
 
         {!batalha ? (
           /* ── Criar batalha ── */
-          <div className="max-w-lg mx-auto rounded-2xl border border-white/12 p-6" style={{ background: "rgba(5,7,16,0.90)" }}>
+          <div className="max-w-lg mx-auto rounded-2xl border border-white/12 p-6" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-5">Criar Batalha</p>
 
             <div className="space-y-4 mb-5">
@@ -528,7 +528,7 @@ export default function AdminBatalhaPage() {
             </div>
 
             {/* Comando */}
-            <div className="rounded-2xl border border-purple-500/25 p-5" style={{ background: "rgba(5,7,16,0.90)" }}>
+            <div className="rounded-2xl border border-purple-500/25 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
               <p className="text-[11px] font-black text-purple-400 uppercase tracking-widest mb-2">⚡ Divulgue no Chat</p>
               <div className="flex items-center gap-3">
                 <span className="font-mono font-black text-lg text-white px-4 py-2 rounded-xl border border-purple-500/35" style={{ background: "rgba(145,70,255,0.15)" }}>
@@ -544,7 +544,7 @@ export default function AdminBatalhaPage() {
             </div>
 
             {/* Lista inscritos */}
-            <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,16,0.90)" }}>
+            <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Inscritos</p>
                 <span className="text-sm font-black text-white">
@@ -582,17 +582,17 @@ export default function AdminBatalhaPage() {
           <div>
             {/* Header info */}
             <div className="flex items-center gap-4 mb-5 flex-wrap">
-              <div className="rounded-xl border border-yellow-500/25 px-4 py-2.5" style={{ background: "rgba(5,7,16,0.90)" }}>
+              <div className="rounded-xl border border-yellow-500/25 px-4 py-2.5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
                 <p className="text-[10px] text-gray-600">Batalha</p>
                 <p className="text-base font-black text-white">{batalha.nome}</p>
               </div>
               {batalha.premiacao > 0 && (
-                <div className="rounded-xl border border-green-500/25 px-4 py-2.5" style={{ background: "rgba(5,7,16,0.90)" }}>
+                <div className="rounded-xl border border-green-500/25 px-4 py-2.5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
                   <p className="text-[10px] text-gray-600">Premiação</p>
                   <p className="text-base font-black text-green-400">R$ {batalha.premiacao.toLocaleString("pt-BR")}</p>
                 </div>
               )}
-              <div className="rounded-xl border border-white/10 px-4 py-2.5" style={{ background: "rgba(5,7,16,0.90)" }}>
+              <div className="rounded-xl border border-white/10 px-4 py-2.5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
                 <p className="text-[10px] text-gray-600">Participantes</p>
                 <p className="text-base font-black text-white">{batalha.inscricoes.length}</p>
               </div>
@@ -601,7 +601,7 @@ export default function AdminBatalhaPage() {
 
             {/* Bracket scroll */}
             <div className="overflow-x-auto max-w-full">
-              <div className="rounded-2xl border border-white/10 p-6 w-fit" style={{ background: "rgba(5,7,16,0.88)" }}>
+              <div className="rounded-2xl border border-white/10 p-6 w-fit" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
                 <Bracket batalha={batalha} onAction={post} />
               </div>
             </div>
