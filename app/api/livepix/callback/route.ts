@@ -1,11 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { isAdmin } from "@/lib/admins";
 import { setLivePixUserToken } from "@/lib/store";
 import { getSiteUrl } from "@/lib/site-url";
 
 export async function GET(req: NextRequest) {
-  const code = req.nextUrl.searchParams.get("code");
+  // Apenas admin pode completar o fluxo OAuth
+  const session = await auth();
+  if (!isAdmin(session?.user?.twitchLogin)) {
+    return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  }
+
+  const code          = req.nextUrl.searchParams.get("code");
+  const returnedState = req.nextUrl.searchParams.get("state");
+  const storedState   = req.cookies.get("livepix_oauth_state")?.value;
+
   if (!code) {
     return NextResponse.json({ error: "Sem código de autorização" }, { status: 400 });
+  }
+
+  // Verifica o state para prevenir CSRF
+  if (!returnedState || !storedState || returnedState !== storedState) {
+    return NextResponse.json({ error: "State inválido — possível ataque CSRF" }, { status: 403 });
   }
 
   const clientId     = process.env.LIVEPIX_CLIENT_ID     ?? "";
@@ -36,10 +52,14 @@ export async function GET(req: NextRequest) {
     expires_at:    Date.now() + (data.expires_in ?? 3600) * 1000,
   });
 
-  return new NextResponse(`
+  // Limpa o cookie de state após uso
+  const response = new NextResponse(`
     <html><body style="font-family:sans-serif;text-align:center;padding:60px;background:#030610;color:#fff">
       <h2>✅ LivePix conectado com sucesso!</h2>
       <p style="color:#6b7280">Pode fechar esta aba.</p>
     </body></html>
   `, { headers: { "Content-Type": "text/html" } });
+
+  response.cookies.set("livepix_oauth_state", "", { maxAge: 0, path: "/" });
+  return response;
 }

@@ -12,7 +12,7 @@ export async function GET() {
 
   const clientId    = process.env.LIVEPIX_CLIENT_ID ?? "";
   const callbackUrl = `${getSiteUrl()}/api/livepix/callback`;
-  const state       = randomBytes(16).toString("hex"); // 32 chars — exigido pelo LivePix
+  const state = randomBytes(16).toString("hex");
 
   const url = new URL("https://oauth.livepix.gg/oauth2/auth");
   url.searchParams.set("response_type", "code");
@@ -21,5 +21,14 @@ export async function GET() {
   url.searchParams.set("state", state);
   url.searchParams.set("audience", "https://api.livepix.gg");
 
-  return NextResponse.redirect(url.toString());
+  // Guarda o state num cookie httpOnly para verificar no callback (CSRF)
+  const redirect = NextResponse.redirect(url.toString());
+  redirect.cookies.set("livepix_oauth_state", state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 10 * 60,
+    path: "/",
+  });
+  return redirect;
 }

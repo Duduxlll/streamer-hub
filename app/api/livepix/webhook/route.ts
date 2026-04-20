@@ -1,16 +1,34 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { getMessage } from "@/lib/livepix";
 import { getJackpot, setJackpot, type JackpotJogador } from "@/lib/jackpotStore";
+import { dbGet, dbSet } from "@/lib/store";
 
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 export async function POST(req: NextRequest) {
   const secret = process.env.LIVEPIX_WEBHOOK_SECRET;
-  if (secret) {
-    const header = req.headers.get("x-webhook-secret") ?? req.headers.get("x-livepix-secret");
-    if (header !== secret) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Secret é obrigatório — recusa tudo se não configurado
+  if (!secret) {
+    console.error("LIVEPIX_WEBHOOK_SECRET não configurado — webhook rejeitado");
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+
+  const header = req.headers.get("x-webhook-secret") ?? req.headers.get("x-livepix-secret") ?? "";
+
+  // Comparação em tempo constante para evitar timing attacks
+  let authorized = false;
+  try {
+    if (header.length > 0 && header.length === secret.length) {
+      authorized = crypto.timingSafeEqual(Buffer.from(header), Buffer.from(secret));
     }
+  } catch {
+    authorized = false;
+  }
+
+  if (!authorized) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body: { event?: string; resource?: { id?: string; type?: string; reference?: string } };
@@ -23,6 +41,13 @@ export async function POST(req: NextRequest) {
   const messageId = body.resource?.id;
   if (!messageId) return NextResponse.json({ ok: true, skipped: "sem messageId" });
 
+  // Idempotência: evita processar o mesmo evento duas vezes (retry do LivePix)
+  const idempotencyKey = `livepix:processed:${messageId}`;
+  const alreadyProcessed = await dbGet(idempotencyKey);
+  if (alreadyProcessed) {
+    return NextResponse.json({ ok: true, skipped: "already processed" });
+  }
+
   const jackpot = await getJackpot();
   if (!jackpot) return NextResponse.json({ ok: true, skipped: "sem jackpot" });
 
@@ -31,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     /* ── Fase aguardando: adiciona jogador automaticamente ── */
     if (jackpot.status === "aguardando") {
-      const pagoCentavos   = Math.round(msg.amount);
+      const pagoCentavos    = Math.round(msg.amount);
       const entradaCentavos = Math.round(jackpot.valorEntrada * 100);
       if (pagoCentavos !== entradaCentavos) {
         console.log(`⚠️ Valor ignorado: R$ ${msg.amount / 100} (esperado R$ ${jackpot.valorEntrada})`);
@@ -42,6 +67,7 @@ export async function POST(req: NextRequest) {
         j => j.nome.toLowerCase() === msg.username.toLowerCase()
       );
       if (jaExiste) {
+        await dbSet(idempotencyKey, Date.now().toString());
         return NextResponse.json({ ok: true, skipped: "jogador já cadastrado" });
       }
 
@@ -53,6 +79,7 @@ export async function POST(req: NextRequest) {
       };
       jackpot.jogadores.push(jogador);
       await setJackpot(jackpot);
+      await dbSet(idempotencyKey, Date.now().toString());
       console.log(`✅ Jogador adicionado: ${jogador.nome} | jogo: ${jogador.jogo}`);
       return NextResponse.json({ ok: true, acao: "jogador-adicionado", jogador: jogador.nome });
     }
@@ -75,6 +102,7 @@ export async function POST(req: NextRequest) {
       }
 
       await setJackpot(jackpot);
+      await dbSet(idempotencyKey, Date.now().toString());
       console.log(`✅ Valor registrado: ${jogadorAtual.nome} → R$ ${valor}`);
       return NextResponse.json({ ok: true, acao: "valor-registrado", jogador: jogadorAtual.nome, valor });
     }
