@@ -62,8 +62,6 @@ export default function SorteiosPage() {
   return (
     <div className="hero-radial min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-
-        {/* Cabeçalho */}
         <div className="mb-10 text-center">
           <p className="text-[#00c853] text-sm font-semibold uppercase tracking-widest mb-2">TestStreamer</p>
           <h1 className="text-4xl lg:text-5xl font-black text-white mb-3">
@@ -73,8 +71,6 @@ export default function SorteiosPage() {
             Participe dos nossos sorteios e concorra a prêmios incríveis. Gratuitos e pagos — tem pra todos!
           </p>
         </div>
-
-        {/* Filtros rápidos */}
         <div className="flex flex-wrap gap-2 justify-center mb-8">
           {["Todos", "Grátis", "Diário", "Premium", "Mensal"].map((f) => (
             <button
@@ -89,8 +85,6 @@ export default function SorteiosPage() {
             </button>
           ))}
         </div>
-
-        {/* Grid de sorteios */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {SORTEIOS.map((s) => {
             const cfg = TIPO_CONFIG[s.tipo];
@@ -142,8 +136,6 @@ export default function SorteiosPage() {
             );
           })}
         </div>
-
-        {/* CTA login */}
         <div className="mt-12 text-center p-8 rounded-2xl border border-[#00c853]/15 bg-[#0e1912]">
           <h3 className="text-xl font-black text-white mb-2">Quer participar de todos os sorteios?</h3>
           <p className="text-gray-400 text-sm mb-6">Crie sua conta gratuitamente e nunca perca um sorteio!</p>

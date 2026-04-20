@@ -40,18 +40,11 @@ export default function LoginPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 relative overflow-hidden">
 
-      {/* Orbs decorativos */}
-
       <div className="w-full max-w-sm relative scale-in">
-
-        {/* Card */}
         <div className="card-dark rounded-2xl overflow-hidden border-[#1d4ed8]/20">
-
-          {/* Faixa topo roxa */}
           <div className="h-1 w-full bg-gradient-to-r from-[#9146ff] via-[#a855f7] to-[#9146ff]" />
 
           <div className="p-8">
-            {/* Logo central */}
             <div className="text-center mb-8">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#9146ff] to-[#6d28d9] flex items-center justify-center mx-auto mb-4 shadow-xl shadow-purple-950/50">
                 <TwitchIcon className="w-8 h-8 text-white" />
@@ -59,8 +52,6 @@ export default function LoginPage() {
               <h1 className="text-2xl font-black text-white">Entrar na plataforma</h1>
               <p className="text-gray-500 text-sm mt-1.5">Faça login com sua conta Twitch</p>
             </div>
-
-            {/* Botão Twitch */}
             <button
               onClick={handleLogin}
               disabled={loading}
@@ -73,16 +64,12 @@ export default function LoginPage() {
               )}
               {loading ? "Redirecionando..." : "Continuar com Twitch"}
             </button>
-
-            {/* Segurança */}
             <div className="mt-4 flex items-center gap-2 justify-center">
               <svg className="w-3.5 h-3.5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
               </svg>
               <span className="text-[11px] text-gray-600">Login seguro via OAuth 2.0 da Twitch</span>
             </div>
-
-            {/* Termos */}
             <div className="mt-5 p-4 rounded-xl bg-[#0f2354]/40 border border-[#1d4ed8]/15">
               <p className="text-xs text-gray-500 text-center leading-relaxed">
                 Ao entrar, você concorda com os{" "}

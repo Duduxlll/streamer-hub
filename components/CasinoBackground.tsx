@@ -1,8 +1,6 @@
 "use client";
 
-// ─── LOGO DA FICHA ─────────────────────────────────────────────────────────
 export const CHIP_LOGO_URL = "/betdasorte-icon.svg";
-// ──────────────────────────────────────────────────────────────────────────
 
 const SUITS = ["♠", "♥", "♦", "♣"] as const;
 const VALUES = ["A", "K", "Q", "J", "10", "9", "7", "2"] as const;
@@ -54,7 +52,6 @@ function buildItems(): Item[] {
   const items: Item[] = [];
   let id = 0;
 
-  // 10 cartas
   for(let i=0;i<10;i++){
     const dur=r(22,44); const sd=r(5,10); const isBack=i%4===0;
     items.push({ id:id++, kind:"card", top:r(2,88), dur, delay:-r(0,dur),
@@ -62,7 +59,6 @@ function buildItems(): Item[] {
       spinDur:sd, spinDelay:-r(0,sd),
       suit:SUITS[ri(0,3)], value:VALUES[ri(0,7)] });
   }
-  // 12 fichas
   for(let i=0;i<12;i++){
     const dur=r(20,46); const sd=r(1.5,3.5); const isBack=i%3===0;
     items.push({ id:id++, kind:"chip", top:r(3,90), dur, delay:-r(0,dur),
@@ -70,7 +66,6 @@ function buildItems(): Item[] {
       spinDur:sd, spinDelay:-r(0,sd),
       pal:CHIP_PAL[ri(0,4)] });
   }
-  // 7 dados
   for(let i=0;i<7;i++){
     const dur=r(24,48); const sd=r(2,5); const isBack=i%3===0;
     items.push({ id:id++, kind:"dice", top:r(5,85), dur, delay:-r(0,dur),
@@ -78,7 +73,6 @@ function buildItems(): Item[] {
       spinDur:sd, spinDelay:-r(0,sd),
       face:ri(1,6) });
   }
-  // 9 moedas
   for(let i=0;i<9;i++){
     const dur=r(18,40); const sd=r(1.2,2.8); const isBack=i%3===0;
     items.push({ id:id++, kind:"coin", top:r(4,92), dur, delay:-r(0,dur),
@@ -89,8 +83,6 @@ function buildItems(): Item[] {
 }
 
 const ITEMS = buildItems();
-
-// ── SVGs ──────────────────────────────────────────────────────────────────
 
 function CardSVG({ suit, value, size }: { suit:string; value:string; size:number }) {
   const red = IS_RED[suit];
@@ -105,25 +97,19 @@ function CardSVG({ suit, value, size }: { suit:string; value:string; size:number
       alignItems:"center", justifyContent:"center",
       position:"relative", overflow:"hidden",
     }}>
-      {/* canto superior esquerdo */}
       <span style={{ position:"absolute", top:"4%", left:"7%", fontSize:size*0.20, fontWeight:900, color:clr, lineHeight:1 }}>{value}</span>
       <span style={{ position:"absolute", top:"20%", left:"8%", fontSize:size*0.16, color:clr, lineHeight:1 }}>{suit}</span>
-      {/* naipe central */}
       <span style={{ fontSize:size*0.46, lineHeight:1, color:clr }}>{suit}</span>
-      {/* canto inferior direito (invertido) */}
       <span style={{ position:"absolute", bottom:"4%", right:"7%", fontSize:size*0.20, fontWeight:900, color:clr, lineHeight:1, transform:"rotate(180deg)" }}>{value}</span>
-      {/* leve sombra interna no topo */}
       <div style={{ position:"absolute", top:0, left:0, right:0, height:"4%", background:"rgba(0,0,0,0.04)", borderRadius:`${size*0.10}px ${size*0.10}px 0 0` }}/>
     </div>
   );
 }
 
-// Chip3D retorna Fragment — deve ser filho direto de um container preserve-3d
-// (evita nested preserve-3d que o Chrome achata)
 function Chip3D({ size, pal, logoUrl }: { size:number; pal:typeof CHIP_PAL[number]; logoUrl?:string }) {
   const T    = Math.round(size * 0.20);
   const half = T / 2;
-  const n    = 8; // 8 discos = 4 listras visíveis na borda (cassino)
+  const n    = 8;
 
   const mark = (i: number) => ({
     position: "absolute" as const,
@@ -167,7 +153,6 @@ function Chip3D({ size, pal, logoUrl }: { size:number; pal:typeof CHIP_PAL[numbe
 
   return (
     <>
-      {/* Borda: discos empilhados no eixo Z */}
       {Array.from({length: n}).map((_, i) => (
         <div key={i} style={{
           position:"absolute", width:size, height:size,
@@ -182,7 +167,6 @@ function Chip3D({ size, pal, logoUrl }: { size:number; pal:typeof CHIP_PAL[numbe
   );
 }
 
-// Uma face do dado
 function DiceFace({ n, size }: { n:number; size:number }) {
   const dots = DOT_POS[n] ?? DOT_POS[1];
   const r    = size * 0.10;
@@ -194,13 +178,11 @@ function DiceFace({ n, size }: { n:number; size:number }) {
       borderRadius:size*0.16,
       boxShadow:`inset 0 0 ${size*0.12}px rgba(0,0,40,0.7)`,
     }}>
-      {/* brilho de topo */}
       <div style={{
         position:"absolute", top:"8%", left:"10%", right:"10%", height:"10%",
         borderRadius:size*0.08,
         background:"rgba(120,170,255,0.10)",
       }}/>
-      {/* pontos */}
       {dots.map(([x,y],i)=>(
         <div key={i} style={{
           position:"absolute",
@@ -216,10 +198,8 @@ function DiceFace({ n, size }: { n:number; size:number }) {
   );
 }
 
-// Dado 3D com 6 faces CSS reais
 function Dice3D({ size }: { size:number }) {
   const half = size / 2;
-  // faces: frente=1, trás=6, direita=3, esquerda=4, topo=2, base=5
   const faces: { n:number; tf:string }[] = [
     { n:1, tf:`translateZ(${half}px)` },
     { n:6, tf:`rotateY(180deg) translateZ(${half}px)` },
@@ -253,12 +233,10 @@ function CoinSVG({ size }: { size:number }) {
   );
 }
 
-// ── Componente principal ──────────────────────────────────────────────────
 export default function CasinoBackground({ logoUrl = CHIP_LOGO_URL }: { logoUrl?: string }) {
   return (
     <div className="fixed inset-0 pointer-events-none" style={{ zIndex:0 }} aria-hidden="true">
 
-      {/* Camada de itens — todos derivando da direita para esquerda */}
       <div style={{ position:"absolute", inset:0, opacity:0.30 }}>
         {ITEMS.map(item => {
           const px = item.scale * 60;
@@ -274,10 +252,8 @@ export default function CasinoBackground({ logoUrl = CHIP_LOGO_URL }: { logoUrl?
                 willChange:"transform,opacity,filter",
               }}
             >
-              {/* escala + blur */}
               <div style={{ transform:`scale(${item.scale})`, filter:f }}>
                 {item.kind==="dice" ? (
-                  /* dado 3D real — precisa de perspective no wrapper */
                   <div style={{ perspective:"220px" }}>
                     <div style={{
                       animation:`spin-dice ${item.spinDur}s linear ${item.spinDelay}s infinite`,
@@ -287,7 +263,6 @@ export default function CasinoBackground({ logoUrl = CHIP_LOGO_URL }: { logoUrl?
                     </div>
                   </div>
                 ) : item.kind==="chip" && item.pal ? (
-                  /* ficha 3D — Fragment diretamente dentro do preserve-3d */
                   <div style={{ perspective:"380px" }}>
                     <div style={{
                       width:60, height:60, position:"relative",
@@ -298,7 +273,6 @@ export default function CasinoBackground({ logoUrl = CHIP_LOGO_URL }: { logoUrl?
                     </div>
                   </div>
                 ) : (
-                  /* carta e moeda */
                   <div style={{
                     animation:`${SPIN_ANIM[item.kind]} ${item.spinDur}s linear ${item.spinDelay}s infinite`,
                   }}>
@@ -314,7 +288,6 @@ export default function CasinoBackground({ logoUrl = CHIP_LOGO_URL }: { logoUrl?
         })}
       </div>
 
-      {/* Gradiente à esquerda — itens somem antes de chegar no conteúdo */}
       <div style={{
         position:"absolute", inset:0, pointerEvents:"none",
         background:"linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.92) 12%, rgba(0,0,0,0.60) 26%, rgba(0,0,0,0) 44%)",

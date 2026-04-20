@@ -22,7 +22,6 @@ export interface Sorteio {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __sorteios: Sorteio[] | undefined;
 }
 

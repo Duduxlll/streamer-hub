@@ -132,8 +132,6 @@ export default function AdminTorneioPage() {
       {ConfirmModal}
 
 <div className="relative max-w-4xl mx-auto px-4 sm:px-6 pt-12 pb-24 space-y-4">
-
-        {/* ── Header ── */}
         <div className="flex items-start justify-between flex-wrap gap-3">
           <div>
             <Link href="/arena" className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-300 transition-colors mb-2">
@@ -185,7 +183,6 @@ export default function AdminTorneioPage() {
         </div>
 
         {!torneio ? (
-          /* ── Criar torneio ── */
           <div className="rounded-2xl border border-white/12 p-6" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-5">Criar Torneio</p>
             <div className="mb-4">
@@ -215,14 +212,11 @@ export default function AdminTorneioPage() {
           </div>
         ) : (
           <>
-            {/* ── Banner do torneio ── */}
             <div className="rounded-2xl border border-yellow-500/25 px-5 py-4"
               style={{ background: "rgba(251,191,36,0.06)", boxShadow: "0 0 30px rgba(251,191,36,0.06)" }}>
               <p className="text-[11px] font-black text-yellow-600 uppercase tracking-widest mb-0.5">🏆 Torneio Ativo</p>
               <p className="text-2xl font-black text-white">{torneio.nome}</p>
             </div>
-
-            {/* ── Comandos do chat ── */}
             {fase && (
               <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
                 <div className="flex items-center justify-between mb-3">
@@ -245,8 +239,6 @@ export default function AdminTorneioPage() {
                 </div>
               </div>
             )}
-
-            {/* ── Controle da fase ── */}
             {fase && (
               <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">
@@ -299,8 +291,6 @@ export default function AdminTorneioPage() {
                 )}
               </div>
             )}
-
-            {/* ── Times ── */}
             {fase && (
               <div>
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-3">
@@ -330,7 +320,6 @@ export default function AdminTorneioPage() {
                         className={`rounded-2xl border p-4 flex flex-col transition-all ${isElim ? "opacity-45" : ""}`}
                         style={{ background: isVenc ? `linear-gradient(135deg, rgba(251,191,36,0.15), rgba(5,7,16,0.92))` : isElim ? "rgba(5,7,16,0.80)" : `linear-gradient(135deg, ${tc.bg}, rgba(5,7,16,0.92))`, borderColor: cardBdr, boxShadow: shadow }}
                       >
-                        {/* Cabeçalho */}
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             {isVenc && <p className="text-[10px] text-yellow-400 font-black mb-0.5 uppercase tracking-widest">🏆 Vencedor</p>}
@@ -340,8 +329,6 @@ export default function AdminTorneioPage() {
                             {votos.length}
                           </span>
                         </div>
-
-                        {/* Campo valor do bônus */}
                         {!isElim && (
                           <div className="mb-3">
                             <p className="text-[9px] font-black uppercase tracking-widest mb-1" style={{ color: isVenc ? "#fbbf24" : tc.text, opacity: 0.7 }}>
@@ -383,8 +370,6 @@ export default function AdminTorneioPage() {
                             )}
                           </div>
                         )}
-
-                        {/* Botão definir vencedor */}
                         {fase.status === "fechada" && (
                           <button
                             onClick={() => {
@@ -400,11 +385,7 @@ export default function AdminTorneioPage() {
                               : "✓ Definir Vencedor"}
                           </button>
                         )}
-
-                        {/* Divisor */}
                         <div className="h-px mb-2" style={{ background: `linear-gradient(90deg, ${cardBdr}, transparent)` }} />
-
-                        {/* Lista de votantes */}
                         <div className="flex-1 space-y-1 max-h-36 overflow-y-auto">
                           {votos.length === 0 ? (
                             <p className="text-[10px] text-gray-700 text-center py-3">Nenhum voto</p>
@@ -426,8 +407,6 @@ export default function AdminTorneioPage() {
                 </div>
               </div>
             )}
-
-            {/* ── Classificados ── */}
             <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
               <div className="flex items-center gap-2.5 mb-3">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">

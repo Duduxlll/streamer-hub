@@ -110,15 +110,11 @@ export default function SorteioListPage() {
   return (
     <div className="page-enter relative min-h-[calc(100vh-4rem)]">
       <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-5">
-
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-gray-600">
           <Link href="/" className="hover:text-gray-400 transition-colors">Home</Link>
           <span>/</span>
           <span className="text-gray-400">Sorteio</span>
         </div>
-
-        {/* Header */}
         <div>
           <h1 className="text-3xl font-black text-white">Sorteios</h1>
           <p className="text-sm text-gray-500 mt-1">Participe dos sorteios ativos na live</p>
@@ -138,8 +134,6 @@ export default function SorteioListPage() {
             {ativos.map(s => <SorteioCard key={s.id} s={s} />)}
           </div>
         )}
-
-        {/* Histórico */}
         {finalizados.length > 0 && (
           <div className="rounded-2xl overflow-hidden"
             style={{ background: "rgba(8,6,20,0.65)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(12px)" }}>

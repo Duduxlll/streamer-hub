@@ -81,7 +81,6 @@ export default function CursorTrail() {
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Glow do cursor
       const { x: gx, y: gy } = mx.current;
       const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, 100);
       g.addColorStop(0,   "rgba(59,130,246,0.13)");

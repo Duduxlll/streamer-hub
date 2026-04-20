@@ -186,15 +186,11 @@ export default function PalpitesPage() {
     <div className="page-enter relative overflow-hidden min-h-[calc(100vh-4rem)]">
 
 <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-16 pb-24">
-
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-gray-600 mb-8">
           <Link href="/arena" className="hover:text-gray-400 transition-colors">Arena</Link>
           <span>/</span>
           <span className="text-gray-400">Palpites</span>
         </div>
-
-        {/* Header */}
         <div className="mb-6">
           <h1 className="text-3xl font-black text-white mb-2">🎯 Palpites</h1>
           {rodada?.status === "aberta" ? (
@@ -207,8 +203,6 @@ export default function PalpitesPage() {
             <p className="text-sm text-gray-600">Aguarde a próxima rodada.</p>
           )}
         </div>
-
-        {/* Status badge */}
         <div className="mb-6">
           {rodada?.status === "aberta" ? (
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-500/10 border border-green-500/40">
@@ -226,13 +220,9 @@ export default function PalpitesPage() {
             </div>
           )}
         </div>
-
-        {/* Último vencedor — sempre visível se existir */}
         {historico.length > 0 && (
           <UltimoVencedor r={historico[0]} />
         )}
-
-        {/* Palpites da rodada atual */}
         {rodada && rodada.palpites.length > 0 ? (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3 mb-4">
@@ -271,8 +261,6 @@ export default function PalpitesPage() {
             </p>
           </div>
         )}
-
-        {/* Histórico de rodadas */}
         <Historico lista={historico} />
 
       </div>

@@ -122,7 +122,6 @@ export default function ArenaPage() {
 
 <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-28">
 
-        {/* ── Header ── */}
         <div className="text-center mb-12 animate-in">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#9146ff]/35 bg-[#9146ff]/10 mb-5">
             <div className="w-1.5 h-1.5 rounded-full bg-[#9146ff] animate-pulse" />
@@ -144,7 +143,6 @@ export default function ArenaPage() {
           </p>
         </div>
 
-        {/* ── Banner Ao Vivo ── */}
         {liveItems.length > 0 && (
           <div className="mb-10 animate-in" style={{ animationDelay: "0.06s", opacity: 0 }}>
             <div
@@ -155,7 +153,6 @@ export default function ArenaPage() {
                 boxShadow: "0 0 50px rgba(239,68,68,0.1)",
               }}
             >
-              {/* Título do banner */}
               <div className="flex items-center gap-3 px-5 py-3 border-b border-red-500/15">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-60" />
@@ -164,7 +161,6 @@ export default function ArenaPage() {
                 <span className="text-xs font-black text-red-400 uppercase tracking-widest">Acontecendo Agora</span>
               </div>
 
-              {/* Items ao vivo */}
               <div className={`p-4 grid gap-3 ${liveItems.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2"}`}>
                 {liveItems.map(item => (
                   <a
@@ -205,7 +201,6 @@ export default function ArenaPage() {
           </div>
         )}
 
-        {/* ── Cards ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
           {FEATURES.map((f, i) => {
             const live = isLive(f.id);
@@ -226,13 +221,11 @@ export default function ArenaPage() {
                   cursor: "pointer",
                 }}
               >
-                {/* Tint de cor permanente */}
                 <div
                   className="absolute inset-0 rounded-2xl pointer-events-none"
                   style={{ background: `linear-gradient(135deg, ${f.color}18 0%, transparent 55%)` }}
                 />
 
-                {/* Glow de fundo no hover */}
                 {f.available && (
                   <div
                     className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"
@@ -240,7 +233,6 @@ export default function ArenaPage() {
                   />
                 )}
 
-                {/* Badge */}
                 <div className="absolute top-4 right-4 z-10">
                   {live ? (
                     <span
@@ -273,7 +265,6 @@ export default function ArenaPage() {
                   )}
                 </div>
 
-                {/* Ícone */}
                 <div
                   className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-3"
                   style={{
@@ -290,7 +281,6 @@ export default function ArenaPage() {
                 <h3 className="text-xl font-black text-white mb-2">{f.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed mb-4">{f.description}</p>
 
-                {/* CTA */}
                 {f.available && (
                   <div
                     className="inline-flex items-center gap-1.5 text-xs font-black transition-all duration-300 group-hover:gap-3"
@@ -303,7 +293,6 @@ export default function ArenaPage() {
                   </div>
                 )}
 
-                {/* Linha decorativa */}
                 <div
                   className="absolute bottom-0 left-6 right-6 h-px rounded-full"
                   style={{
@@ -311,7 +300,6 @@ export default function ArenaPage() {
                   }}
                 />
 
-                {/* Brilho lateral esquerdo nos disponíveis */}
                 {f.available && (
                   <div
                     className="absolute top-0 left-0 w-px h-full opacity-60"
@@ -323,7 +311,6 @@ export default function ArenaPage() {
           })}
         </div>
 
-        {/* Rodapé */}
         <p className="text-center text-xs text-gray-700 mt-12">
           Faça login com Twitch para participar quando as funções forem liberadas.
         </p>

@@ -104,8 +104,6 @@ export default function AdminSorteioPage() {
       <ToastContainer toasts={toasts} dismiss={dismiss} />
       {ConfirmModal}
       <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-12 pb-24 space-y-5">
-
-        {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-widest"
             style={{ background: "rgba(255,186,0,0.12)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.35)" }}>
@@ -117,8 +115,6 @@ export default function AdminSorteioPage() {
             {mostrarForm ? "✕ Fechar" : "+ Novo Sorteio"}
           </button>
         </div>
-
-        {/* Form criar */}
         {mostrarForm && (
           <div className="rounded-2xl overflow-hidden"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -165,8 +161,6 @@ export default function AdminSorteioPage() {
             </div>
           </div>
         )}
-
-        {/* Sorteios ativos */}
         {ativos.length > 0 && (
           <div className="space-y-3">
             <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Sorteios Ativos ({ativos.length})</p>
@@ -175,8 +169,6 @@ export default function AdminSorteioPage() {
             ))}
           </div>
         )}
-
-        {/* Finalizados */}
         {finalizados.length > 0 && (
           <div className="space-y-3">
             <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Finalizados ({finalizados.length})</p>

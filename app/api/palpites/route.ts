@@ -3,7 +3,6 @@ import { addOrUpdatePalpite } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
-/* POST — exclusivo para o bot da Twitch (chave secreta) */
 export async function POST(req: Request) {
   const secret = req.headers.get("x-bot-secret");
   if (!secret || secret !== process.env.BOT_SECRET) {

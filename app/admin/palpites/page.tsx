@@ -270,8 +270,6 @@ export default function AdminPalpitesPage() {
       <ToastContainer toasts={toasts} dismiss={dismiss} />
 
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-5">
-
-        {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
             <Link href="/arena" className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-400 transition-colors mb-3">
@@ -312,13 +310,10 @@ export default function AdminPalpitesPage() {
             </div>
           )}
         </div>
-
-        {/* Painel de vencedor */}
         {ultimoResultado && !rodadaAtiva ? (
           <VencedorPanel r={ultimoResultado} onNovaRodada={novaRodada} />
         ) : (
           <>
-            {/* ── Configuração da Rodada ── */}
             <Card accent="yellow" className="p-6">
               <SectionLabel>Configuração da Rodada</SectionLabel>
 
@@ -381,8 +376,6 @@ export default function AdminPalpitesPage() {
                 </div>
               )}
             </Card>
-
-            {/* ── Palpites Recebidos ── */}
             <Card accent="blue" className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <SectionLabel>Palpites Recebidos</SectionLabel>
@@ -428,8 +421,6 @@ export default function AdminPalpitesPage() {
             </Card>
           </>
         )}
-
-        {/* ── Histórico ── */}
         <Card className="overflow-hidden">
           <button onClick={() => setShowHistorico(v => !v)}
             className="w-full flex items-center justify-between px-6 py-4 transition-colors hover:bg-white/3">

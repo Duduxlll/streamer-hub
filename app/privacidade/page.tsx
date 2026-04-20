@@ -11,14 +11,12 @@ export default function PrivacidadePage() {
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 relative z-10">
 
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-gray-500 mb-8">
           <Link href="/" className="hover:text-gray-300 transition-colors">Home</Link>
           <span>/</span>
           <span className="text-gray-400">Política de Privacidade</span>
         </div>
 
-        {/* Header */}
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4"
             style={{ background: "rgba(145,70,255,0.15)", color: "#c084fc", border: "1px solid rgba(145,70,255,0.3)" }}>
@@ -36,7 +34,6 @@ export default function PrivacidadePage() {
           <p className="text-gray-500 text-sm">Última atualização: 19 de abril de 2026</p>
         </div>
 
-        {/* Intro */}
         <div className="rounded-2xl p-6 mb-8"
           style={{ background: "rgba(145,70,255,0.06)", border: "1px solid rgba(145,70,255,0.2)" }}>
           <p className="text-gray-300 text-sm leading-relaxed">
@@ -185,7 +182,6 @@ export default function PrivacidadePage() {
 
         </div>
 
-        {/* Footer links */}
         <div className="mt-16 pt-8 border-t border-white/5 flex flex-wrap items-center justify-between gap-4">
           <Link href="/" className="text-sm text-gray-500 hover:text-white transition-colors">
             ← Voltar para Home

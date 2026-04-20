@@ -9,11 +9,10 @@ import type { Batalha, BatalhaMatch, BatalhaSlot } from "@/lib/batalhaStore";
 import { useToast, ToastContainer } from "@/components/toast";
 import { useConfirm } from "@/components/confirm-modal";
 
-// ── Bracket layout constants ─────────────────────────────────────────────────
-const MH   = 168;   // match card height
-const MW   = 310;   // match card width
-const RG   = 24;    // row gap between matches
-const CW   = 72;    // connector width between rounds
+const MH   = 168;
+const MW   = 310;
+const RG   = 24;
+const CW   = 72;
 const UNIT = MH + RG;
 
 type BatalhaActionBody = {
@@ -43,7 +42,6 @@ function roundLabel(idx: number, total: number) {
   return `Rodada ${idx + 1}`;
 }
 
-// ── SVG Connectors ────────────────────────────────────────────────────────────
 function Connectors({ rounds }: { rounds: BatalhaMatch[][] }) {
   if (!rounds.length) return null;
   const vagas = rounds[0].length * 2;
@@ -79,7 +77,6 @@ function Connectors({ rounds }: { rounds: BatalhaMatch[][] }) {
   );
 }
 
-// ── Slot Row ──────────────────────────────────────────────────────────────────
 function SlotRow({
   slot,
   canWin,
@@ -102,7 +99,6 @@ function SlotRow({
 
   return (
     <div className={`flex-1 min-h-0 px-3 flex flex-col justify-center gap-1.5 transition-all ${isLose ? "opacity-35" : ""}`}>
-      {/* Player row */}
       <div className="flex items-center gap-1.5">
         <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-black ${
           isWin ? "bg-green-500/30 text-green-300"
@@ -116,7 +112,6 @@ function SlotRow({
         }`}>
           {hasPlayer ? slot.jogador!.displayName : "Vaga livre"}
         </span>
-        {/* LOSE clicável → define como vencedor */}
         {canWin && hasPlayer && (
           <button
             onClick={onWin}
@@ -128,7 +123,6 @@ function SlotRow({
           </button>
         )}
 
-        {/* Badges fixos quando decidido */}
         {isWin && (
           <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-green-500/22 text-green-400 uppercase tracking-wide flex-shrink-0">WIN</span>
         )}
@@ -137,7 +131,6 @@ function SlotRow({
         )}
       </div>
 
-      {/* Inputs — always visible when active */}
       {hasPlayer && !slot.resultado && (
         <div className="flex items-center gap-1.5 ml-6">
           <input
@@ -160,7 +153,6 @@ function SlotRow({
         </div>
       )}
 
-      {/* Read-only info when decided */}
       {hasPlayer && slot.resultado && (slot.jogoNome || (slot.jogoValor != null && slot.jogoValor > 0)) && (
         <div className="flex items-center gap-2 ml-6">
           {slot.jogoNome && <span className="text-[10px] text-gray-500 truncate">{slot.jogoNome}</span>}
@@ -175,7 +167,6 @@ function SlotRow({
   );
 }
 
-// ── Match Card ────────────────────────────────────────────────────────────────
 function MatchCard({
   match, roundIdx, matchIdx, onAction,
 }: {
@@ -195,7 +186,6 @@ function MatchCard({
       }`}
       style={{ width: MW, height: MH, background: "rgba(5,7,18,0.97)", backdropFilter: "blur(8px)" }}
     >
-      {/* Slot 1 */}
       <SlotRow
         slot={match.slot1}
         canWin={canWin}
@@ -205,7 +195,6 @@ function MatchCard({
 
       <div className="h-px bg-white/8 flex-shrink-0" />
 
-      {/* Slot 2 */}
       <SlotRow
         slot={match.slot2}
         canWin={canWin}
@@ -216,7 +205,6 @@ function MatchCard({
   );
 }
 
-// ── Bracket ───────────────────────────────────────────────────────────────────
 function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: BatalhaActionBody) => void }) {
   const { rounds } = batalha;
   const { w, h } = canvasSize(batalha.vagas);
@@ -224,7 +212,6 @@ function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: Bat
 
   return (
     <div className="overflow-auto pb-2">
-      {/* Round labels */}
       <div className="relative mb-4 flex-shrink-0" style={{ width: w, height: 20 }}>
         {rounds.map((_, r) => {
           const x = r * (MW + CW);
@@ -240,7 +227,6 @@ function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: Bat
         })}
       </div>
 
-      {/* Bracket canvas */}
       <div className="relative flex-shrink-0" style={{ width: w, height: h }}>
         <Connectors rounds={rounds} />
         {rounds.flatMap((round, r) =>
@@ -263,7 +249,6 @@ function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: Bat
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────────────
 export default function AdminBatalhaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -337,7 +322,6 @@ export default function AdminBatalhaPage() {
     } finally { setLoading(false); }
   }
 
-  // ── Winner screen ──────────────────────────────────────────────────────────
   if (batalha?.status === "finalizada" && batalha.vencedorFinal && !verChave) {
     return (
       <div className="page-enter relative min-h-[calc(100vh-4rem)] overflow-hidden flex items-center justify-center">
@@ -380,7 +364,6 @@ export default function AdminBatalhaPage() {
 
 <div className="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 pt-12 pb-24">
 
-        {/* Header */}
         <div className={`flex items-center justify-between flex-wrap gap-3 mb-6 ${
           !batalha ? "max-w-lg mx-auto" :
           batalha.status === "inscricao" ? "max-w-xl mx-auto" : ""
@@ -435,7 +418,6 @@ export default function AdminBatalhaPage() {
         </div>
 
         {!batalha ? (
-          /* ── Criar batalha ── */
           <div className="max-w-lg mx-auto rounded-2xl border border-white/12 p-6" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-5">Criar Batalha</p>
 
@@ -514,9 +496,7 @@ export default function AdminBatalhaPage() {
             </button>
           </div>
         ) : batalha.status === "inscricao" ? (
-          /* ── Inscrições ── */
           <div className="max-w-xl mx-auto space-y-4">
-            {/* Info */}
             <div className="rounded-2xl border border-yellow-500/25 px-5 py-4" style={{ background: "rgba(5,7,16,0.92)", boxShadow: "0 0 30px rgba(251,191,36,0.06)" }}>
               <p className="text-[11px] font-black text-yellow-600 uppercase tracking-widest mb-0.5">⚔️ Batalha Criada</p>
               <p className="text-xl font-black text-white mb-1">{batalha.nome}</p>
@@ -527,7 +507,6 @@ export default function AdminBatalhaPage() {
               </div>
             </div>
 
-            {/* Comando */}
             <div className="rounded-2xl border border-purple-500/25 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
               <p className="text-[11px] font-black text-purple-400 uppercase tracking-widest mb-2">⚡ Divulgue no Chat</p>
               <div className="flex items-center gap-3">
@@ -543,7 +522,6 @@ export default function AdminBatalhaPage() {
               </div>
             </div>
 
-            {/* Lista inscritos */}
             <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Inscritos</p>
@@ -578,9 +556,7 @@ export default function AdminBatalhaPage() {
             </button>
           </div>
         ) : (
-          /* ── Bracket ── */
           <div>
-            {/* Header info */}
             <div className="flex items-center gap-4 mb-5 flex-wrap">
               <div className="rounded-xl border border-yellow-500/25 px-4 py-2.5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
                 <p className="text-[10px] text-gray-600">Batalha</p>
@@ -599,7 +575,6 @@ export default function AdminBatalhaPage() {
 
             </div>
 
-            {/* Bracket scroll */}
             <div className="overflow-x-auto max-w-full">
               <div className="rounded-2xl border border-white/10 p-6 w-fit" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
                 <Bracket batalha={batalha} onAction={post} />

@@ -32,7 +32,6 @@ export default function TwitchStatus() {
     return () => clearInterval(id);
   }, []);
 
-  /* loading */
   if (!data) {
     return (
       <div className="flex items-center gap-1.5 bg-[#070f1f] border border-[#1d4ed8]/30 rounded-full px-4 py-1.5 whitespace-nowrap">
@@ -42,7 +41,6 @@ export default function TwitchStatus() {
     );
   }
 
-  /* ao vivo */
   if (data.isLive) {
     return (
       <div className="flex items-center gap-2 bg-[#070f1f] border border-red-500/50 rounded-full px-4 py-1.5 shadow-lg shadow-red-950/40 whitespace-nowrap">
@@ -61,7 +59,6 @@ export default function TwitchStatus() {
     );
   }
 
-  /* offline */
   return (
     <div className="flex items-center gap-1.5 bg-[#070f1f] border border-white/8 rounded-full px-4 py-1.5 whitespace-nowrap">
       <span className="w-2 h-2 rounded-full bg-gray-600" />

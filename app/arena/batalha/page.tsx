@@ -7,7 +7,6 @@ import { useEffect, useState, useCallback } from "react";
 import { isAdmin } from "@/lib/admins";
 import type { Batalha, BatalhaMatch, BatalhaSlot } from "@/lib/batalhaStore";
 
-// ── Bracket layout ────────────────────────────────────────────────────────────
 const MH   = 140;
 const MW   = 310;
 const RG   = 24;
@@ -36,7 +35,6 @@ function roundLabel(idx: number, total: number) {
   return `Rodada ${idx + 1}`;
 }
 
-// ── SVG Connectors ────────────────────────────────────────────────────────────
 function Connectors({ rounds }: { rounds: BatalhaMatch[][] }) {
   if (!rounds.length) return null;
   const vagas = rounds[0].length * 2;
@@ -65,7 +63,6 @@ function Connectors({ rounds }: { rounds: BatalhaMatch[][] }) {
   return <svg className="absolute inset-0 pointer-events-none" width={w} height={h}>{lines}</svg>;
 }
 
-// ── Slot público (read-only) ───────────────────────────────────────────────────
 function SlotPublic({ slot }: { slot: BatalhaSlot }) {
   const isWin     = slot.resultado === "win";
   const isLose    = slot.resultado === "lose";
@@ -73,7 +70,6 @@ function SlotPublic({ slot }: { slot: BatalhaSlot }) {
 
   return (
     <div className={`flex-1 min-h-0 px-3 flex flex-col justify-center gap-1.5 transition-all ${isLose ? "opacity-35" : ""}`}>
-      {/* Nome */}
       <div className="flex items-center gap-1.5">
         <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-black ${
           isWin ? "bg-green-500/30 text-green-300"
@@ -95,7 +91,6 @@ function SlotPublic({ slot }: { slot: BatalhaSlot }) {
         )}
       </div>
 
-      {/* Jogo + Valor (quando disponíveis) */}
       {hasPlayer && (slot.jogoNome || (slot.jogoValor != null && slot.jogoValor > 0)) && (
         <div className="flex items-center gap-2 ml-6">
           {slot.jogoNome && (
@@ -112,7 +107,6 @@ function SlotPublic({ slot }: { slot: BatalhaSlot }) {
   );
 }
 
-// ── Match público ─────────────────────────────────────────────────────────────
 function MatchPublic({ match }: { match: BatalhaMatch }) {
   const decided = !!(match.slot1.resultado || match.slot2.resultado);
   return (
@@ -129,7 +123,6 @@ function MatchPublic({ match }: { match: BatalhaMatch }) {
   );
 }
 
-// ── Bracket público ───────────────────────────────────────────────────────────
 function BracketPublic({ batalha }: { batalha: Batalha }) {
   const { rounds } = batalha;
   const { w, h } = canvasSize(batalha.vagas);
@@ -164,7 +157,6 @@ function BracketPublic({ batalha }: { batalha: Batalha }) {
   );
 }
 
-// ── Página principal ──────────────────────────────────────────────────────────
 export default function ArenaTransferePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -198,7 +190,6 @@ export default function ArenaTransferePage() {
     );
   }
 
-  // ── Tela do vencedor ─────────────────────────────────────────────────────
   if (batalha?.status === "finalizada" && batalha.vencedorFinal) {
     return (
       <div className="page-enter relative min-h-[calc(100vh-4rem)] overflow-hidden flex items-center justify-center">
@@ -236,14 +227,12 @@ export default function ArenaTransferePage() {
 
 <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-14 pb-24">
 
-        {/* Breadcrumb */}
         <div className="flex items-center justify-center gap-2 text-xs text-gray-600 mb-8">
           <Link href="/arena" className="hover:text-gray-400 transition-colors">Arena</Link>
           <span>/</span>
           <span className="text-gray-400">Batalha de Bônus</span>
         </div>
 
-        {/* Header */}
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-3 mb-2 flex-wrap">
             <h1 className="text-4xl font-black">
@@ -324,7 +313,6 @@ export default function ArenaTransferePage() {
             )}
           </div>
         ) : (
-          /* ── Bracket view ── */
           <div>
             <div className="flex items-center gap-3 mb-5 flex-wrap">
               {batalha.premiacao > 0 && (

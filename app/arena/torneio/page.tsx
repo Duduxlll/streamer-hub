@@ -58,15 +58,11 @@ export default function TorneioPage() {
     <div className="page-enter relative overflow-hidden min-h-[calc(100vh-4rem)]">
 
 <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-14 pb-24">
-
-        {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-gray-600 mb-8">
           <Link href="/arena" className="hover:text-gray-400 transition-colors">Arena</Link>
           <span>/</span>
           <span className="text-gray-400">Torneio</span>
         </div>
-
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
             <h1 className="text-4xl font-black">
@@ -95,7 +91,6 @@ export default function TorneioPage() {
         </div>
 
         {!torneio ? (
-          /* ── Sem torneio ── */
           <div className="text-center py-20 rounded-2xl border border-white/10" style={{ background: "rgba(5,7,16,0.88)" }}>
             <p className="text-6xl mb-4">🏆</p>
             <p className="text-white font-black text-xl mb-2">Sem torneio ativo</p>
@@ -105,7 +100,6 @@ export default function TorneioPage() {
           </div>
         ) : (
           <>
-            {/* Status da fase */}
             {fase && (
               <div className="mb-6">
                 {fase.status === "aberta" && (
@@ -137,8 +131,6 @@ export default function TorneioPage() {
                 )}
               </div>
             )}
-
-            {/* Como participar */}
             {fase?.status === "aberta" && (
               <div className="rounded-2xl border border-purple-500/25 p-5 mb-6"
                 style={{ background: "rgba(5,7,16,0.92)", boxShadow: "0 0 30px rgba(145,70,255,0.10)" }}>
@@ -161,8 +153,6 @@ export default function TorneioPage() {
                 </div>
               </div>
             )}
-
-            {/* Times */}
             {fase && (
               <div className="mb-6">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-3">
@@ -189,7 +179,6 @@ export default function TorneioPage() {
                           boxShadow: isElim ? undefined : `0 0 24px ${cor.glow}`,
                         }}
                       >
-                        {/* Header do card */}
                         <div className="mb-3">
                           {isVenc && (
                             <p className="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-1">
@@ -215,11 +204,7 @@ export default function TorneioPage() {
                             </div>
                           )}
                         </div>
-
-                        {/* Divisor */}
                         <div className="h-px mb-3" style={{ background: `linear-gradient(90deg, ${cor.border}, transparent)` }} />
-
-                        {/* Lista de participantes */}
                         <div className="flex-1 space-y-1.5 max-h-44 overflow-y-auto scrollbar-thin">
                           {participantes.length === 0 ? (
                             <p className="text-[11px] text-gray-700 text-center py-3">Nenhum ainda</p>
@@ -241,8 +226,6 @@ export default function TorneioPage() {
                 </div>
               </div>
             )}
-
-            {/* Classificados */}
             {torneio.classificados !== null && (
               <div
                 className="rounded-2xl border border-white/12 p-5"

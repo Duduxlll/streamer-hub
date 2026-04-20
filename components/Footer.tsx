@@ -40,13 +40,10 @@ export default function Footer() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6">
 
-        {/* ── Grid: branding + links ── */}
         <div className="flex flex-col lg:flex-row items-start gap-10 lg:gap-20 mb-10">
 
-          {/* ── Branding ── */}
           <div className="flex flex-wrap items-center gap-5 lg:gap-8">
 
-            {/* stainzincs com glitch */}
             <div className="flex items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -55,7 +52,6 @@ export default function Footer() {
                 className="w-11 h-11 rounded-full border-2 border-[#1d4ed8]/40 object-cover flex-shrink-0"
               />
 
-              {/* wrapper glitch */}
               <span
                 style={{
                   position: "relative",
@@ -66,7 +62,6 @@ export default function Footer() {
                   animation: "glitch-body 3s 0s infinite linear",
                 }}
               >
-                {/* texto principal: stain branco + zincs azul */}
                 <span style={{ fontWeight: 900 }}>
                   <span style={{ color: "#ffffff" }}>stain</span>
                   <span
@@ -84,7 +79,6 @@ export default function Footer() {
                   </span>
                 </span>
 
-                {/* fatia ciano */}
                 <span
                   aria-hidden
                   style={{
@@ -97,7 +91,6 @@ export default function Footer() {
                   stainzincs
                 </span>
 
-                {/* fatia vermelha */}
                 <span
                   aria-hidden
                   style={{
@@ -112,10 +105,8 @@ export default function Footer() {
               </span>
             </div>
 
-            {/* × */}
             <span className="text-2xl font-black text-gray-600 select-none">×</span>
 
-            {/* Bet da Sorte logo */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/betdasorte-logo.svg"
@@ -124,10 +115,8 @@ export default function Footer() {
             />
           </div>
 
-          {/* spacer */}
           <div className="hidden lg:block flex-1" />
 
-          {/* ── Colunas de links ── */}
           <div className="grid grid-cols-2 gap-12 shrink-0">
 
             <div>
@@ -180,7 +169,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* ── Barra inferior ── */}
         <div className="pt-4">
           <div className="flex flex-wrap items-center justify-between gap-y-2 text-xs text-gray-600">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">

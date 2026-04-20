@@ -25,7 +25,6 @@ function NavLink({ href, label, from, to, alsoActiveOn }: { href: string; label:
       >
         {label}
       </span>
-      {/* Underline: sempre presente, expande no hover; glow quando ativo */}
       <span
         className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 h-0.5 rounded-full transition-all duration-300 ${
           active ? "w-4/5" : "w-0 group-hover:w-4/5"
@@ -66,7 +65,6 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
         )}
         <span className="text-sm font-semibold text-purple-200 max-w-[100px] truncate">{name}</span>
 
-        {/* Badge Admin dourado */}
         {admin && (
           <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wide"
             style={{ background: "rgba(255,186,0,0.15)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.35)" }}>
@@ -81,7 +79,6 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
 
       {open && (
         <>
-          {/* Overlay para fechar */}
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-white/8 bg-[#070f1f] shadow-2xl shadow-black/50 z-50 overflow-hidden">
             <div className="px-4 py-3 border-b border-white/5">
@@ -173,7 +170,6 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#1d4ed8]/40 shadow-lg shadow-blue-950/50 group-hover:shadow-blue-700/40 transition-all flex-shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -189,7 +185,6 @@ export default function Navbar() {
             </span>
           </Link>
 
-          {/* Parceiro — Bet da Sorte */}
           <a
             href="https://www.betdasorte.bet.br/"
             target="_blank"
@@ -201,14 +196,12 @@ export default function Navbar() {
             <img src="/betdasorte-logo.svg" alt="Bet da Sorte" className="h-4 w-auto" />
           </a>
 
-          {/* Links desktop */}
           <div className="hidden md:flex items-center gap-2">
             <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />
             <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" alsoActiveOn={["/admin/palpites", "/admin/torneio", "/admin/batalha", "/admin/jackpot"]} />
             <NavLink href={admin ? "/admin/sorteio" : "/sorteio"} label="Sorteio" from="#ffba00" to="#e6a000" alsoActiveOn={["/admin/sorteio", "/sorteio"]} />
           </div>
 
-          {/* Auth desktop */}
           <div className="hidden md:flex items-center">
             {isLoading && (
               <div className="w-8 h-8 rounded-full border-2 border-[#9146ff]/40 border-t-[#9146ff] animate-spin" />
@@ -231,7 +224,6 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Toggle mobile */}
           <button
             onClick={() => setOpen(!open)}
             className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-[rgba(29,78,216,0.12)] transition-colors"
@@ -244,7 +236,6 @@ export default function Navbar() {
           </button>
         </div>
 
-        {/* Menu mobile */}
         {open && (
           <div className="md:hidden pb-4 space-y-1 border-t border-white/5 pt-2 mt-1">
             <div onClick={() => setOpen(false)} className="block px-0">

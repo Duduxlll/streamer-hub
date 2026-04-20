@@ -1,4 +1,3 @@
-// Usernames da Twitch com permissão de admin (em minúsculo)
 export const ADMINS: string[] = [
   "dudufpss",
 ];

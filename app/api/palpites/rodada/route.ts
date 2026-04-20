@@ -28,7 +28,6 @@ export async function POST(req: Request) {
     resultado?: number;
   };
 
-  /* ── Abrir rodada ── */
   if (body.action === "open") {
     const buyIn = Number(body.buyIn ?? 0);
     const numVencedores = Number(body.numVencedores ?? 1);
@@ -44,14 +43,12 @@ export async function POST(req: Request) {
     return NextResponse.json(rodada, { headers: NO_STORE_HEADERS });
   }
 
-  /* ── Travar palpites (ninguém mais muda) ── */
   if (body.action === "lock") {
     await travarPalpites();
     await queueChatMessage(`🔒 Palpites fechados! Ninguém mais pode participar. Aguardando resultado... ⏳`);
     return NextResponse.json(await getRodada(), { headers: NO_STORE_HEADERS });
   }
 
-  /* ── Definir vencedor e encerrar ── */
   if (body.action === "close") {
     const temResultado = typeof body.resultado === "number";
     const res = temResultado ? body.resultado! : undefined;

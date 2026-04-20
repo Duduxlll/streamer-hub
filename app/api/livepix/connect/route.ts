@@ -21,7 +21,6 @@ export async function GET() {
   url.searchParams.set("state", state);
   url.searchParams.set("audience", "https://api.livepix.gg");
 
-  // Guarda o state num cookie httpOnly para verificar no callback (CSRF)
   const redirect = NextResponse.redirect(url.toString());
   redirect.cookies.set("livepix_oauth_state", state, {
     httpOnly: true,

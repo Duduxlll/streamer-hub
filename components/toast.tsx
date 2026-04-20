@@ -59,7 +59,6 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
         minWidth: 240,
       }}
     >
-      {/* Barra de progresso */}
       <span
         className="absolute bottom-0 left-0 h-[2px] rounded-full"
         style={{
@@ -69,15 +68,10 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
         }}
       />
 
-      {/* Ícone */}
       <span className="text-base flex-shrink-0 mt-0.5">{cfg.icon}</span>
-
-      {/* Mensagem */}
       <span className="text-sm font-semibold leading-snug" style={{ color: "#e5e7eb" }}>
         {item.message}
       </span>
-
-      {/* Fechar */}
       <span className="ml-auto flex-shrink-0 text-gray-600 hover:text-gray-300 transition-colors text-xs pl-2 mt-0.5">
         ✕
       </span>

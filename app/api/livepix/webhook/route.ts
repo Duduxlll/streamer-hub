@@ -9,7 +9,6 @@ function newId() { return Date.now().toString(36) + Math.random().toString(36).s
 export async function POST(req: NextRequest) {
   const secret = process.env.LIVEPIX_WEBHOOK_SECRET;
 
-  // Secret é obrigatório — recusa tudo se não configurado
   if (!secret) {
     console.error("LIVEPIX_WEBHOOK_SECRET não configurado — webhook rejeitado");
     return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
@@ -17,7 +16,6 @@ export async function POST(req: NextRequest) {
 
   const header = req.headers.get("x-webhook-secret") ?? req.headers.get("x-livepix-secret") ?? "";
 
-  // Comparação em tempo constante para evitar timing attacks
   let authorized = false;
   try {
     if (header.length > 0 && header.length === secret.length) {
@@ -41,7 +39,6 @@ export async function POST(req: NextRequest) {
   const messageId = body.resource?.id;
   if (!messageId) return NextResponse.json({ ok: true, skipped: "sem messageId" });
 
-  // Idempotência: evita processar o mesmo evento duas vezes (retry do LivePix)
   const idempotencyKey = `livepix:processed:${messageId}`;
   const alreadyProcessed = await dbGet(idempotencyKey);
   if (alreadyProcessed) {
@@ -54,7 +51,6 @@ export async function POST(req: NextRequest) {
   try {
     const msg = await getMessage(messageId);
 
-    /* ── Fase aguardando: adiciona jogador automaticamente ── */
     if (jackpot.status === "aguardando") {
       const pagoCentavos    = Math.round(msg.amount);
       const entradaCentavos = Math.round(jackpot.valorEntrada * 100);
@@ -84,7 +80,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, acao: "jogador-adicionado", jogador: jogador.nome });
     }
 
-    /* ── Fase ativo: registra valor do jogador atual ── */
     if (jackpot.status === "ativo") {
       const jogadorAtual = jackpot.jogadores[jackpot.jogadorAtualIdx];
       if (!jogadorAtual || jogadorAtual.valor !== null) {

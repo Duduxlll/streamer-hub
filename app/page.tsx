@@ -13,10 +13,8 @@ export default function HomePage() {
   return (
     <div className="relative overflow-hidden">
 
-      {/* Orbs animados */}
       <div className="orb w-[520px] h-[520px] bg-blue-900/25 -top-40 -left-32" style={{ animationDelay: "0s" }} />
 
-      {/* Partículas */}
       {[...Array(10)].map((_, i) => (
         <div
           key={i}
@@ -32,11 +30,9 @@ export default function HomePage() {
         />
       ))}
 
-      {/* ── HERO ─────────────────────────────────────────────── */}
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 lg:pr-[38%]">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
 
-          {/* Avatar */}
           <div className="flex-shrink-0 flex flex-col items-center gap-0 animate-in animate-in-delay-1">
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#1d4ed8]/20 to-transparent blur-3xl scale-125 pointer-events-none" />
@@ -53,7 +49,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Links abaixo da foto */}
             <div className="mt-8 flex items-center justify-center gap-3">
               <a
                 href="https://twitch.tv/stainzincs"
@@ -76,7 +71,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Texto */}
           <div className="text-center lg:text-left">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#1d4ed8]/25 bg-[#1d4ed8]/8 mb-5 animate-in animate-in-delay-1">
               <div className="w-1.5 h-1.5 rounded-full bg-[#3b82f6] animate-pulse" />
@@ -100,31 +94,25 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── SORTEIOS ATIVOS ──────────────────────────────────── */}
       <SorteioDestaque />
 
-      {/* ── SEÇÃO BET DA SORTE ───────────────────────────────── */}
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 animate-in" style={{ animationDelay: "0.2s", opacity: 0 }}>
         <div className="relative rounded-2xl overflow-hidden border border-[#1d4ed8]/20"
           style={{ background: "linear-gradient(135deg, rgba(2,4,12,0.98) 0%, rgba(7,15,46,0.96) 50%, rgba(2,4,12,0.98) 100%)" }}>
 
-          {/* Glow azul suave */}
           <div className="absolute inset-0 pointer-events-none"
             style={{ background: "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(29,78,216,0.1) 0%, transparent 70%)" }} />
 
           <div className="relative flex flex-col lg:flex-row items-center gap-10 px-8 py-12 lg:px-16">
 
-            {/* Logo */}
             <div className="flex-shrink-0" style={{ animation: "float 5s ease-in-out infinite" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/betdasorte-logo.svg" alt="Bet da Sorte" className="h-12 lg:h-16 w-auto" />
             </div>
 
-            {/* Divisor */}
             <div className="hidden lg:block w-px h-16 bg-[#1d4ed8]/25" />
 
-            {/* Texto */}
-            <div className="flex-1 text-center lg:text-left">
+              <div className="flex-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#ffba00]/40 bg-[#ffba00]/10 mb-3">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#ffba00] animate-pulse" />
                 <span className="text-xs font-bold text-[#ffba00] uppercase tracking-widest">Parceiro Oficial</span>
@@ -137,7 +125,6 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* CTA */}
             <div className="flex-shrink-0">
               <a
                 href="https://www.betdasorte.bet.br/"
@@ -154,7 +141,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Linha topo */}
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2563eb]/40 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#1d4ed8]/25 to-transparent" />
         </div>

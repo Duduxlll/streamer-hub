@@ -40,7 +40,6 @@ interface StoreState {
 }
 
 const STORE_KEY = "streamer-hub:palpites:v1";
-// Chave separada para a fila — evita race condition com addOrUpdatePalpite
 const QUEUE_KEY = "streamer-hub:palpites:queue:v1";
 const LIVEPIX_TOKEN_KEY = "livepix:user-token:v1";
 const STORE_TABLE = "app_store";
@@ -221,8 +220,6 @@ async function saveState(state: StoreState): Promise<void> {
   globalThis.__palpitesFallbackState = normalized;
 }
 
-/* ─── Rodada ─── */
-
 export async function getRodada(): Promise<Rodada | null> {
   const state = await loadState();
   return state.rodada ?? null;
@@ -317,8 +314,6 @@ export async function addOrUpdatePalpite(
   return { ok: true, updated: false };
 }
 
-/* ─── Histórico ─── */
-
 export async function getHistorico(): Promise<ResultadoRodada[]> {
   const state = await loadState();
   return state.historico;
@@ -330,13 +325,10 @@ export async function clearHistorico(): Promise<void> {
   await saveState(state);
 }
 
-/* ─── Fila de mensagens para o bot (chave separada — sem race condition com palpites) ─── */
-
 export async function queueChatMessage(msg: string): Promise<void> {
   const client = getTursoClient();
   if (client) {
     await ensureTursoSchema();
-    // Append atômico — um único UPDATE sem precisar de read prévio
     await client.execute({
       sql: `
         INSERT INTO ${STORE_TABLE} (key, value, updated_at)
@@ -366,7 +358,6 @@ export async function drainChatMessages(): Promise<string[]> {
   const client = getTursoClient();
   if (client) {
     await ensureTursoSchema();
-    // Batch atômico: lê e limpa em uma única transação — sem race condition
     const results = await client.batch([
       { sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`, args: [QUEUE_KEY] },
       {
@@ -394,8 +385,6 @@ export async function drainChatMessages(): Promise<string[]> {
   globalThis.__palpitesFallbackQueue = [];
   return msgs;
 }
-
-/* ─── Token OAuth do LivePix (persistido no Turso para sobreviver restarts) ─── */
 
 export async function getLivePixUserToken(): Promise<LivePixUserToken | null> {
   const client = getTursoClient();
@@ -439,8 +428,6 @@ export async function setLivePixUserToken(t: LivePixUserToken | null): Promise<v
   globalThis.__livepixUserToken = t ?? undefined;
 }
 
-/* ─── Helpers genéricos para outros stores ─── */
-
 export async function dbGet(key: string): Promise<string | null> {
   const client = getTursoClient();
   if (!client) return null;
@@ -462,8 +449,6 @@ export async function dbSet(key: string, value: string | null): Promise<void> {
     });
   }
 }
-
-/* ─── Diagnóstico ─── */
 
 export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
   let tursoReady = false;

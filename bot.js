@@ -1,5 +1,3 @@
-// Bot da Twitch — escuta comandos e distribui tickets de sorteio
-// Executar com: npm run bot
 require("dotenv").config({ path: ".env.local" });
 
 const tmi = require("tmi.js");
@@ -43,7 +41,6 @@ const BOT_OAUTH     = process.env.BOT_OAUTH              || "";
 const CLIENT_ID     = process.env.TWITCH_CLIENT_ID       || "";
 const CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET   || "";
 
-// false = conta tickets mesmo offline (teste); true = só quando ao vivo
 const REQUER_LIVE = process.env.REQUER_LIVE !== "false";
 
 if (!BOT_SECRET) { console.error("❌  BOT_SECRET não definido no .env.local"); process.exit(1); }
@@ -52,7 +49,6 @@ if (!SITE_URL) { console.error("❌  SITE_URL precisa apontar para o domínio at
 console.log(`📺  Canal: #${CHANNEL}`);
 console.log(`📡  Requer live: ${REQUER_LIVE ? "SIM" : "NÃO (modo teste)"}`);
 
-/* ─── tmi.js ─── */
 const clientOptions = {
   channels: [CHANNEL],
   ...(BOT_USER && BOT_OAUTH ? {
@@ -74,10 +70,6 @@ client.connect().then(() => {
   process.exit(1);
 });
 
-/* ─────────────────────────────────────────
-   App Access Token (client credentials)
-   Usado para verificar live e follows
-   ───────────────────────────────────────── */
 let _appToken = null;
 let _appTokenExpiry = 0;
 
@@ -112,7 +104,6 @@ async function helixGet(path) {
   return res.json();
 }
 
-/* ─── Verificar se o canal está ao vivo ─── */
 async function canalEstaAoVivo() {
   try {
     const data = await helixGet(`/streams?user_login=${CHANNEL}`);
@@ -120,10 +111,9 @@ async function canalEstaAoVivo() {
   } catch { return false; }
 }
 
-/* ─── IDs e avatares dos usuários ─── */
 let broadcasterID = null;
-const userIDCache  = new Map(); // login -> twitch_id
-const avatarCache  = new Map(); // login -> image_url
+const userIDCache  = new Map();
+const avatarCache  = new Map();
 
 async function getBroadcasterID() {
   if (broadcasterID) return broadcasterID;
@@ -147,13 +137,12 @@ async function getUserInfo(login) {
       if (chatters.has(login)) chatters.get(login).image = user.profile_image_url ?? null;
       return user.id;
     }
-  } catch { /* ignora */ }
+  } catch { }
   return null;
 }
 
-/* ─── Checar follow ─── */
-const followCache = new Map(); // login -> { segue, ts }
-const FOLLOW_TTL  = 5 * 60 * 1000; // 5 min
+const followCache = new Map();
+const FOLLOW_TTL  = 5 * 60 * 1000;
 
 async function eSeguidorDoCanal(login) {
   const cached = followCache.get(login);
@@ -169,7 +158,6 @@ async function eSeguidorDoCanal(login) {
     const data = await helixGet(`/channels/followers?broadcaster_id=${bId}&user_id=${uId}`);
 
     if (data.error || data.status === 401 || data.status === 403) {
-      // API exige token do broadcaster ou moderador — fallback permissivo
       followCache.set(login, { segue: true, ts: Date.now() });
       return true;
     }
@@ -182,10 +170,7 @@ async function eSeguidorDoCanal(login) {
   }
 }
 
-/* ─────────────────────────────────────────
-   Rastreamento de chatters ativos
-   ───────────────────────────────────────── */
-const chatters = new Map(); // login -> { displayName, image, lastSeen }
+const chatters = new Map();
 
 client.on("message", async (_channel, tags, message, self) => {
   if (self) return;
@@ -194,7 +179,6 @@ client.on("message", async (_channel, tags, message, self) => {
   const login       = (tags.username || "").toLowerCase();
   const msg         = message.trim();
 
-  // Atualiza registro do chatter
   const existing = chatters.get(login);
   chatters.set(login, {
     displayName,
@@ -202,7 +186,6 @@ client.on("message", async (_channel, tags, message, self) => {
     lastSeen : Date.now(),
   });
 
-  /* ── !p / !palpite ── */
   const matchP = msg.match(/^!(?:p|palpite)\s+([\d.,]+)/i);
   if (matchP) {
     const valor = parseFloat(matchP[1].replace(/\./g, "").replace(",", "."));
@@ -227,7 +210,6 @@ client.on("message", async (_channel, tags, message, self) => {
     return;
   }
 
-  /* ── Batalha ── */
   if (batalhaComando && msg.toLowerCase() === batalhaComando.toLowerCase()) {
     try {
       const res  = await fetch(`${SITE_URL}/api/batalha/entrar`, {
@@ -245,7 +227,6 @@ client.on("message", async (_channel, tags, message, self) => {
     return;
   }
 
-  /* ── !time ── */
   const matchT = msg.match(/^!time\s+(.+)/i);
   if (matchT) {
     const time = matchT[1].trim();
@@ -270,25 +251,18 @@ client.on("disconnected", (reason) => {
   setTimeout(() => client.connect().catch(() => {}), 5000);
 });
 
-/* ─────────────────────────────────────────
-   Sistema de Tickets
-   Distribui +1 ticket a cada minutosTicket
-   para quem está no chat e segue o canal
-   ───────────────────────────────────────── */
 let lastTicketRun = 0;
 
 async function darTickets() {
   try {
-    // 1. Verificar se canal está ao vivo (se REQUER_LIVE=true)
     if (REQUER_LIVE) {
       const aoVivo = await canalEstaAoVivo();
       if (!aoVivo) {
-        process.stdout.write(".");  // ponto silencioso — canal offline
+        process.stdout.write(".");
         return;
       }
     }
 
-    // 2. Buscar sorteio ativo
     const res = await fetch(`${SITE_URL}/api/sorteio`);
     const data = await res.json();
     const sorteio = data.ativo;
@@ -298,14 +272,13 @@ async function darTickets() {
       return;
     }
 
-    // 3. Checar se já passou o intervalo desde a última rodada
     const intervalMs = sorteio.minutosTicket * 60 * 1000;
     const now        = Date.now();
 
     if (lastTicketRun > 0 && now - lastTicketRun < intervalMs) return;
     lastTicketRun = now;
 
-    const janelaAtividade = intervalMs + 15 * 60 * 1000; // intervalo + 15 min de tolerância
+    const janelaAtividade = intervalMs + 15 * 60 * 1000;
     const ativos = [...chatters.entries()].filter(([, v]) => now - v.lastSeen <= janelaAtividade);
 
     console.log(`\n🎟️  [${new Date().toLocaleTimeString("pt-BR")}] Rodada de tickets`);
@@ -314,21 +287,18 @@ async function darTickets() {
 
     let total = 0;
     for (const [login, info] of ativos) {
-      // Só dá ticket para quem já participou
       const eParticipante = sorteio.participantes.some(p => p.username === login);
       if (!eParticipante) {
         console.log(`  ⏭️  ${info.displayName} — não participou do sorteio`);
         continue;
       }
 
-      // Checar follow
       const segue = await eSeguidorDoCanal(login);
       if (!segue) {
         console.log(`  ⏭️  ${info.displayName} — não segue #${CHANNEL}`);
         continue;
       }
 
-      // Busca avatar se não temos
       if (!info.image) await getUserInfo(login);
 
       const ticketRes = await fetch(`${SITE_URL}/api/sorteio`, {
@@ -357,10 +327,8 @@ async function darTickets() {
   }
 }
 
-// Verifica a cada 30s se é hora de dar tickets
 setInterval(darTickets, 30 * 1000);
 
-/* ─── Comando de batalha (atualiza a cada 10s) ─── */
 let batalhaComando = null;
 async function refreshBatalhaComando() {
   try {
@@ -373,7 +341,6 @@ async function refreshBatalhaComando() {
 refreshBatalhaComando();
 setInterval(refreshBatalhaComando, 10000);
 
-/* ─── Mensagens enfileiradas pelo admin ─── */
 async function drainAndSend() {
   if (!BOT_USER) return;
   try {
@@ -386,6 +353,6 @@ async function drainAndSend() {
       await client.say(`#${CHANNEL}`, msg).catch(() => {});
       console.log(`📢  Chat: ${msg}`);
     }
-  } catch { /* ignora */ }
+  } catch { }
 }
 setInterval(drainAndSend, 1000);

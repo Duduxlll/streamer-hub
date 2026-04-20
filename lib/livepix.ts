@@ -1,15 +1,9 @@
-/* ── LivePix API integration ─────────────────────────────────
-   Auth: client_credentials com scope messages:read
-   Webhook: resource.id → GET /v2/messages/{id}
-────────────────────────────────────────────────────────────── */
-
 interface TokenCache {
   access_token: string;
   expires_at: number;
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var __livepix_token: TokenCache | undefined;
 }
 
@@ -53,7 +47,7 @@ export interface LivePixMessage {
   id: string;
   username: string;
   message: string;
-  amount: number;     // em centavos (ex: 5000 = R$50,00)
+  amount: number;
   currency: string;
   reference: string;
   createdAt: string;

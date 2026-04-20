@@ -8,7 +8,6 @@ import type { Jackpot } from "@/lib/jackpotStore";
 
 const RW = 160, RG = 10;
 
-/* ── Idle roulette (scrolling slowly) ───────────────────── */
 function IdleRoleta({ jogadores }: { jogadores: Jackpot["jogadores"] }) {
   if (jogadores.length === 0) return null;
   const items = Array.from({ length: 20 }, (_, i) => jogadores[i % jogadores.length]);
@@ -21,19 +20,16 @@ function IdleRoleta({ jogadores }: { jogadores: Jackpot["jogadores"] }) {
           to   { transform: translateX(-50%); }
         }
       `}</style>
-      {/* Arrows */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20">
         <div className="w-0 h-0" style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: "8px solid rgba(245,158,11,0.4)" }} />
       </div>
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
         <div className="w-0 h-0" style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderBottom: "8px solid rgba(245,158,11,0.4)" }} />
       </div>
-      {/* Side fades */}
       <div className="absolute inset-y-0 left-0 w-32 z-10 pointer-events-none"
         style={{ background: "linear-gradient(90deg,rgba(8,10,20,1) 0%,transparent 100%)" }} />
       <div className="absolute inset-y-0 right-0 w-32 z-10 pointer-events-none"
         style={{ background: "linear-gradient(270deg,rgba(8,10,20,1) 0%,transparent 100%)" }} />
-      {/* Strip */}
       <div className="absolute inset-0 flex items-center px-2 overflow-hidden">
         <div style={{ display: "flex", gap: RG, width: "max-content", animation: "idle-jk-pub 22s linear infinite" }}>
           {all.map((p, i) => (
@@ -110,7 +106,6 @@ export default function ArenaJackpotPage() {
     return (
       <div className="page-enter min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 py-16">
         <div className="max-w-md w-full space-y-3">
-          {/* Winner card */}
           <div className="rounded-2xl border border-[#f59e0b]/40 p-8 text-center" style={{ background: "rgba(245,158,11,0.06)" }}>
             <p className="text-5xl mb-3 animate-bounce">🏆</p>
             <p className="text-[11px] font-black text-amber-500 uppercase tracking-widest mb-2">Campeão do Jackpot</p>
@@ -135,8 +130,6 @@ export default function ArenaJackpotPage() {
               )}
             </div>
           </div>
-
-          {/* Ranking scrollável */}
           <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,10,20,0.95)" }}>
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
               <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Ranking</p>
@@ -170,8 +163,6 @@ export default function ArenaJackpotPage() {
   return (
     <div className="page-enter relative min-h-[calc(100vh-4rem)]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-10 pb-24 space-y-4">
-
-        {/* Header */}
         <div className="flex items-center gap-3 flex-wrap">
           <div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-1"
@@ -196,13 +187,9 @@ export default function ArenaJackpotPage() {
             ))}
           </div>
         </div>
-
-        {/* Progress */}
         <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-700" style={{ width: `${progPct}%`, background: "linear-gradient(90deg,#f59e0b,#fbbf24)" }} />
         </div>
-
-        {/* Roulette + jogando agora */}
         <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,10,20,0.98)" }}>
           <IdleRoleta jogadores={jogadoresNaRoleta} />
           {jogadorAtual && (
@@ -213,8 +200,6 @@ export default function ArenaJackpotPage() {
             </div>
           )}
         </div>
-
-        {/* Placar ao vivo */}
         <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.95)" }}>
           <div className="flex items-center justify-between mb-4">
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Placar ao Vivo</p>

@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import type { Sorteio } from "@/app/api/sorteio/route";
 
-/* ── Countdown hook ──────────────────────────────────────── */
 function useCountdown(endsAt: number) {
   const [left, setLeft] = useState(Math.max(0, endsAt - Date.now()));
   useEffect(() => {
@@ -27,7 +26,6 @@ function useCountdown(endsAt: number) {
   return { unidades, encerrado: left === 0 };
 }
 
-/* ── Animated digit ──────────────────────────────────────── */
 function Digit({ value }: { value: string }) {
   const prev = useRef(value);
   const [flip, setFlip] = useState(false);
@@ -54,7 +52,6 @@ function Digit({ value }: { value: string }) {
   );
 }
 
-/* ── Countdown box ───────────────────────────────────────── */
 function CountdownBox({ value, label }: { value: number; label: string }) {
   const str = String(value).padStart(2, "0");
   return (
@@ -76,7 +73,6 @@ function CountdownBox({ value, label }: { value: number; label: string }) {
   );
 }
 
-/* ── Card ────────────────────────────────────────────────── */
 function SorteioCard({ s }: { s: Sorteio }) {
   const endsAt = s.iniciadoEm + s.duracaoMs;
   const { unidades, encerrado } = useCountdown(endsAt);
@@ -99,15 +95,12 @@ function SorteioCard({ s }: { s: Sorteio }) {
           boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
         }}
       >
-        {/* Linha topo */}
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ffba00]/30 to-transparent" />
 
         <div className="relative flex flex-col sm:flex-row items-center sm:items-stretch gap-0">
 
-          {/* ── Lado esquerdo: info ── */}
           <div className="flex-1 px-6 sm:px-8 py-6 sm:py-7">
 
-            {/* Badge */}
             <div className="flex items-center gap-2 mb-5">
               <span
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest"
@@ -118,13 +111,11 @@ function SorteioCard({ s }: { s: Sorteio }) {
               </span>
             </div>
 
-            {/* Título */}
             <div className="mb-1">
               <p className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-600 mb-1">Título</p>
               <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">{s.titulo}</h3>
             </div>
 
-            {/* Premiação */}
             {s.valor && (
               <div className="mt-3 mb-5">
                 <p className="text-[10px] font-black uppercase tracking-[0.15em] text-gray-600 mb-1">Premiação</p>
@@ -141,7 +132,6 @@ function SorteioCard({ s }: { s: Sorteio }) {
               </div>
             )}
 
-            {/* Botão */}
             <Link
               href={`/sorteio/${s.id}`}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-black text-sm transition-all hover:scale-[1.04] hover:shadow-[0_0_28px_rgba(255,186,0,0.4)] active:scale-[0.98]"
@@ -151,11 +141,9 @@ function SorteioCard({ s }: { s: Sorteio }) {
             </Link>
           </div>
 
-          {/* Divisor */}
           <div className="hidden sm:block w-px self-stretch my-6" style={{ background: "rgba(255,186,0,0.12)" }} />
           <div className="block sm:hidden h-px mx-6" style={{ background: "rgba(255,186,0,0.12)" }} />
 
-          {/* ── Lado direito: countdown ── */}
           <div className="flex items-center justify-center px-6 sm:px-8 py-6 sm:py-7 gap-3 sm:gap-4">
             {unidades.map((u, i) => (
               <div key={u.label} className="flex items-center gap-3 sm:gap-4">
@@ -171,14 +159,12 @@ function SorteioCard({ s }: { s: Sorteio }) {
           </div>
         </div>
 
-        {/* Linha base */}
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#ffba00]/20 to-transparent" />
       </div>
     </div>
   );
 }
 
-/* ── Seção principal ─────────────────────────────────────── */
 export default function SorteioDestaque() {
   const [sorteios, setSorteios] = useState<Sorteio[]>([]);
 
@@ -205,7 +191,6 @@ export default function SorteioDestaque() {
       className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 animate-in"
       style={{ animationDelay: "0.15s", opacity: 0 }}
     >
-      {/* Cabeçalho da seção */}
       <div className="flex items-center gap-3 mb-4">
         <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-600">🎟️ Sorteios Ativos</span>
         <div className="flex-1 h-px bg-gradient-to-r from-[#ffba00]/20 to-transparent" />

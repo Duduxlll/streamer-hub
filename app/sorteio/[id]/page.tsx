@@ -24,7 +24,6 @@ function Countdown({ endsAt }: { endsAt: number }) {
   return <span>{h > 0 ? `${fmt(h)}:` : ""}{fmt(m)}:{fmt(s)}</span>;
 }
 
-/* Roleta idle — gira continuamente */
 function RoletaIdle({ participantes }: { participantes: Participante[] }) {
   const SHOW = 14;
   const source = participantes;
@@ -42,17 +41,14 @@ function RoletaIdle({ participantes }: { participantes: Participante[] }) {
           to   { transform: translateX(-50%); }
         }
       `}</style>
-      {/* Indicador central */}
       <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[152px] z-10 pointer-events-none rounded-xl"
         style={{ border: "2px solid rgba(255,186,0,0.28)" }} />
-      {/* Setas */}
       <div className="absolute top-1 left-1/2 -translate-x-1/2 z-20">
         <div className="w-0 h-0" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "9px solid rgba(255,186,0,0.35)" }} />
       </div>
       <div className="absolute bottom-1 left-1/2 -translate-x-1/2 z-20">
         <div className="w-0 h-0" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderBottom: "9px solid rgba(255,186,0,0.35)" }} />
       </div>
-      {/* Fades laterais */}
       <div className="absolute inset-y-0 left-0 w-28 z-10 pointer-events-none"
         style={{ background: "linear-gradient(90deg, rgba(10,8,24,1) 0%, transparent 100%)" }} />
       <div className="absolute inset-y-0 right-0 w-28 z-10 pointer-events-none"
@@ -82,7 +78,6 @@ function RoletaIdle({ participantes }: { participantes: Participante[] }) {
   );
 }
 
-/* Roleta do vencedor — animação única ao sortear */
 function Roleta({ participantes, vencedor }: { participantes: Participante[]; vencedor: Participante }) {
   const stripRef = useRef<HTMLDivElement>(null);
   const [strip, setStrip] = useState<Participante[]>([]);
@@ -156,13 +151,11 @@ function EntradaCard({ p }: { p: Participante }) {
   return (
     <div className="relative overflow-hidden rounded-2xl flex flex-col items-center"
       style={{ background: "rgba(8,6,20,0.85)", border: "1px solid rgba(255,255,255,0.09)" }}>
-      {/* Fundo desfocado */}
       {p.image && (
         <img src={p.image} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           style={{ filter: "blur(14px) brightness(0.25)", transform: "scale(1.2)" }} />
       )}
       <div className="relative z-10 flex flex-col items-center gap-2 px-2 pt-4 pb-3 w-full">
-        {/* Foto */}
         {p.image ? (
           <img src={p.image} alt={p.displayName}
             className="w-16 h-16 rounded-full object-cover border-2"
@@ -173,11 +166,9 @@ function EntradaCard({ p }: { p: Participante }) {
             {p.displayName[0]?.toUpperCase()}
           </div>
         )}
-        {/* Nome */}
         <p className="text-xs font-black text-white text-center truncate w-full leading-tight drop-shadow">
           {p.displayName}
         </p>
-        {/* Tickets */}
         <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black"
           style={{ background: "rgba(255,186,0,0.15)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.3)" }}>
           🎟️ {p.tickets}
@@ -276,7 +267,6 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
     <div className="relative min-h-[calc(100vh-4rem)]">
       <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-10 pb-24 space-y-6">
 
-        {/* Breadcrumb / linha de navegação */}
         <div className="flex items-center gap-2 text-xs flex-wrap">
           <Link href="/" className="text-gray-600 hover:text-gray-400 transition-colors">Home</Link>
           <span className="text-gray-700">/</span>
@@ -284,7 +274,6 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
           <span className="text-gray-700">/</span>
           <span className="text-gray-500 truncate max-w-[120px]">{sorteio.titulo}</span>
 
-          {/* Links admin integrados no breadcrumb */}
           {admin && (
             <>
               <span className="text-gray-700 ml-auto">·</span>
@@ -301,7 +290,6 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
           )}
         </div>
 
-        {/* Header */}
         <div className="rounded-2xl overflow-hidden"
           style={{ background: "rgba(8,6,20,0.75)", border: "1px solid rgba(255,186,0,0.2)", backdropFilter: "blur(12px)" }}>
           <div className="flex items-center gap-2 px-5 py-3 border-b border-[rgba(255,186,0,0.1)]">
@@ -331,7 +319,6 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-3 gap-3">
           {[
             { label: "Participantes", value: String(sorteio.participantes.length), icon: "👥" },
@@ -353,7 +340,6 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
           ))}
         </div>
 
-        {/* Como participar — só para usuários */}
         {!finalizado && !admin && (
           <div className="rounded-2xl p-5 space-y-3"
             style={{ background: "rgba(8,6,20,0.65)", border: "1px solid rgba(29,78,216,0.2)", backdropFilter: "blur(10px)" }}>
@@ -374,7 +360,6 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* Botão participar — só para usuários */}
         {!finalizado && !admin && (
           <div className="flex justify-center">
             {status === "unauthenticated" ? (
@@ -401,24 +386,20 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* Seção da roleta — entre stats e últimas entradas */}
         {!finalizado && (
           <div className="rounded-2xl overflow-hidden space-y-0"
             style={{ background: "rgba(8,6,20,0.7)", border: "1px solid rgba(255,186,0,0.18)", backdropFilter: "blur(12px)" }}>
 
-            {/* Header da seção */}
             <div className="flex items-center gap-2 px-5 py-3 border-b border-white/5">
               <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#ffba00" }}>
                 🎰 Roleta
               </span>
             </div>
 
-            {/* Roleta idle girando */}
             <div className="p-4">
               <RoletaIdle participantes={sorteio.participantes} />
             </div>
 
-            {/* Admin: botão sortear */}
             {admin && (
               <div className="px-5 pb-5 flex flex-col items-center gap-3">
                 <button
@@ -443,7 +424,6 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
               </div>
             )}
 
-            {/* Usuários: aguardando texto */}
             {!admin && (
               <div className="px-5 pb-5 text-center">
                 <p className="text-sm text-gray-500">
@@ -454,7 +434,6 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* Roleta do vencedor */}
         {mostrarRoleta && sorteio.vencedor && (
           <div className="rounded-3xl overflow-hidden"
             style={{ background: "rgba(10,8,24,0.95)", border: "1px solid rgba(255,186,0,0.2)" }}>
@@ -486,7 +465,6 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
           </div>
         )}
 
-        {/* Últimas entradas */}
         <div className="rounded-2xl overflow-hidden"
           style={{ background: "rgba(8,6,20,0.7)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(12px)" }}>
           <div className="flex items-center gap-2 px-5 py-3 border-b border-white/5">

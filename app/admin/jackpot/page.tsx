@@ -9,13 +9,11 @@ import type { Jackpot } from "@/lib/jackpotStore";
 import { useToast, ToastContainer } from "@/components/toast";
 import { useConfirm } from "@/components/confirm-modal";
 
-/* ── Roulette constants ──────────────────────────────────── */
 const RW = 160;
 const RG = 10;
 const RUNIT = RW + RG;
 const WINNER_POS = 42;
 
-/* ── Idle roulette (slowly scrolling) ───────────────────── */
 function IdleRoleta({ jogadores }: { jogadores: Jackpot["jogadores"] }) {
   const items = Array.from({ length: 20 }, (_, i) => jogadores[i % jogadores.length]);
   const all = [...items, ...items];
@@ -27,19 +25,16 @@ function IdleRoleta({ jogadores }: { jogadores: Jackpot["jogadores"] }) {
           to   { transform: translateX(-50%); }
         }
       `}</style>
-      {/* Arrows only */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20">
         <div className="w-0 h-0" style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: "8px solid rgba(245,158,11,0.4)" }} />
       </div>
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
         <div className="w-0 h-0" style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderBottom: "8px solid rgba(245,158,11,0.4)" }} />
       </div>
-      {/* Side fades */}
       <div className="absolute inset-y-0 left-0 w-32 z-10 pointer-events-none"
         style={{ background: "linear-gradient(90deg,rgba(8,10,20,1) 0%,transparent 100%)" }} />
       <div className="absolute inset-y-0 right-0 w-32 z-10 pointer-events-none"
         style={{ background: "linear-gradient(270deg,rgba(8,10,20,1) 0%,transparent 100%)" }} />
-      {/* Strip */}
       <div className="absolute inset-0 flex items-center px-2 overflow-hidden">
         <div style={{ display: "flex", gap: RG, width: "max-content", animation: "idle-jk 22s linear infinite" }}>
           {all.map((p, i) => (
@@ -58,7 +53,6 @@ function IdleRoleta({ jogadores }: { jogadores: Jackpot["jogadores"] }) {
   );
 }
 
-/* ── Spin roulette (full animation like sorteio) ────────── */
 function SpinRoleta({ randomPool, target, onFinished }: {
   randomPool: Jackpot["jogadores"];
   target: Jackpot["jogadores"][0];
@@ -92,24 +86,20 @@ function SpinRoleta({ randomPool, target, onFinished }: {
     }, 120);
 
     return () => clearTimeout(t1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
     <div className="relative overflow-hidden" style={{ height: 110, background: "rgba(8,10,20,0.98)" }}>
-      {/* Arrows only */}
       <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 transition-all duration-500">
         <div className="w-0 h-0" style={{ borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderTop: `10px solid ${finalizado ? "#f59e0b" : "rgba(245,158,11,0.5)"}` }} />
       </div>
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 transition-all duration-500">
         <div className="w-0 h-0" style={{ borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderBottom: `10px solid ${finalizado ? "#f59e0b" : "rgba(245,158,11,0.5)"}` }} />
       </div>
-      {/* Side fades */}
       <div className="absolute inset-y-0 left-0 w-36 z-10 pointer-events-none"
         style={{ background: "linear-gradient(90deg,rgba(8,10,20,1) 0%,rgba(8,10,20,0.7) 65%,transparent 100%)" }} />
       <div className="absolute inset-y-0 right-0 w-36 z-10 pointer-events-none"
         style={{ background: "linear-gradient(270deg,rgba(8,10,20,1) 0%,rgba(8,10,20,0.7) 65%,transparent 100%)" }} />
-      {/* Strip */}
       <div className="absolute inset-0 flex items-center px-2 overflow-hidden">
         <div ref={stripRef} style={{ display: "flex", gap: RG, willChange: "transform" }}>
           {strip.map((p, i) => {
@@ -135,7 +125,6 @@ function SpinRoleta({ randomPool, target, onFinished }: {
   );
 }
 
-/* ── Stat box ────────────────────────────────────────────── */
 function StatBox({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div className="text-center px-4 py-2.5 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
@@ -145,7 +134,6 @@ function StatBox({ label, value, color }: { label: string; value: string; color?
   );
 }
 
-/* ── Main ────────────────────────────────────────────────── */
 export default function AdminJackpotPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -158,28 +146,22 @@ export default function AdminJackpotPage() {
   const [spinning,      setSpinning]      = useState(false);
   const [livepixOk,     setLivepixOk]     = useState<boolean | null>(null);
 
-  // Setup form
   const [formNome,  setFormNome]  = useState("");
   const [formValor, setFormValor] = useState("");
 
-  // Add player form
   const [pNome, setPNome] = useState("");
   const [pJogo, setPJogo] = useState("");
 
-  // Register value
   const [regValor, setRegValor] = useState("");
   const regRef = useRef<HTMLInputElement>(null);
 
-  // Edit player (aguardando)
   const [editingId,   setEditingId]   = useState<string | null>(null);
   const [editNome,    setEditNome]    = useState("");
   const [editJogo,    setEditJogo]    = useState("");
 
-  // Edit valor (ativo/placar)
   const [editValorId, setEditValorId] = useState<string | null>(null);
   const [editValor,   setEditValor]   = useState("");
 
-  // Scroll to top on mount
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
@@ -236,7 +218,6 @@ export default function AdminJackpotPage() {
     return v.trim();
   }
 
-  /* ── Sem jackpot: formulário de criação ── */
   if (!jackpot) {
     return (
       <div className="relative min-h-[calc(100vh-4rem)]">
@@ -251,7 +232,6 @@ export default function AdminJackpotPage() {
             </span>
             <h1 className="text-3xl font-black text-white">Jackpot</h1>
           </div>
-          {/* LivePix connect */}
           <a
             href="/api/livepix/connect"
             className="flex items-center justify-between px-4 py-3 rounded-2xl border mb-3 transition-all hover:bg-[#f59e0b]/10"
@@ -319,7 +299,6 @@ export default function AdminJackpotPage() {
   const ganhadorAtual = jackpot.jogadores.filter(j => j.valor !== null)
     .reduce<Jackpot["jogadores"][0] | null>((best, j) => (j.valor ?? -1) > (best?.valor ?? -1) ? j : best, null);
 
-  /* ── Finalizado ── */
   if (jackpot.status === "finalizado" && jackpot.vencedor) {
     const premioFinal    = jackpot.jogadores.reduce((sum, j) => sum + (j.valor ?? 0), 0);
     const rankingSorted  = [...jackpot.jogadores].sort((a, b) => (b.valor ?? -1) - (a.valor ?? -1));
@@ -328,7 +307,6 @@ export default function AdminJackpotPage() {
         <ToastContainer toasts={toasts} dismiss={dismiss} />
         {ConfirmModal}
         <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-4">
-          {/* Winner card */}
           <div className="rounded-2xl border border-[#f59e0b]/40 p-8 text-center" style={{ background: "rgba(245,158,11,0.06)" }}>
             <p className="text-5xl mb-3">🏆</p>
             <p className="text-[11px] font-black text-amber-500 uppercase tracking-widest mb-2">Campeão do Jackpot</p>
@@ -351,8 +329,6 @@ export default function AdminJackpotPage() {
               )}
             </div>
           </div>
-
-          {/* Ranking scrollável */}
           <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
               <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Ranking</p>
@@ -394,7 +370,6 @@ export default function AdminJackpotPage() {
     );
   }
 
-  /* ── Aguardando: adicionar jogadores ── */
   if (jackpot.status === "aguardando") {
     return (
       <div className="relative min-h-[calc(100vh-4rem)]">
@@ -529,7 +504,6 @@ export default function AdminJackpotPage() {
     );
   }
 
-  /* ── Ativo ── */
   const jogadorAtual      = jackpot.jogadores[jackpot.jogadorAtualIdx];
   const sorted            = [...jackpot.jogadores].filter(j => j.valor !== null).sort((a, b) => (b.valor ?? 0) - (a.valor ?? 0));
   const premioTotal       = jackpot.jogadores.reduce((sum, j) => sum + (j.valor ?? 0), 0);
@@ -546,8 +520,6 @@ export default function AdminJackpotPage() {
       <ToastContainer toasts={toasts} dismiss={dismiss} />
       {ConfirmModal}
       <div className="page-enter max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-24 space-y-4">
-
-        {/* Top bar */}
         <div className="flex items-center gap-3 flex-wrap">
           <div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-1.5"
@@ -571,14 +543,10 @@ export default function AdminJackpotPage() {
             >Cancelar</button>
           </div>
         </div>
-
-        {/* Progress bar */}
         <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-700"
             style={{ width: `${progPct}%`, background: "linear-gradient(90deg,#f59e0b,#fbbf24)" }} />
         </div>
-
-        {/* ── Roulette card ── */}
         <div
           className="rounded-2xl border overflow-hidden"
           style={{
@@ -586,8 +554,6 @@ export default function AdminJackpotPage() {
             borderColor: "rgba(255,255,255,0.08)",
           }}
         >
-
-          {/* ── Roulette track ── */}
           {!spinning && jogadoresNaRoleta.length > 0 && <IdleRoleta jogadores={jogadoresNaRoleta} />}
           {spinning && jackpot.jogadores[jackpot.jogadorAtualIdx] && (
             <SpinRoleta
@@ -601,8 +567,6 @@ export default function AdminJackpotPage() {
               }}
             />
           )}
-
-          {/* ── GIRAR button (waiting state) ── */}
           {waitingToSpin && !spinning && (
             <div
               className="border-t px-6 py-7 flex flex-col items-center gap-4"
@@ -625,8 +589,6 @@ export default function AdminJackpotPage() {
               </button>
             </div>
           )}
-
-          {/* ── Spinning label ── */}
           {spinning && (
             <div
               className="border-t px-6 py-4 text-center"
@@ -637,21 +599,17 @@ export default function AdminJackpotPage() {
               </p>
             </div>
           )}
-
-          {/* ── Jogador revelado + input ── */}
           {!waitingToSpin && !spinning && jogadorAtual && (
             <div
               className="border-t px-6 py-6"
               style={{ borderColor: "rgba(34,197,94,0.15)" }}
             >
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                {/* Player info */}
                 <div className="text-center sm:text-left flex-1">
                   <p className="text-[10px] font-black uppercase tracking-widest text-green-400 mb-1.5">Jogando Agora</p>
                   <p className="text-3xl font-black text-white leading-tight">{jogadorAtual.nome}</p>
                   {jogadorAtual.jogo && <p className="text-sm text-gray-500 mt-1">{jogadorAtual.jogo}</p>}
                 </div>
-                {/* Input */}
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="flex flex-col items-center gap-1">
                     <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Resultado</span>
@@ -690,10 +648,7 @@ export default function AdminJackpotPage() {
             </div>
           )}
         </div>
-
-        {/* Bottom: aguardando + placar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Aguardando */}
           <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-3">
               Aguardando ({restantes})
@@ -728,8 +683,6 @@ export default function AdminJackpotPage() {
               {restantes === 0 && <p className="text-xs text-gray-700 text-center py-3">Todos jogaram!</p>}
             </div>
           </div>
-
-          {/* Placar */}
           <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Placar ao Vivo</p>
