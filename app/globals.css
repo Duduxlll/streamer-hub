@@ -1,0 +1,449 @@
+@import "tailwindcss";
+
+:root {
+  --blue-primary: #1d4ed8;
+  --blue-accent: #2563eb;
+  --blue-text: #60a5fa;
+  --blue-dark: #0f2354;
+  --blue-deeper: #07112e;
+  --bg-dark: #030610;
+  --bg-card: #070f1f;
+  --bg-card2: #0c1730;
+  --twitch-purple: #9146ff;
+}
+
+@theme inline {
+  --color-background: var(--bg-dark);
+  --color-foreground: #f0f0f0;
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: "Courier New", Consolas, monospace;
+}
+
+body {
+  background-color: #000000;
+  color: #f0f0f0;
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+/* ── TOAST NOTIFICATIONS ──────────────────────────────────── */
+
+@keyframes toast-in {
+  0%   { opacity: 0; transform: translateX(110%) scale(0.92); }
+  60%  { transform: translateX(-6px) scale(1.01); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes toast-out {
+  0%   { opacity: 1; transform: translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateX(110%) scale(0.92); }
+}
+
+@keyframes toast-progress {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
+/* ── CASINO BACKGROUND ANIMATIONS ────────────────────────── */
+
+/* Objetos derivam da direita para a esquerda, somem ao chegar na esquerda */
+@keyframes drift-left {
+  0%   { transform: translateX(0vw)    translateY(0px);   opacity: 0;   }
+  7%   { opacity: 1;                                                      }
+  72%  { opacity: 0.95;                                                   }
+  90%  { opacity: 0.20;                                                   }
+  100% { transform: translateX(-130vw) translateY(-20px); opacity: 0;   }
+}
+
+/* Carta gira suavemente no eixo Z */
+@keyframes spin-card {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Ficha / moeda gira no eixo Y — perspective no wrapper JSX */
+@keyframes spin-chip {
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(360deg); }
+}
+
+/* Dado 3D — rotação que revela todas as faces */
+@keyframes spin-dice {
+  0%   { transform: rotateX(0deg)   rotateY(0deg);   }
+  25%  { transform: rotateX(90deg)  rotateY(180deg); }
+  50%  { transform: rotateX(180deg) rotateY(90deg);  }
+  75%  { transform: rotateX(270deg) rotateY(270deg); }
+  100% { transform: rotateX(360deg) rotateY(360deg); }
+}
+
+@keyframes card-3d-flip {
+  0%,100% { transform: perspective(600px) rotateY(0deg);   }
+  50%     { transform: perspective(600px) rotateY(180deg); }
+}
+
+@keyframes chip-edge-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes sparkle-pulse {
+  0%,100% { opacity: 0; transform: scale(0) rotate(0deg);   }
+  40%,60% { opacity: 1; transform: scale(1) rotate(180deg); }
+}
+
+@keyframes ambient-breathe {
+  0%,100% { opacity: 0.7; }
+  50%     { opacity: 1;   }
+}
+
+/* ── ESTRELAS (mantido para compatibilidade) ─────────────── */
+
+@keyframes star-twinkle {
+  0%,100% { opacity: 0.12; transform: scale(0.75); }
+  50%     { opacity: 1;    transform: scale(1.3);  }
+}
+
+/* ── KEYFRAMES ───────────────────────────────────────────── */
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(29,78,216,0.7); }
+  50% { opacity: 0.6; transform: scale(0.85); box-shadow: 0 0 0 5px rgba(29,78,216,0); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(29,78,216,0.4), 0 0 50px rgba(29,78,216,0.12), inset 0 0 20px rgba(29,78,216,0.05);
+  }
+  50% {
+    box-shadow: 0 0 55px rgba(37,99,235,0.7), 0 0 110px rgba(29,78,216,0.25), inset 0 0 30px rgba(29,78,216,0.1);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  33% { transform: translateY(-10px); }
+  66% { transform: translateY(-18px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+  25% { transform: translate(35px, -25px) scale(1.12); opacity: 0.7; }
+  50% { transform: translate(-15px, 30px) scale(0.9); opacity: 0.4; }
+  75% { transform: translate(20px, 10px) scale(1.05); opacity: 0.6; }
+}
+
+@keyframes slide-up-fade {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sweep-light {
+  0% { transform: translateX(-100%) skewX(-15deg); opacity: 0; }
+  40% { opacity: 1; }
+  100% { transform: translateX(200%) skewX(-15deg); opacity: 0; }
+}
+
+@keyframes scan-lines {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100px; }
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: rgba(29,78,216,0.2); }
+  50% { border-color: rgba(37,99,235,0.6); }
+}
+
+@keyframes particle-float {
+  0% { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 0.5; }
+  100% { transform: translateY(-20px) translateX(60px) scale(1); opacity: 0; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes twitch-glow {
+  0%, 100% { box-shadow: 0 0 15px rgba(145,70,255,0.3); }
+  50% { box-shadow: 0 0 40px rgba(145,70,255,0.65), 0 0 80px rgba(145,70,255,0.2); }
+}
+
+/* ── GLITCH TEXT ─────────────────────────────────────────── */
+
+@keyframes glitch-body {
+  0%,60%,68%,100% { transform: translate(0) skewX(0deg); }
+  61%  { transform: translate(-3px,0) skewX(-2deg); }
+  62%  { transform: translate(3px,0)  skewX(1.5deg); }
+  63%  { transform: translate(-1px,0); }
+  64%  { transform: translate(0); }
+  66%  { transform: translate(2px,0); }
+  67%  { transform: translate(0); }
+}
+
+@keyframes glitch-overlay-a {
+  0%,60%,67%,100% { clip-path: inset(0 0 100% 0); }
+  61%  { clip-path: inset(12% 0 52% 0); }
+  62%  { clip-path: inset(55% 0 18% 0); }
+  63%  { clip-path: inset(0 0 100% 0); }
+  65%  { clip-path: inset(72% 0 5% 0); }
+  66%  { clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes glitch-overlay-b {
+  0%,61%,68%,100% { clip-path: inset(0 0 100% 0); }
+  62%  { clip-path: inset(38% 0 38% 0); }
+  63%  { clip-path: inset(5% 0 70% 0); }
+  64%  { clip-path: inset(0 0 100% 0); }
+  66%  { clip-path: inset(62% 0 15% 0); }
+  67%  { clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes glitch-img-body {
+  0%,60%,67%,100% { transform: translate(0); filter: none; }
+  61%  { transform: translate(-4px,0); filter: brightness(2) hue-rotate(30deg) saturate(2); }
+  62%  { transform: translate(4px,0);  filter: brightness(1.6) hue-rotate(-20deg); }
+  63%  { transform: translate(0); filter: none; }
+  65%  { transform: translate(-2px,0); filter: brightness(1.8); }
+  66%  { transform: translate(0); filter: none; }
+}
+
+/* Classes CSS para glitch (CSS classes ganham da animação inline) */
+.gt-wrapper {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+  font-weight: 900;
+  animation: glitch-body 3s var(--gd, 0s) infinite linear;
+}
+
+.gt-cyan {
+  position: absolute; inset: 0;
+  font-weight: 900;
+  color: rgba(0,200,255,0.9);
+  overflow: hidden;
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translateX(-4px);
+  animation: glitch-overlay-a 3s var(--gd, 0s) infinite linear;
+  animation-fill-mode: both;
+}
+
+.gt-red {
+  position: absolute; inset: 0;
+  font-weight: 900;
+  color: rgba(255,0,64,0.9);
+  overflow: hidden;
+  user-select: none;
+  pointer-events: none;
+  white-space: nowrap;
+  transform: translateX(4px);
+  animation: glitch-overlay-b 3s var(--gd, 0s) infinite linear;
+  animation-fill-mode: both;
+}
+
+/* ── COMPONENTS ──────────────────────────────────────────── */
+
+.live-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+.glow-card {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.float-img {
+  animation: float 5.5s ease-in-out infinite;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #1d4ed8 0%, #93c5fd 50%, #1d4ed8 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3.5s linear infinite;
+}
+
+/* Botão Twitch roxo */
+.btn-twitch {
+  background: linear-gradient(135deg, #9146ff, #6d28d9);
+  border: 1px solid rgba(145,70,255,0.5);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  animation: twitch-glow 3s ease-in-out infinite;
+}
+
+.btn-twitch::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+  transform: translateX(-100%) skewX(-15deg);
+}
+
+.btn-twitch:hover::before {
+  animation: sweep-light 0.7s ease forwards;
+}
+
+.btn-twitch:hover {
+  background: linear-gradient(135deg, #a855f7, #9146ff);
+  box-shadow: 0 6px 40px rgba(145,70,255,0.6), 0 0 100px rgba(145,70,255,0.2);
+  transform: translateY(-3px);
+}
+
+/* Botão azul principal */
+.btn-glow {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(37,99,235,0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+  transform: translateX(-100%) skewX(-15deg);
+}
+
+.btn-glow:hover::before {
+  animation: sweep-light 0.7s ease forwards;
+}
+
+.btn-glow:hover {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  box-shadow: 0 6px 35px rgba(37,99,235,0.6), 0 0 90px rgba(29,78,216,0.18);
+  transform: translateY(-3px);
+}
+
+/* Botão secundário */
+.btn-secondary {
+  border: 1px solid rgba(37,99,235,0.25);
+  background: rgba(37,99,235,0.06);
+  color: #93c5fd;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-secondary:hover {
+  background: rgba(37,99,235,0.14);
+  border-color: rgba(37,99,235,0.5);
+  box-shadow: 0 4px 22px rgba(37,99,235,0.2);
+  transform: translateY(-2px);
+  color: #bfdbfe;
+}
+
+/* Cards */
+.card-dark {
+  background: var(--bg-card);
+  border: 1px solid rgba(29,78,216,0.12);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-dark:hover {
+  border-color: rgba(37,99,235,0.45);
+  box-shadow: 0 10px 50px rgba(29,78,216,0.18), inset 0 1px 0 rgba(255,255,255,0.04);
+  transform: translateY(-5px);
+}
+
+/* Navbar */
+.navbar-blur {
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  background: rgba(3,6,16,0.92);
+  border-bottom: 1px solid rgba(29,78,216,0.12);
+}
+
+/* Hero background */
+.hero-radial {
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(15,35,84,0.5) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 70% at 88% 40%, rgba(29,78,216,0.1) 0%, transparent 55%),
+    radial-gradient(ellipse 35% 50% at 10% 90%, rgba(15,35,84,0.12) 0%, transparent 50%),
+    var(--bg-dark);
+}
+
+/* Divisor de seção */
+.section-divider {
+  border-top: 1px solid rgba(29,78,216,0.08);
+}
+
+/* Ícone social (apenas Twitch agora) */
+.icon-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.03);
+  color: #64748b;
+  transition: all 0.25s ease;
+}
+
+.icon-social-twitch:hover {
+  color: #c4b5fd;
+  background: rgba(145,70,255,0.15);
+  border-color: rgba(145,70,255,0.45);
+  box-shadow: 0 4px 18px rgba(145,70,255,0.3);
+  transform: translateY(-2px);
+}
+
+/* Orbs de fundo */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+  animation: orb-drift 12s ease-in-out infinite;
+}
+
+/* Partículas */
+.particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: rgba(37,99,235,0.6);
+  animation: particle-float linear infinite;
+  pointer-events: none;
+}
+
+/* Animações de entrada */
+.animate-in {
+  animation: slide-up-fade 0.7s ease forwards;
+}
+
+.animate-in-delay-1 { animation-delay: 0.08s; opacity: 0; }
+.animate-in-delay-2 { animation-delay: 0.22s; opacity: 0; }
+.animate-in-delay-3 { animation-delay: 0.38s; opacity: 0; }
+.animate-in-delay-4 { animation-delay: 0.55s; opacity: 0; }
+
+.scale-in {
+  animation: scale-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Borda animada */
+.border-animated {
+  animation: border-glow 3s ease-in-out infinite;
+}
+
+/* Faixa brilhante decorativa */
+.stripe-glow {
+  background: linear-gradient(90deg, transparent, rgba(29,78,216,0.15), transparent);
+  height: 1px;
+  width: 100%;
+}
