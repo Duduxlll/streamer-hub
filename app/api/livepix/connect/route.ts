@@ -16,7 +16,7 @@ export async function GET() {
   url.searchParams.set("response_type", "code");
   url.searchParams.set("client_id", clientId);
   url.searchParams.set("redirect_uri", callbackUrl);
-  url.searchParams.set("scope", "payments");
+  // Não especifica scope — usa os escopos padrão configurados no client LivePix
 
   return NextResponse.redirect(url.toString());
 }
