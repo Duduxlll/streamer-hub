@@ -48,34 +48,17 @@ declare global {
   var __palpitesFallbackState: StoreState | undefined;
 }
 
-type RedisResult<T> = {
-  result?: T;
-  error?: string;
-};
-
 export interface StoreDiagnostics {
-  backend: "turso" | "redis" | "local-file" | "memory";
+  backend: "turso" | "local-file" | "memory";
   env: {
     TURSO_DATABASE_URL: boolean;
     TURSO_AUTH_TOKEN: boolean;
-    UPSTASH_REDIS_REST_URL: boolean;
-    UPSTASH_REDIS_REST_TOKEN: boolean;
-    KV_REST_API_URL: boolean;
-    KV_REST_API_TOKEN: boolean;
-    REDIS_REST_API_URL: boolean;
-    REDIS_REST_API_TOKEN: boolean;
     RENDER: boolean;
-    VERCEL: boolean;
     NODE_ENV: string | undefined;
   };
   turso: {
     configured: boolean;
     ready: boolean;
-    error: string | null;
-  };
-  redis: {
-    configured: boolean;
-    ping: string | null;
     error: string | null;
   };
   rodadaAtual: {
@@ -93,39 +76,19 @@ let tursoSchemaReady: Promise<void> | null = null;
 function tursoConfig() {
   const url = process.env.TURSO_DATABASE_URL;
   const authToken = process.env.TURSO_AUTH_TOKEN;
-
   return url ? { url, authToken } : null;
 }
 
-function redisConfig() {
-  const url =
-    process.env.UPSTASH_REDIS_REST_URL ??
-    process.env.KV_REST_API_URL ??
-    process.env.REDIS_REST_API_URL;
-
-  const token =
-    process.env.UPSTASH_REDIS_REST_TOKEN ??
-    process.env.KV_REST_API_TOKEN ??
-    process.env.REDIS_REST_API_TOKEN;
-
-  return url && token ? { url: url.replace(/\/+$/, ""), token } : null;
-}
-
 function emptyState(): StoreState {
-  return {
-    rodada: null,
-    historico: [],
-    msgQueue: [],
-  };
+  return { rodada: null, historico: [], msgQueue: [] };
 }
 
 function shouldUseLocalFile() {
-  return !tursoConfig() && !redisConfig() && process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1";
+  return !tursoConfig() && process.env.NODE_ENV !== "production" && process.env.RENDER !== "true";
 }
 
 function getBackend(): StoreDiagnostics["backend"] {
   if (tursoConfig()) return "turso";
-  if (redisConfig()) return "redis";
   if (shouldUseLocalFile()) return "local-file";
   return "memory";
 }
@@ -135,10 +98,7 @@ function getTursoClient() {
   if (!config) return null;
 
   if (!tursoClient) {
-    tursoClient = createClient({
-      url: config.url,
-      authToken: config.authToken,
-    });
+    tursoClient = createClient({ url: config.url, authToken: config.authToken });
   }
 
   return tursoClient;
@@ -197,29 +157,6 @@ async function saveTursoState(raw: string): Promise<void> {
   });
 }
 
-async function redisCommand<T>(command: unknown[]) {
-  const config = redisConfig();
-  if (!config) return undefined;
-
-  const res = await fetch(config.url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${config.token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(command),
-    cache: "no-store",
-  });
-
-  if (!res.ok) {
-    throw new Error(`Redis ${command[0]} failed: ${res.status} ${await res.text()}`);
-  }
-
-  const data = await res.json() as RedisResult<T>;
-  if (data.error) throw new Error(`Redis ${command[0]} failed: ${data.error}`);
-  return data.result;
-}
-
 function parseState(raw: unknown): StoreState {
   if (!raw) return emptyState();
 
@@ -238,14 +175,7 @@ function parseState(raw: unknown): StoreState {
 }
 
 async function loadState(): Promise<StoreState> {
-  if (tursoConfig()) {
-    return loadTursoState();
-  }
-
-  if (redisConfig()) {
-    const raw = await redisCommand<string>(["GET", STORE_KEY]);
-    return parseState(raw);
-  }
+  if (tursoConfig()) return loadTursoState();
 
   if (shouldUseLocalFile()) {
     try {
@@ -273,11 +203,6 @@ async function saveState(state: StoreState): Promise<void> {
     return;
   }
 
-  if (redisConfig()) {
-    await redisCommand(["SET", STORE_KEY, raw]);
-    return;
-  }
-
   if (shouldUseLocalFile()) {
     await fs.mkdir(path.dirname(LOCAL_FILE), { recursive: true });
     await fs.writeFile(LOCAL_FILE, raw, "utf-8");
@@ -294,7 +219,7 @@ export async function getRodada(): Promise<Rodada | null> {
   return state.rodada ?? null;
 }
 
-export async function abrirRodada(buyIn: number, numVencedores: number): Promise<Rodada> {
+export async function abrirRodada(buyIn: number, numVencedores: number, msgFila?: string): Promise<Rodada> {
   const state = await loadState();
   const now = Date.now();
   const rodada: Rodada = {
@@ -307,22 +232,56 @@ export async function abrirRodada(buyIn: number, numVencedores: number): Promise
   };
 
   state.rodada = rodada;
+  if (msgFila) state.msgQueue.push(msgFila);
   await saveState(state);
   return rodada;
 }
 
-export async function travarPalpites(): Promise<void> {
+export async function travarPalpites(msgFila?: string): Promise<void> {
   const state = await loadState();
   if (state.rodada) {
     state.rodada.status = "travada";
+    if (msgFila) state.msgQueue.push(msgFila);
     await saveState(state);
   }
 }
 
-export async function fecharRodada(): Promise<void> {
+export async function fecharRodada(
+  resultado?: number,
+  buildMsg?: (entry: ResultadoRodada) => string
+): Promise<ResultadoRodada | null> {
   const state = await loadState();
+  const r = state.rodada;
+  if (!r) return null;
+
+  let vencedores: VencedorInfo[] = [];
+  if (typeof resultado === "number" && r.palpites.length > 0) {
+    const ordenados = [...r.palpites].sort(
+      (a, b) => Math.abs(a.valor - resultado) - Math.abs(b.valor - resultado)
+    );
+    vencedores = ordenados.slice(0, r.numVencedores).map((p, i) => ({
+      posicao: i + 1,
+      username: p.username,
+      valor: p.valor,
+      diferenca: Math.abs(p.valor - resultado),
+    }));
+  }
+
+  const entry: ResultadoRodada = {
+    id: r.id,
+    buyIn: r.buyIn,
+    resultado: resultado ?? 0,
+    totalParticipantes: r.palpites.length,
+    vencedores,
+    palpites: [...r.palpites],
+    encerradaEm: Date.now(),
+  };
+
+  state.historico = [entry, ...state.historico].slice(0, 10);
   state.rodada = null;
+  if (buildMsg) state.msgQueue.push(buildMsg(entry));
   await saveState(state);
+  return entry;
 }
 
 export async function addOrUpdatePalpite(
@@ -349,42 +308,7 @@ export async function addOrUpdatePalpite(
   return { ok: true, updated: false };
 }
 
-/* Historico de resultados */
-
-export async function saveResultado(resultado?: number): Promise<ResultadoRodada | null> {
-  const state = await loadState();
-  const r = state.rodada;
-  if (!r) return null;
-
-  let vencedores: VencedorInfo[] = [];
-  if (typeof resultado === "number" && r.palpites.length > 0) {
-    const ordenados = [...r.palpites].sort(
-      (a, b) => Math.abs(a.valor - resultado) - Math.abs(b.valor - resultado)
-    );
-    vencedores = ordenados
-      .slice(0, r.numVencedores)
-      .map((p, i) => ({
-        posicao: i + 1,
-        username: p.username,
-        valor: p.valor,
-        diferenca: Math.abs(p.valor - resultado),
-      }));
-  }
-
-  const entry: ResultadoRodada = {
-    id: r.id,
-    buyIn: r.buyIn,
-    resultado: resultado ?? 0,
-    totalParticipantes: r.palpites.length,
-    vencedores,
-    palpites: [...r.palpites],
-    encerradaEm: Date.now(),
-  };
-
-  state.historico = [entry, ...state.historico].slice(0, 10);
-  await saveState(state);
-  return entry;
-}
+/* Histórico de resultados */
 
 export async function getHistorico(): Promise<ResultadoRodada[]> {
   const state = await loadState();
@@ -416,8 +340,6 @@ export async function drainChatMessages(): Promise<string[]> {
 export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
   let tursoReady = false;
   let tursoError: string | null = null;
-  let ping: string | null = null;
-  let redisError: string | null = null;
 
   if (tursoConfig()) {
     try {
@@ -429,14 +351,6 @@ export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
     }
   }
 
-  if (redisConfig()) {
-    try {
-      ping = await redisCommand<string>(["PING"]) ?? null;
-    } catch (err) {
-      redisError = err instanceof Error ? err.message : "Erro desconhecido no Redis";
-    }
-  }
-
   const state = await loadState().catch(() => emptyState());
 
   return {
@@ -444,25 +358,13 @@ export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
     env: {
       TURSO_DATABASE_URL: !!process.env.TURSO_DATABASE_URL,
       TURSO_AUTH_TOKEN: !!process.env.TURSO_AUTH_TOKEN,
-      UPSTASH_REDIS_REST_URL: !!process.env.UPSTASH_REDIS_REST_URL,
-      UPSTASH_REDIS_REST_TOKEN: !!process.env.UPSTASH_REDIS_REST_TOKEN,
-      KV_REST_API_URL: !!process.env.KV_REST_API_URL,
-      KV_REST_API_TOKEN: !!process.env.KV_REST_API_TOKEN,
-      REDIS_REST_API_URL: !!process.env.REDIS_REST_API_URL,
-      REDIS_REST_API_TOKEN: !!process.env.REDIS_REST_API_TOKEN,
       RENDER: process.env.RENDER === "true",
-      VERCEL: process.env.VERCEL === "1",
       NODE_ENV: process.env.NODE_ENV,
     },
     turso: {
       configured: !!tursoConfig(),
       ready: tursoReady,
       error: tursoError,
-    },
-    redis: {
-      configured: !!redisConfig(),
-      ping,
-      error: redisError,
     },
     rodadaAtual: {
       exists: !!state.rodada,

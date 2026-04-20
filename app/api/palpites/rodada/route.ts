@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
-import { getRodada, abrirRodada, travarPalpites, fecharRodada, saveResultado, queueChatMessage } from "@/lib/store";
+import { getRodada, abrirRodada, travarPalpites, fecharRodada } from "@/lib/store";
+import type { ResultadoRodada } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -33,49 +34,43 @@ export async function POST(req: Request) {
     const numVencedores = Number(body.numVencedores ?? 1);
     if (buyIn <= 0) return NextResponse.json({ error: "Buy-in inválido" }, { status: 400 });
 
-    const rodada = await abrirRodada(buyIn, numVencedores);
-
-    await queueChatMessage(
+    const msg =
       `🎯 PALPITE ABERTO! Bônus no valor de R$ ${buyIn.toLocaleString("pt-BR")}. ` +
-      `Use !p <valor> para participar! Ex: !p 230 — Quem acertar mais perto ganha! 🏆`
-    );
+      `Use !p <valor> para participar! Ex: !p 230 — Quem acertar mais perto ganha! 🏆`;
 
+    const rodada = await abrirRodada(buyIn, numVencedores, msg);
     return NextResponse.json(rodada, { headers: NO_STORE_HEADERS });
   }
 
   /* ── Travar palpites (ninguém mais muda) ── */
   if (body.action === "lock") {
-    await travarPalpites();
-    await queueChatMessage(`🔒 Palpites fechados! Ninguém mais pode participar. Aguardando resultado... ⏳`);
+    const msg = `🔒 Palpites fechados! Ninguém mais pode participar. Aguardando resultado... ⏳`;
+    await travarPalpites(msg);
     return NextResponse.json(await getRodada(), { headers: NO_STORE_HEADERS });
   }
 
   /* ── Definir vencedor e encerrar ── */
   if (body.action === "close") {
     const temResultado = typeof body.resultado === "number";
-    const resultadoSalvo = await saveResultado(temResultado ? body.resultado : undefined);
+    const res = temResultado ? body.resultado! : undefined;
 
-    if (temResultado && resultadoSalvo && resultadoSalvo.vencedores.length > 0) {
-      const v = resultadoSalvo.vencedores;
-      const res = body.resultado!;
-      if (v.length === 1) {
-        await queueChatMessage(
-          `🏆 VENCEDOR DEFINIDO! Resultado: R$ ${res.toLocaleString("pt-BR")}. ` +
-          `🥇 @${v[0].username} palpitou R$ ${v[0].valor.toLocaleString("pt-BR")} — diferença de apenas R$ ${v[0].diferenca.toLocaleString("pt-BR")}! Parabéns! 🎉`
-        );
-      } else {
+    const buildMsg = (entry: ResultadoRodada): string => {
+      if (temResultado && entry.vencedores.length > 0) {
+        const v = entry.vencedores;
+        if (v.length === 1) {
+          return (
+            `🏆 VENCEDOR DEFINIDO! Resultado: R$ ${res!.toLocaleString("pt-BR")}. ` +
+            `🥇 @${v[0].username} palpitou R$ ${v[0].valor.toLocaleString("pt-BR")} — diferença de apenas R$ ${v[0].diferenca.toLocaleString("pt-BR")}! Parabéns! 🎉`
+          );
+        }
         const lista = v.map((x, i) => `${i + 1}º @${x.username} (R$ ${x.valor.toLocaleString("pt-BR")})`).join(" | ");
-        await queueChatMessage(
-          `🏆 VENCEDORES DEFINIDOS! Resultado: R$ ${res.toLocaleString("pt-BR")}. ${lista} Parabéns! 🎉`
-        );
+        return `🏆 VENCEDORES DEFINIDOS! Resultado: R$ ${res!.toLocaleString("pt-BR")}. ${lista} Parabéns! 🎉`;
       }
-    } else if (temResultado) {
-      await queueChatMessage(`Resultado: R$ ${body.resultado!.toLocaleString("pt-BR")}. Nenhum participante nesta rodada.`);
-    } else {
-      await queueChatMessage(`Rodada encerrada sem resultado definido. Até a próxima! 👋`);
-    }
+      if (temResultado) return `Resultado: R$ ${res!.toLocaleString("pt-BR")}. Nenhum participante nesta rodada.`;
+      return `Rodada encerrada sem resultado definido. Até a próxima! 👋`;
+    };
 
-    await fecharRodada();
+    const resultadoSalvo = await fecharRodada(res, buildMsg);
     return NextResponse.json({ ok: true, resultado: resultadoSalvo }, { headers: NO_STORE_HEADERS });
   }
 

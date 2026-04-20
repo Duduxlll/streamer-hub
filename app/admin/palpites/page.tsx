@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { isAdmin } from "@/lib/admins";
 import type { Rodada, ResultadoRodada } from "@/lib/store";
 import { useToast, ToastContainer } from "@/components/toast";
@@ -126,6 +126,8 @@ export default function AdminPalpitesPage() {
   const [historico, setHistorico] = useState<ResultadoRodada[]>([]);
   const [showHistorico, setShowHistorico] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [carregando, setCarregando] = useState(true);
+  const actionInFlight = useRef(false);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -133,14 +135,18 @@ export default function AdminPalpitesPage() {
   }, [status, session, router]);
 
   const fetchDados = useCallback(async () => {
+    if (actionInFlight.current) return;
     try {
       const [rRes, hRes] = await Promise.all([
         fetch("/api/palpites/rodada", { cache: "no-store" }),
         fetch("/api/palpites/historico", { cache: "no-store" }),
       ]);
+      if (actionInFlight.current) return;
       setRodada(await rRes.json());
       setHistorico(await hRes.json() as ResultadoRodada[]);
-    } catch { /* ignora */ }
+    } catch { /* ignora */ } finally {
+      setCarregando(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -149,7 +155,7 @@ export default function AdminPalpitesPage() {
     return () => clearInterval(id);
   }, [fetchDados]);
 
-  if (status === "loading" || !isAdmin(session?.user?.twitchLogin)) {
+  if (status === "loading" || !isAdmin(session?.user?.twitchLogin) || carregando) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-[#9146ff] border-t-transparent animate-spin" />
@@ -158,7 +164,8 @@ export default function AdminPalpitesPage() {
   }
 
   async function abrirPalpites() {
-    if (!buyIn || loading) return;
+    if (!buyIn || actionInFlight.current) return;
+    actionInFlight.current = true;
     setLoading(true);
     try {
       const res = await fetch("/api/palpites/rodada", {
@@ -169,11 +176,12 @@ export default function AdminPalpitesPage() {
       setRodada(await res.json());
       toast("Palpites abertos! Chat pode apostar agora 🎯", "success");
     } catch { toast("Erro ao abrir palpites.", "error"); }
-    finally { setLoading(false); }
+    finally { actionInFlight.current = false; setLoading(false); }
   }
 
   async function travarPalpites() {
-    if (loading) return;
+    if (actionInFlight.current) return;
+    actionInFlight.current = true;
     setLoading(true);
     try {
       const resp = await fetch("/api/palpites/rodada", {
@@ -184,11 +192,12 @@ export default function AdminPalpitesPage() {
       setRodada(await resp.json());
       toast("Palpites fechados! Informe o resultado.", "warning");
     } catch { toast("Erro ao fechar palpites.", "error"); }
-    finally { setLoading(false); }
+    finally { actionInFlight.current = false; setLoading(false); }
   }
 
   async function definirVencedor() {
-    if (loading) return;
+    if (actionInFlight.current) return;
+    actionInFlight.current = true;
     setLoading(true);
     try {
       const res = parseValor(resultado);
@@ -207,7 +216,7 @@ export default function AdminPalpitesPage() {
         toast("Rodada encerrada.", "info");
       }
     } catch { toast("Erro ao definir vencedor.", "error"); }
-    finally { setLoading(false); }
+    finally { actionInFlight.current = false; setLoading(false); }
   }
 
   function novaRodada() {
