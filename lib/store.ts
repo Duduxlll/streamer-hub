@@ -37,15 +37,18 @@ export interface ResultadoRodada {
 interface StoreState {
   rodada: Rodada | null;
   historico: ResultadoRodada[];
-  msgQueue: string[];
 }
 
 const STORE_KEY = "streamer-hub:palpites:v1";
+// Chave separada para a fila — evita race condition com addOrUpdatePalpite
+const QUEUE_KEY = "streamer-hub:palpites:queue:v1";
 const STORE_TABLE = "app_store";
 const LOCAL_FILE = path.join(process.cwd(), ".data", "palpites-store.json");
+const LOCAL_QUEUE_FILE = path.join(process.cwd(), ".data", "palpites-queue.json");
 
 declare global {
   var __palpitesFallbackState: StoreState | undefined;
+  var __palpitesFallbackQueue: string[] | undefined;
 }
 
 export interface StoreDiagnostics {
@@ -80,7 +83,7 @@ function tursoConfig() {
 }
 
 function emptyState(): StoreState {
-  return { rodada: null, historico: [], msgQueue: [] };
+  return { rodada: null, historico: [] };
 }
 
 function shouldUseLocalFile() {
@@ -127,55 +130,42 @@ async function ensureTursoSchema(): Promise<void> {
   await tursoSchemaReady;
 }
 
-async function loadTursoState(): Promise<StoreState> {
-  const client = getTursoClient();
-  if (!client) return emptyState();
-
-  await ensureTursoSchema();
-  const result = await client.execute({
-    sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`,
-    args: [STORE_KEY],
-  });
-
-  return parseState(result.rows[0]?.value);
-}
-
-async function saveTursoState(raw: string): Promise<void> {
-  const client = getTursoClient();
-  if (!client) return;
-
-  await ensureTursoSchema();
-  await client.execute({
-    sql: `
-      INSERT INTO ${STORE_TABLE} (key, value, updated_at)
-      VALUES (?, ?, CURRENT_TIMESTAMP)
-      ON CONFLICT(key) DO UPDATE SET
-        value = excluded.value,
-        updated_at = CURRENT_TIMESTAMP
-    `,
-    args: [STORE_KEY, raw],
-  });
-}
-
 function parseState(raw: unknown): StoreState {
   if (!raw) return emptyState();
 
   try {
     const value = typeof raw === "string" ? JSON.parse(raw) : raw;
-    const state = value as Partial<StoreState>;
+    const state = value as Partial<StoreState & { msgQueue?: unknown }>;
 
     return {
       rodada: state.rodada ?? null,
       historico: Array.isArray(state.historico) ? state.historico : [],
-      msgQueue: Array.isArray(state.msgQueue) ? state.msgQueue : [],
     };
   } catch {
     return emptyState();
   }
 }
 
+function parseQueue(raw: unknown): string[] {
+  if (!raw) return [];
+  try {
+    const value = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return [];
+  }
+}
+
 async function loadState(): Promise<StoreState> {
-  if (tursoConfig()) return loadTursoState();
+  const client = getTursoClient();
+  if (client) {
+    await ensureTursoSchema();
+    const result = await client.execute({
+      sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`,
+      args: [STORE_KEY],
+    });
+    return parseState(result.rows[0]?.value);
+  }
 
   if (shouldUseLocalFile()) {
     try {
@@ -193,13 +183,23 @@ async function saveState(state: StoreState): Promise<void> {
   const normalized: StoreState = {
     rodada: state.rodada ?? null,
     historico: state.historico.slice(0, 10),
-    msgQueue: state.msgQueue,
   };
 
   const raw = JSON.stringify(normalized);
 
-  if (tursoConfig()) {
-    await saveTursoState(raw);
+  const client = getTursoClient();
+  if (client) {
+    await ensureTursoSchema();
+    await client.execute({
+      sql: `
+        INSERT INTO ${STORE_TABLE} (key, value, updated_at)
+        VALUES (?, ?, CURRENT_TIMESTAMP)
+        ON CONFLICT(key) DO UPDATE SET
+          value = excluded.value,
+          updated_at = CURRENT_TIMESTAMP
+      `,
+      args: [STORE_KEY, raw],
+    });
     return;
   }
 
@@ -212,14 +212,14 @@ async function saveState(state: StoreState): Promise<void> {
   globalThis.__palpitesFallbackState = normalized;
 }
 
-/* Rodada */
+/* ─── Rodada ─── */
 
 export async function getRodada(): Promise<Rodada | null> {
   const state = await loadState();
   return state.rodada ?? null;
 }
 
-export async function abrirRodada(buyIn: number, numVencedores: number, msgFila?: string): Promise<Rodada> {
+export async function abrirRodada(buyIn: number, numVencedores: number): Promise<Rodada> {
   const state = await loadState();
   const now = Date.now();
   const rodada: Rodada = {
@@ -232,16 +232,14 @@ export async function abrirRodada(buyIn: number, numVencedores: number, msgFila?
   };
 
   state.rodada = rodada;
-  if (msgFila) state.msgQueue.push(msgFila);
   await saveState(state);
   return rodada;
 }
 
-export async function travarPalpites(msgFila?: string): Promise<void> {
+export async function travarPalpites(): Promise<void> {
   const state = await loadState();
   if (state.rodada) {
     state.rodada.status = "travada";
-    if (msgFila) state.msgQueue.push(msgFila);
     await saveState(state);
   }
 }
@@ -279,8 +277,10 @@ export async function fecharRodada(
 
   state.historico = [entry, ...state.historico].slice(0, 10);
   state.rodada = null;
-  if (buildMsg) state.msgQueue.push(buildMsg(entry));
   await saveState(state);
+
+  if (buildMsg) await queueChatMessage(buildMsg(entry));
+
   return entry;
 }
 
@@ -308,7 +308,7 @@ export async function addOrUpdatePalpite(
   return { ok: true, updated: false };
 }
 
-/* Histórico de resultados */
+/* ─── Histórico ─── */
 
 export async function getHistorico(): Promise<ResultadoRodada[]> {
   const state = await loadState();
@@ -321,21 +321,72 @@ export async function clearHistorico(): Promise<void> {
   await saveState(state);
 }
 
-/* Fila de mensagens para o bot */
+/* ─── Fila de mensagens para o bot (chave separada — sem race condition com palpites) ─── */
 
 export async function queueChatMessage(msg: string): Promise<void> {
-  const state = await loadState();
-  state.msgQueue.push(msg);
-  await saveState(state);
+  const client = getTursoClient();
+  if (client) {
+    await ensureTursoSchema();
+    // Append atômico — um único UPDATE sem precisar de read prévio
+    await client.execute({
+      sql: `
+        INSERT INTO ${STORE_TABLE} (key, value, updated_at)
+        VALUES (?, json_array(?), CURRENT_TIMESTAMP)
+        ON CONFLICT(key) DO UPDATE SET
+          value = json_insert(value, '$[#]', ?),
+          updated_at = CURRENT_TIMESTAMP
+      `,
+      args: [QUEUE_KEY, msg, msg],
+    });
+    return;
+  }
+
+  if (shouldUseLocalFile()) {
+    let queue: string[] = [];
+    try { queue = parseQueue(await fs.readFile(LOCAL_QUEUE_FILE, "utf-8")); } catch { /**/ }
+    queue.push(msg);
+    await fs.mkdir(path.dirname(LOCAL_QUEUE_FILE), { recursive: true });
+    await fs.writeFile(LOCAL_QUEUE_FILE, JSON.stringify(queue), "utf-8");
+    return;
+  }
+
+  (globalThis.__palpitesFallbackQueue ??= []).push(msg);
 }
 
 export async function drainChatMessages(): Promise<string[]> {
-  const state = await loadState();
-  const msgs = state.msgQueue;
-  state.msgQueue = [];
-  await saveState(state);
+  const client = getTursoClient();
+  if (client) {
+    await ensureTursoSchema();
+    // Batch atômico: lê e limpa em uma única transação — sem race condition
+    const results = await client.batch([
+      { sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`, args: [QUEUE_KEY] },
+      {
+        sql: `INSERT INTO ${STORE_TABLE} (key, value, updated_at)
+              VALUES (?, '[]', CURRENT_TIMESTAMP)
+              ON CONFLICT(key) DO UPDATE SET value = '[]', updated_at = CURRENT_TIMESTAMP`,
+        args: [QUEUE_KEY],
+      },
+    ], "write");
+
+    return parseQueue(results[0].rows[0]?.value);
+  }
+
+  if (shouldUseLocalFile()) {
+    let queue: string[] = [];
+    try { queue = parseQueue(await fs.readFile(LOCAL_QUEUE_FILE, "utf-8")); } catch { /**/ }
+    if (queue.length > 0) {
+      await fs.mkdir(path.dirname(LOCAL_QUEUE_FILE), { recursive: true });
+      await fs.writeFile(LOCAL_QUEUE_FILE, "[]", "utf-8");
+    }
+    return queue;
+  }
+
+  const msgs = globalThis.__palpitesFallbackQueue ?? [];
+  globalThis.__palpitesFallbackQueue = [];
   return msgs;
 }
+
+/* ─── Diagnóstico ─── */
 
 export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
   let tursoReady = false;
@@ -352,6 +403,7 @@ export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
   }
 
   const state = await loadState().catch(() => emptyState());
+  const queue = await drainChatMessages().catch(() => []);
 
   return {
     backend: getBackend(),
@@ -372,6 +424,6 @@ export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
       palpites: state.rodada?.palpites.length ?? 0,
     },
     historico: state.historico.length,
-    queue: state.msgQueue.length,
+    queue: queue.length,
   };
 }

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
-import { getRodada, abrirRodada, travarPalpites, fecharRodada } from "@/lib/store";
+import { getRodada, abrirRodada, travarPalpites, fecharRodada, queueChatMessage } from "@/lib/store";
 import type { ResultadoRodada } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -34,18 +34,20 @@ export async function POST(req: Request) {
     const numVencedores = Number(body.numVencedores ?? 1);
     if (buyIn <= 0) return NextResponse.json({ error: "Buy-in inválido" }, { status: 400 });
 
-    const msg =
-      `🎯 PALPITE ABERTO! Bônus no valor de R$ ${buyIn.toLocaleString("pt-BR")}. ` +
-      `Use !p <valor> para participar! Ex: !p 230 — Quem acertar mais perto ganha! 🏆`;
+    const rodada = await abrirRodada(buyIn, numVencedores);
 
-    const rodada = await abrirRodada(buyIn, numVencedores, msg);
+    await queueChatMessage(
+      `🎯 PALPITE ABERTO! Bônus no valor de R$ ${buyIn.toLocaleString("pt-BR")}. ` +
+      `Use !p <valor> para participar! Ex: !p 230 — Quem acertar mais perto ganha! 🏆`
+    );
+
     return NextResponse.json(rodada, { headers: NO_STORE_HEADERS });
   }
 
   /* ── Travar palpites (ninguém mais muda) ── */
   if (body.action === "lock") {
-    const msg = `🔒 Palpites fechados! Ninguém mais pode participar. Aguardando resultado... ⏳`;
-    await travarPalpites(msg);
+    await travarPalpites();
+    await queueChatMessage(`🔒 Palpites fechados! Ninguém mais pode participar. Aguardando resultado... ⏳`);
     return NextResponse.json(await getRodada(), { headers: NO_STORE_HEADERS });
   }
 

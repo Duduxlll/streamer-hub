@@ -134,6 +134,13 @@ export default function AdminPalpitesPage() {
     if (!isAdmin(session?.user?.twitchLogin)) router.replace("/arena/palpites");
   }, [status, session, router]);
 
+  // Sincroniza buyIn/numVencedores da rodada ativa ao carregar a página
+  useEffect(() => {
+    if (!rodada) return;
+    setBuyIn(prev => prev || String(rodada.buyIn));
+    setNumVencedores(prev => prev || String(rodada.numVencedores));
+  }, [rodada]);
+
   const fetchDados = useCallback(async () => {
     if (actionInFlight.current) return;
     try {
