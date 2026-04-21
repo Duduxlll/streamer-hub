@@ -192,25 +192,12 @@ export default function AdminSorteioPage() {
           </div>
         )}
         {finalizados.length > 0 && (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Finalizados ({finalizados.length})</p>
-              <button
-                onClick={limparHistorico}
-                disabled={limpandoHistorico}
-                className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-black text-red-400 transition-colors hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
-                style={{ border: "1px solid rgba(239,68,68,0.24)" }}
-              >
-                <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M8.75 1A1.75 1.75 0 007 2.75V3H4.25a.75.75 0 000 1.5H5v11.75A2.75 2.75 0 007.75 19h4.5A2.75 2.75 0 0015 16.25V4.5h.75a.75.75 0 000-1.5H13v-.25A1.75 1.75 0 0011.25 1h-2.5zM8.5 3v-.25a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3zM8.75 7.5a.75.75 0 00-1.5 0v7a.75.75 0 001.5 0v-7zm4 0a.75.75 0 00-1.5 0v7a.75.75 0 001.5 0v-7z" clipRule="evenodd" />
-                </svg>
-                {limpandoHistorico ? "Limpando..." : "Limpar histórico"}
-              </button>
-            </div>
-            {finalizados.map(s => (
-              <SorteioCard key={s.id} s={s} onCancelar={() => cancelar(s.id)} />
-            ))}
-          </div>
+          <HistoricoAcordeon
+            finalizados={finalizados}
+            onCancelar={cancelar}
+            onLimpar={limparHistorico}
+            limpando={limpandoHistorico}
+          />
         )}
 
         {sorteios.length === 0 && !mostrarForm && (
@@ -220,6 +207,71 @@ export default function AdminSorteioPage() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function HistoricoAcordeon({ finalizados, onCancelar, onLimpar, limpando }: {
+  finalizados: Sorteio[];
+  onCancelar: (id: string) => void;
+  onLimpar: () => void;
+  limpando: boolean;
+}) {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <div className="rounded-2xl overflow-hidden"
+      style={{ background: "rgba(8,6,20,0.65)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(12px)" }}>
+      <button
+        onClick={() => setAberto(o => !o)}
+        className="w-full flex items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-white/3"
+      >
+        <span className="text-sm font-black text-white flex-1">Histórico de Sorteios</span>
+        <span className="text-xs px-2 py-0.5 rounded-full font-bold"
+          style={{ background: "rgba(255,255,255,0.06)", color: "#9ca3af", border: "1px solid rgba(255,255,255,0.08)" }}>
+          {finalizados.length}
+        </span>
+        <button
+          onClick={e => { e.stopPropagation(); onLimpar(); }}
+          disabled={limpando}
+          className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-black text-red-400 transition-colors hover:bg-red-500/10 disabled:opacity-50"
+          style={{ border: "1px solid rgba(239,68,68,0.24)" }}
+        >
+          <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M8.75 1A1.75 1.75 0 007 2.75V3H4.25a.75.75 0 000 1.5H5v11.75A2.75 2.75 0 007.75 19h4.5A2.75 2.75 0 0015 16.25V4.5h.75a.75.75 0 000-1.5H13v-.25A1.75 1.75 0 0011.25 1h-2.5zM8.5 3v-.25a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3zM8.75 7.5a.75.75 0 00-1.5 0v7a.75.75 0 001.5 0v-7zm4 0a.75.75 0 00-1.5 0v7a.75.75 0 001.5 0v-7z" clipRule="evenodd" />
+          </svg>
+          {limpando ? "Limpando..." : "Limpar histórico"}
+        </button>
+        <svg className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${aberto ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+        </svg>
+      </button>
+      {aberto && (
+        <div className="border-t border-white/5 divide-y divide-white/5">
+          {finalizados.map(s => (
+            <div key={s.id} className="px-5 py-4 flex items-center gap-4">
+              <div className="flex-1 min-w-0 space-y-1">
+                <p className="text-sm font-black text-white truncate">{s.titulo}</p>
+                {s.valor && <p className="text-xs font-black" style={{ color: "#ffba00" }}>{s.valor}</p>}
+                <p className="text-[11px] text-gray-600">{s.participantes.length} participantes · {s.participantes.reduce((a: number, p: Participante) => a + p.tickets, 0)} tickets</p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                {s.vencedor && (
+                  <span className="text-xs font-bold px-3 py-1.5 rounded-lg"
+                    style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", color: "#22c55e" }}>
+                    🏆 {s.vencedor.displayName}
+                  </span>
+                )}
+                <button onClick={() => onCancelar(s.id)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-colors">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
