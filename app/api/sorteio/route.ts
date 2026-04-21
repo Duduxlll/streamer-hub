@@ -73,12 +73,12 @@ export async function POST(req: NextRequest) {
     if (!username || typeof username !== "string") {
       return NextResponse.json({ error: "username obrigatório" }, { status: 400 });
     }
-    const ok = await addTicket(
+    const result = await addTicket(
       username,
       typeof displayName === "string" ? displayName : username,
       typeof image === "string" ? image : null,
     );
-    return NextResponse.json({ ok }, { headers: NO_CACHE });
+    return NextResponse.json(result, { headers: NO_CACHE });
   }
 
   if (action === "sortear") {

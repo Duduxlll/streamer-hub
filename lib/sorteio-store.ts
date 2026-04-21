@@ -5,6 +5,7 @@ export interface Participante {
   displayName: string;
   image: string | null;
   tickets: number;
+  lastTicketAt: number;
 }
 
 export interface Sorteio {
@@ -36,14 +37,21 @@ function applyExpiry(list: Sorteio[]): Sorteio[] {
 }
 
 async function load(): Promise<Sorteio[]> {
+  let list: Sorteio[];
   try {
     const raw = await dbGet(KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      return applyExpiry(Array.isArray(parsed) ? parsed : []);
-    }
-  } catch {}
-  return applyExpiry(globalThis.__sorteioFallback ?? []);
+    const parsed = raw ? JSON.parse(raw) : null;
+    list = Array.isArray(parsed) ? parsed : (globalThis.__sorteioFallback ?? []);
+  } catch {
+    list = globalThis.__sorteioFallback ?? [];
+  }
+
+  const before = list.map(s => s.status);
+  applyExpiry(list);
+  const expired = list.some((s, i) => s.status !== before[i]);
+  if (expired) await persist(list);
+
+  return list;
 }
 
 async function persist(list: Sorteio[]): Promise<void> {
@@ -98,7 +106,7 @@ export async function participarSorteio(
   );
   if (jaParticipa) return { sorteio: s, jaParticipa: true };
 
-  s.participantes.push({ username, displayName, image, tickets: 1 });
+  s.participantes.push({ username, displayName, image, tickets: 1, lastTicketAt: Date.now() });
   await persist(list);
   return { sorteio: s, jaParticipa: false };
 }
@@ -107,21 +115,27 @@ export async function addTicket(
   username: string,
   displayName: string,
   image: string | null,
-): Promise<boolean> {
+): Promise<{ ok: boolean; reason?: string }> {
   const list = await load();
   const s = getAtivo(list);
-  if (!s || s.status !== "ativo") return false;
+  if (!s || s.status !== "ativo") return { ok: false, reason: "sem sorteio ativo" };
+
+  const intervalMs = s.minutosTicket * 60 * 1000;
+  const now = Date.now();
 
   const ex = s.participantes.find(
     p => p.username.toLowerCase() === username.toLowerCase(),
   );
-  if (ex) {
-    ex.tickets += 1;
-  } else {
-    s.participantes.push({ username, displayName, image, tickets: 1 });
-  }
+  if (!ex) return { ok: false, reason: "não participou" };
+
+  const lastAt = ex.lastTicketAt ?? 0;
+  if (now - lastAt < intervalMs) return { ok: false, reason: "muito cedo" };
+
+  ex.tickets += 1;
+  ex.lastTicketAt = now;
+  if (image && !ex.image) ex.image = image;
   await persist(list);
-  return true;
+  return { ok: true };
 }
 
 export async function realizarSorteio(id: string): Promise<Sorteio | { error: string }> {

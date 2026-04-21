@@ -251,8 +251,6 @@ client.on("disconnected", (reason) => {
   setTimeout(() => client.connect().catch(() => {}), 5000);
 });
 
-let lastTicketRun = 0;
-
 async function darTickets() {
   try {
     if (REQUER_LIVE) {
@@ -267,37 +265,23 @@ async function darTickets() {
     const data = await res.json();
     const sorteio = data.ativo;
 
-    if (!sorteio || sorteio.status !== "ativo") {
-      if (!sorteio) lastTicketRun = 0;
-      return;
-    }
+    if (!sorteio || sorteio.status !== "ativo") return;
 
-    const intervalMs = sorteio.minutosTicket * 60 * 1000;
-    const now        = Date.now();
-
-    if (lastTicketRun > 0 && now - lastTicketRun < intervalMs) return;
-    lastTicketRun = now;
-
-    const janelaAtividade = intervalMs + 15 * 60 * 1000;
+    const intervalMs  = sorteio.minutosTicket * 60 * 1000;
+    const now         = Date.now();
+    const janelaAtividade = intervalMs + 5 * 60 * 1000;
     const ativos = [...chatters.entries()].filter(([, v]) => now - v.lastSeen <= janelaAtividade);
-
-    console.log(`\n🎟️  [${new Date().toLocaleTimeString("pt-BR")}] Rodada de tickets`);
-    console.log(`   Sorteio: "${sorteio.titulo}" | intervalo: ${sorteio.minutosTicket}min`);
-    console.log(`   Chatters ativos: ${ativos.length} | Participantes: ${sorteio.participantes.length}`);
 
     let total = 0;
     for (const [login, info] of ativos) {
-      const eParticipante = sorteio.participantes.some(p => p.username === login);
-      if (!eParticipante) {
-        console.log(`  ⏭️  ${info.displayName} — não participou do sorteio`);
-        continue;
-      }
+      const participante = sorteio.participantes.find(p => p.username.toLowerCase() === login.toLowerCase());
+      if (!participante) continue;
+
+      const lastAt = participante.lastTicketAt ?? 0;
+      if (now - lastAt < intervalMs) continue;
 
       const segue = await eSeguidorDoCanal(login);
-      if (!segue) {
-        console.log(`  ⏭️  ${info.displayName} — não segue #${CHANNEL}`);
-        continue;
-      }
+      if (!segue) continue;
 
       if (!info.image) await getUserInfo(login);
 
@@ -315,13 +299,13 @@ async function darTickets() {
 
       if (ticketData.ok) {
         total++;
-        console.log(`  ✅  ${info.displayName} → +1 ticket`);
-      } else {
-        console.log(`  ❌  ${info.displayName} → falhou (sorteio encerrado?)`);
+        console.log(`  ✅  ${info.displayName} → +1 ticket (total: ${participante.tickets + 1})`);
       }
     }
 
-    console.log(`  📊  Total nesta rodada: ${total} ticket(s)\n`);
+    if (total > 0) {
+      console.log(`\n🎟️  [${new Date().toLocaleTimeString("pt-BR")}] ${total} ticket(s) distribuído(s) — "${sorteio.titulo}"`);
+    }
   } catch (err) {
     console.error("❌  Erro na rodada de tickets:", err.message);
   }
