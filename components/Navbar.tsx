@@ -104,7 +104,7 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
             <span className="text-[10px] font-bold text-white uppercase">{name[0]}</span>
           </div>
         )}
-        <span className="text-sm font-semibold text-purple-200 max-w-[100px] truncate">{name}</span>
+        <span className="text-sm font-semibold max-w-[100px] truncate" style={{ color: `rgb(${color})`, filter: "brightness(1.4) saturate(0.9)" }}>{name}</span>
 
         {admin && (
           <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wide"
