@@ -138,7 +138,7 @@ export default function ArenaPage() {
           </h1>
 
           <p className="text-gray-500 text-lg max-w-md mx-auto leading-relaxed">
-            Participe das interações ao vivo com o NomeTeste.
+            Participe das interações ao vivo com o stainzincs.
             Batalhas, torneios e palpites em tempo real.
           </p>
         </div>

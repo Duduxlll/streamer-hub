@@ -216,13 +216,13 @@ export default function Navbar() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://static-cdn.jtvnw.net/jtv_user_pictures/8c7083c8-3b8e-4f5e-abe2-d681f5b6df8b-profile_image-300x300.png"
-                alt="NomeTeste"
+                alt="stainzincs"
                 className="w-full h-full object-cover"
               />
             </div>
             <span className="font-bold text-lg tracking-tight">
-              <span className="text-white">Nome</span>
-              <span className="gradient-text">Teste</span>
+              <span className="text-white">stain</span>
+              <span className="gradient-text">zincs</span>
             </span>
           </Link>
 
@@ -234,7 +234,7 @@ export default function Navbar() {
           >
             <span className="text-xs text-gray-500 uppercase tracking-widest">parceiro</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/betdasorte-logo.svg" alt="Bet Teste" className="h-4 w-auto" />
+            <img src="/betdasorte-logo.svg" alt="Bet da Sorte" className="h-4 w-auto" />
           </a>
 
           <div className="hidden md:flex items-center gap-2">

@@ -6,8 +6,8 @@ import Footer from "@/components/Footer";
 import AuthProvider from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
-  title: "StreamerHub | NomeTeste",
-  description: "Canal oficial do NomeTeste — Lives de cassino e muito mais!",
+  title: "StreamerHub | stainzincs",
+  description: "Canal oficial do stainzincs — Lives de cassino e muito mais!",
 };
 
 export default function RootLayout({
