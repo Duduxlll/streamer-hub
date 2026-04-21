@@ -48,7 +48,7 @@ export default function Footer() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://static-cdn.jtvnw.net/jtv_user_pictures/8c7083c8-3b8e-4f5e-abe2-d681f5b6df8b-profile_image-300x300.png"
-                alt="stainzincs"
+                alt="NomeTeste"
                 className="w-11 h-11 rounded-full border-2 border-[#1d4ed8]/40 object-cover flex-shrink-0"
               />
 
@@ -63,7 +63,7 @@ export default function Footer() {
                 }}
               >
                 <span style={{ fontWeight: 900 }}>
-                  <span style={{ color: "#ffffff" }}>stain</span>
+                  <span style={{ color: "#ffffff" }}>Nome</span>
                   <span
                     style={{
                       background: "linear-gradient(135deg, #1d4ed8 0%, #93c5fd 50%, #1d4ed8 100%)",
@@ -75,7 +75,7 @@ export default function Footer() {
                       fontWeight: 900,
                     }}
                   >
-                    zincs
+                    Teste
                   </span>
                 </span>
 
@@ -88,7 +88,7 @@ export default function Footer() {
                     animation: "glitch-overlay-a 3s 0s infinite linear",
                   }}
                 >
-                  stainzincs
+                  NomeTeste
                 </span>
 
                 <span
@@ -100,7 +100,7 @@ export default function Footer() {
                     animation: "glitch-overlay-b 3s 0s infinite linear",
                   }}
                 >
-                  stainzincs
+                  NomeTeste
                 </span>
               </span>
             </div>
@@ -110,7 +110,7 @@ export default function Footer() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/betdasorte-logo.svg"
-              alt="Bet da Sorte"
+              alt="Bet Teste"
               className="h-9 w-auto flex-shrink-0"
             />
           </div>
@@ -172,7 +172,7 @@ export default function Footer() {
         <div className="pt-4">
           <div className="flex flex-wrap items-center justify-between gap-y-2 text-xs text-gray-600">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span>© 2026 stainzincs</span>
+              <span>© 2026 NomeTeste</span>
               <span>·</span>
               <span>Todos os direitos reservados</span>
               <span>·</span>

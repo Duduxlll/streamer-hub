@@ -40,7 +40,7 @@ export default function HomePage() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="https://static-cdn.jtvnw.net/jtv_user_pictures/8c7083c8-3b8e-4f5e-abe2-d681f5b6df8b-profile_image-300x300.png"
-                  alt="stainzincs"
+                  alt="NomeTeste"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -66,7 +66,7 @@ export default function HomePage() {
                 className="flex items-center px-4 py-2 rounded-full bg-[#1d4ed8]/10 border border-[#1d4ed8]/30 hover:bg-[#1d4ed8]/20 hover:border-[#1d4ed8]/60 transition-all shadow-lg shadow-blue-950/30"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/betdasorte-icon.svg" alt="Bet da Sorte" className="h-6 w-6" />
+                <img src="/betdasorte-icon.svg" alt="Bet Teste" className="h-6 w-6" />
               </a>
             </div>
           </div>
@@ -78,13 +78,13 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-5xl lg:text-7xl font-black tracking-tight mb-3 animate-in animate-in-delay-2">
-              <span className="text-white">stain</span><span className="gradient-text">zincs</span>
+              <span className="text-white">Nome</span><span className="gradient-text">Teste</span>
             </h1>
 
             <p className="text-gray-400 text-lg mb-2 animate-in animate-in-delay-2">
               Parceiro oficial{" "}
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/betdasorte-logo.svg" alt="Bet da Sorte" className="inline-block h-5 w-auto align-middle ml-1" />
+              <img src="/betdasorte-logo.svg" alt="Bet Teste" className="inline-block h-5 w-auto align-middle ml-1" />
             </p>
             <p className="text-gray-500 text-sm mb-10 max-w-md animate-in animate-in-delay-2">
               Lives de cassino ao vivo e a melhor comunidade do Brasil. Entre e participe!
@@ -107,7 +107,7 @@ export default function HomePage() {
 
             <div className="flex-shrink-0" style={{ animation: "float 5s ease-in-out infinite" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/betdasorte-logo.svg" alt="Bet da Sorte" className="h-12 lg:h-16 w-auto" />
+              <img src="/betdasorte-logo.svg" alt="Bet Teste" className="h-12 lg:h-16 w-auto" />
             </div>
 
             <div className="hidden lg:block w-px h-16 bg-[#1d4ed8]/25" />
@@ -121,7 +121,7 @@ export default function HomePage() {
                 Jogue na melhor plataforma do Brasil
               </h2>
               <p className="text-gray-400 text-sm max-w-md">
-                Cassino ao vivo, esportes e muito mais. Use o bônus exclusivo do stainzincs e comece a jogar agora!
+                Cassino ao vivo, esportes e muito mais. Use o bônus exclusivo do NomeTeste e comece a jogar agora!
               </p>
             </div>
 
