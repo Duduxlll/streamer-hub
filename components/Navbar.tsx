@@ -46,8 +46,33 @@ function TwitchIcon({ className }: { className?: string }) {
   );
 }
 
-function useImageColor(src: string | null | undefined): string {
-  const [color, setColor] = useState("145,70,255");
+function nameToColor(name: string): string {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  const hue = h % 360;
+  const s = 0.65, l = 0.58;
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const hue2rgb = (t: number) => {
+    if (t < 0) t += 1; if (t > 1) t -= 1;
+    if (t < 1 / 6) return p + (q - p) * 6 * t;
+    if (t < 1 / 2) return q;
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+    return p;
+  };
+  const r = Math.round(hue2rgb(hue / 360 + 1 / 3) * 255);
+  const g = Math.round(hue2rgb(hue / 360) * 255);
+  const b = Math.round(hue2rgb(hue / 360 - 1 / 3) * 255);
+  return `${r},${g},${b}`;
+}
+
+function useImageColor(src: string | null | undefined, name: string): string {
+  const fallback = nameToColor(name);
+  const [color, setColor] = useState(fallback);
+
+  useEffect(() => {
+    setColor(nameToColor(name));
+  }, [name]);
 
   useEffect(() => {
     if (!src) return;
@@ -56,8 +81,7 @@ function useImageColor(src: string | null | undefined): string {
     img.onload = () => {
       try {
         const canvas = document.createElement("canvas");
-        canvas.width = 16;
-        canvas.height = 16;
+        canvas.width = 16; canvas.height = 16;
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
         ctx.drawImage(img, 0, 0, 16, 16);
@@ -68,7 +92,7 @@ function useImageColor(src: string | null | undefined): string {
           if (pa < 128) continue;
           const max = Math.max(pr, pg, pb);
           const min = Math.min(pr, pg, pb);
-          if (max - min < 30) continue;
+          if (max - min < 20) continue;
           r += pr; g += pg; b += pb; count++;
         }
         if (count > 0) {
@@ -76,15 +100,16 @@ function useImageColor(src: string | null | undefined): string {
         }
       } catch { }
     };
+    img.onerror = () => setColor(nameToColor(name));
     img.src = src;
-  }, [src]);
+  }, [src, name]);
 
   return color;
 }
 
 function UserMenu({ name, image, admin }: { name: string; image?: string | null; admin: boolean }) {
   const [open, setOpen] = useState(false);
-  const color = useImageColor(image);
+  const color = useImageColor(image, name);
 
   return (
     <div className="relative">
