@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
-import type { Sorteio, Participante } from "@/app/api/sorteio/route";
+import type { Sorteio, Participante } from "@/lib/sorteio-store";
 import { useToast, ToastContainer } from "@/components/toast";
 import { useConfirm } from "@/components/confirm-modal";
 

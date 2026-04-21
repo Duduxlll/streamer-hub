@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
-import type { Sorteio } from "@/app/api/sorteio/route";
+import type { Sorteio } from "@/lib/sorteio-store";
 
 function Countdown({ endsAt }: { endsAt: number }) {
   const [left, setLeft] = useState(Math.max(0, endsAt - Date.now()));

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, use } from "react";
 import { useSession, signIn } from "next-auth/react";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
-import type { Sorteio, Participante } from "@/app/api/sorteio/route";
+import type { Sorteio, Participante } from "@/lib/sorteio-store";
 
 const ITEM_W = 140;
 const ITEM_GAP = 10;

@@ -1,90 +1,67 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
+import {
+  getSorteios,
+  getAtivo,
+  criarSorteio,
+  participarSorteio,
+  addTicket,
+  realizarSorteio,
+  cancelarSorteio,
+} from "@/lib/sorteio-store";
 
-export interface Participante {
-  username: string;
-  displayName: string;
-  image: string | null;
-  tickets: number;
-}
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
-export interface Sorteio {
-  id: string;
-  titulo: string;
-  valor: string;
-  minutosTicket: number;
-  duracaoMs: number;
-  iniciadoEm: number;
-  status: "ativo" | "pronto" | "finalizado" | "cancelado";
-  participantes: Participante[];
-  vencedor: Participante | null;
-}
-
-declare global {
-  var __sorteios: Sorteio[] | undefined;
-}
-
-if (!globalThis.__sorteios) globalThis.__sorteios = [];
-
-function getAll(): Sorteio[] {
-  const list = globalThis.__sorteios ?? [];
-  for (const s of list) {
-    if (s.status === "ativo" && Date.now() >= s.iniciadoEm + s.duracaoMs) {
-      s.status = "pronto";
-    }
-  }
-  return list;
-}
-
-function getAtivo(): Sorteio | null {
-  return getAll().find(s => s.status === "ativo" || s.status === "pronto") ?? null;
-}
+const NO_CACHE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
 export async function GET(req: NextRequest) {
   const id = req.nextUrl.searchParams.get("id");
-  const all = getAll();
+  const list = await getSorteios();
+  const ativo = getAtivo(list);
+
   if (id) {
-    const s = all.find(x => x.id === id) ?? null;
-    return NextResponse.json({ sorteio: s, sorteios: all, ativo: getAtivo() });
+    const sorteio = list.find(x => x.id === id) ?? null;
+    return NextResponse.json({ sorteio, sorteios: list, ativo }, { headers: NO_CACHE });
   }
-  return NextResponse.json({ sorteios: all, ativo: getAtivo() });
+  return NextResponse.json({ sorteios: list, ativo }, { headers: NO_CACHE });
 }
 
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  const body = await req.json();
+  const body = await req.json().catch(() => ({}));
   const { action } = body;
 
   if (action === "criar") {
+    const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
-    const s: Sorteio = {
-      id: Date.now().toString(),
+    const s = await criarSorteio({
       titulo: String(body.titulo || "Sorteio"),
       valor: String(body.valor || ""),
-      minutosTicket: Math.max(1, Number(body.minutosTicket) || 10),
-      duracaoMs: Math.max(60_000, Number(body.duracaoMinutos) * 60_000),
-      iniciadoEm: Date.now(),
-      status: "ativo",
-      participantes: [],
-      vencedor: null,
-    };
-    globalThis.__sorteios = [s, ...(globalThis.__sorteios ?? [])];
-    return NextResponse.json({ sorteio: s, sorteios: getAll() });
+      minutosTicket: Number(body.minutosTicket) || 10,
+      duracaoMinutos: Number(body.duracaoMinutos) || 60,
+    });
+    const list = await getSorteios();
+    return NextResponse.json({ sorteio: s, sorteios: list }, { headers: NO_CACHE });
   }
 
   if (action === "participar") {
-    if (!session?.user) return NextResponse.json({ error: "Login necessário" }, { status: 401 });
-    const s = getAtivo();
-    if (!s) return NextResponse.json({ error: "Sem sorteio ativo" }, { status: 400 });
-    const username = session.user.twitchLogin ?? session.user.name ?? "";
-    if (s.participantes.find(p => p.username === username)) {
-      return NextResponse.json({ sorteio: s, jaParticipa: true });
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Login necessário" }, { status: 401 });
     }
-    s.participantes.push({ username, displayName: session.user.name ?? username, image: session.user.image ?? null, tickets: 1 });
-    return NextResponse.json({ sorteio: s });
+    const username = session.user.twitchLogin ?? session.user.name ?? "";
+    const result = await participarSorteio(
+      username,
+      session.user.name ?? username,
+      session.user.image ?? null,
+    );
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+    return NextResponse.json(result, { headers: NO_CACHE });
   }
 
   if (action === "add-ticket") {
@@ -92,39 +69,40 @@ export async function POST(req: NextRequest) {
     if (!botSecret || req.headers.get("x-bot-secret") !== botSecret) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
-    const s = getAtivo();
-    if (!s || s.status !== "ativo") return NextResponse.json({ ok: false });
     const { username, displayName, image } = body;
-    const ex = s.participantes.find(p => p.username === username);
-    if (ex) ex.tickets += 1;
-    else s.participantes.push({ username, displayName: displayName ?? username, image: image ?? null, tickets: 1 });
-    return NextResponse.json({ ok: true });
+    if (!username || typeof username !== "string") {
+      return NextResponse.json({ error: "username obrigatório" }, { status: 400 });
+    }
+    const ok = await addTicket(
+      username,
+      typeof displayName === "string" ? displayName : username,
+      typeof image === "string" ? image : null,
+    );
+    return NextResponse.json({ ok }, { headers: NO_CACHE });
   }
 
   if (action === "sortear") {
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const id = body.id as string;
-    const list = getAll();
-    const s = list.find(x => x.id === id) ?? getAtivo();
-    if (!s) return NextResponse.json({ error: "Sem sorteio" }, { status: 400 });
-    if (s.status === "finalizado") return NextResponse.json({ sorteio: s });
-    if (s.participantes.length === 0) return NextResponse.json({ error: "Sem participantes" }, { status: 400 });
-    const pool: Participante[] = [];
-    for (const p of s.participantes) for (let i = 0; i < Math.max(p.tickets, 1); i++) pool.push(p);
-    s.vencedor = pool[Math.floor(Math.random() * pool.length)];
-    s.status = "finalizado";
-    return NextResponse.json({ sorteio: s, sorteios: getAll() });
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) {
+      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    }
+    const result = await realizarSorteio(String(body.id ?? ""));
+    if ("error" in result) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
+    }
+    const list = await getSorteios();
+    return NextResponse.json({ sorteio: result, sorteios: list }, { headers: NO_CACHE });
   }
 
   if (action === "cancelar") {
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const id = body.id as string;
-    if (id) {
-      globalThis.__sorteios = (globalThis.__sorteios ?? []).filter(s => s.id !== id);
-    } else {
-      globalThis.__sorteios = [];
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) {
+      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
-    return NextResponse.json({ ok: true, sorteios: getAll() });
+    const id = body.id ? String(body.id) : null;
+    await cancelarSorteio(id);
+    const list = await getSorteios();
+    return NextResponse.json({ ok: true, sorteios: list }, { headers: NO_CACHE });
   }
 
   return NextResponse.json({ error: "Ação inválida" }, { status: 400 });

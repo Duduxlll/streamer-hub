@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import type { Sorteio } from "@/app/api/sorteio/route";
+import type { Sorteio } from "@/lib/sorteio-store";
 
 function useCountdown(endsAt: number) {
   const [left, setLeft] = useState(Math.max(0, endsAt - Date.now()));
