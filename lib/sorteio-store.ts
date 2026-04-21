@@ -100,6 +100,7 @@ export async function participarSorteio(
   const list = await load();
   const s = getAtivo(list);
   if (!s) return { error: "Sem sorteio ativo" };
+  if (s.status !== "ativo") return { error: "Sorteio encerrado — inscrições fechadas" };
 
   const jaParticipa = s.participantes.some(
     p => p.username.toLowerCase() === username.toLowerCase(),

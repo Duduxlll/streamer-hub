@@ -250,16 +250,29 @@ function HistoricoAcordeon({ finalizados, onCancelar, onLimpar, limpando }: {
           {finalizados.map(s => (
             <div key={s.id} className="px-5 py-4 flex items-center gap-4">
               <div className="flex-1 min-w-0 space-y-1">
-                <p className="text-sm font-black text-white truncate">{s.titulo}</p>
-                {s.valor && <p className="text-xs font-black" style={{ color: "#ffba00" }}>{s.valor}</p>}
-                <p className="text-[11px] text-gray-600">{s.participantes.length} participantes · {s.participantes.reduce((a: number, p: Participante) => a + p.tickets, 0)} tickets</p>
+                <div>
+                  <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Título</p>
+                  <p className="text-sm font-black text-white truncate">{s.titulo}</p>
+                </div>
+                {s.valor && (
+                  <div>
+                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Premiação</p>
+                    <p className="text-sm font-black" style={{ color: "#ffba00" }}>{s.valor}</p>
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 {s.vencedor && (
-                  <span className="text-xs font-bold px-3 py-1.5 rounded-lg"
-                    style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.25)", color: "#22c55e" }}>
-                    🏆 {s.vencedor.displayName}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {s.vencedor.image && (
+                      <img src={s.vencedor.image} alt={s.vencedor.displayName}
+                        className="w-7 h-7 rounded-full object-cover border border-[#ffba00]/40" />
+                    )}
+                    <div className="text-right">
+                      <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Vencedor</p>
+                      <p className="text-xs font-black text-white">{s.vencedor.displayName}</p>
+                    </div>
+                  </div>
                 )}
                 <button onClick={() => onCancelar(s.id)}
                   className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-colors">
