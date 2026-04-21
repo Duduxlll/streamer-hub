@@ -66,14 +66,20 @@ function HistoricoSorteios({ sorteios: lista, onLimpar, limpando }: {
                 style={{ background: "rgba(255,186,0,0.1)", border: "1px solid rgba(255,186,0,0.2)" }}>
                 🏆
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-black text-white truncate leading-tight">{s.titulo}</p>
+              <div className="flex-1 min-w-0 space-y-1">
+                <div>
+                  <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Título</p>
+                  <p className="text-sm font-black text-white truncate leading-tight">{s.titulo}</p>
+                </div>
                 {s.valor && (
-                  <p className="text-xs font-bold mt-0.5" style={{
-                    background: "linear-gradient(90deg,#ffba00,#ffdd55)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}>{s.valor}</p>
+                  <div>
+                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Premiação</p>
+                    <p className="text-xs font-bold" style={{
+                      background: "linear-gradient(90deg,#ffba00,#ffdd55)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}>{s.valor}</p>
+                  </div>
                 )}
               </div>
               {s.vencedor && (
