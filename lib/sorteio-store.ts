@@ -159,3 +159,10 @@ export async function cancelarSorteio(id: string | null): Promise<void> {
   const list = await load();
   await persist(id ? list.filter(s => s.id !== id) : []);
 }
+
+export async function limparHistoricoSorteios(): Promise<Sorteio[]> {
+  const list = await load();
+  const ativos = list.filter(s => s.status !== "finalizado").slice(0, 20);
+  await persist(ativos);
+  return ativos;
+}

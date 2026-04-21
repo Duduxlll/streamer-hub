@@ -31,6 +31,7 @@ export default function AdminSorteioPage() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ titulo: "", valor: "", minutosTicket: "10", duracaoMinutos: "60" });
   const [criando, setCriando] = useState(false);
+  const [limpandoHistorico, setLimpandoHistorico] = useState(false);
   const [mostrarForm, setMostrarForm] = useState(false);
 
   const fetchSorteios = useCallback(async () => {
@@ -88,6 +89,27 @@ export default function AdminSorteioPage() {
       setSorteios(data.sorteios ?? []);
       toast("Sorteio removido.", "warning");
     } catch { toast("Erro ao remover sorteio.", "error"); }
+  }
+
+  async function limparHistorico() {
+    if (finalizados.length === 0 || limpandoHistorico) return;
+    if (!await confirm("Limpar todo o histórico de sorteios finalizados?", { confirmLabel: "Limpar", danger: true })) return;
+
+    setLimpandoHistorico(true);
+    try {
+      const res = await fetch("/api/sorteio", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "limpar-historico" }),
+      });
+      if (!res.ok) throw new Error("Erro ao limpar histórico");
+      const data = await res.json();
+      setSorteios(data.sorteios ?? []);
+      toast("Histórico de sorteios limpo.", "warning");
+    } catch {
+      toast("Erro ao limpar histórico.", "error");
+    } finally {
+      setLimpandoHistorico(false);
+    }
   }
 
   const ativos = sorteios.filter(s => s.status === "ativo" || s.status === "pronto");
@@ -171,7 +193,20 @@ export default function AdminSorteioPage() {
         )}
         {finalizados.length > 0 && (
           <div className="space-y-3">
-            <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Finalizados ({finalizados.length})</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Finalizados ({finalizados.length})</p>
+              <button
+                onClick={limparHistorico}
+                disabled={limpandoHistorico}
+                className="flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-black text-red-400 transition-colors hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                style={{ border: "1px solid rgba(239,68,68,0.24)" }}
+              >
+                <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M8.75 1A1.75 1.75 0 007 2.75V3H4.25a.75.75 0 000 1.5H5v11.75A2.75 2.75 0 007.75 19h4.5A2.75 2.75 0 0015 16.25V4.5h.75a.75.75 0 000-1.5H13v-.25A1.75 1.75 0 0011.25 1h-2.5zM8.5 3v-.25a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3zM8.75 7.5a.75.75 0 00-1.5 0v7a.75.75 0 001.5 0v-7zm4 0a.75.75 0 00-1.5 0v7a.75.75 0 001.5 0v-7z" clipRule="evenodd" />
+                </svg>
+                {limpandoHistorico ? "Limpando..." : "Limpar histórico"}
+              </button>
+            </div>
             {finalizados.map(s => (
               <SorteioCard key={s.id} s={s} onCancelar={() => cancelar(s.id)} />
             ))}

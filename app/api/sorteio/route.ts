@@ -9,6 +9,7 @@ import {
   addTicket,
   realizarSorteio,
   cancelarSorteio,
+  limparHistoricoSorteios,
 } from "@/lib/sorteio-store";
 
 export const dynamic = "force-dynamic";
@@ -102,6 +103,15 @@ export async function POST(req: NextRequest) {
     const id = body.id ? String(body.id) : null;
     await cancelarSorteio(id);
     const list = await getSorteios();
+    return NextResponse.json({ ok: true, sorteios: list }, { headers: NO_CACHE });
+  }
+
+  if (action === "limpar-historico") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) {
+      return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    }
+    const list = await limparHistoricoSorteios();
     return NextResponse.json({ ok: true, sorteios: list }, { headers: NO_CACHE });
   }
 
