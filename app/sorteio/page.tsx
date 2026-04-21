@@ -19,6 +19,86 @@ function Countdown({ endsAt }: { endsAt: number }) {
   return <span className="font-mono">{fmt(m)}:{fmt(s)}</span>;
 }
 
+function HistoricoSorteios({ sorteios: lista, onLimpar, limpando }: {
+  sorteios: Sorteio[];
+  onLimpar?: () => void;
+  limpando?: boolean;
+}) {
+  const [aberto, setAberto] = useState(false);
+  return (
+    <div className="rounded-2xl overflow-hidden"
+      style={{ background: "rgba(8,6,20,0.7)", border: "1px solid rgba(255,186,0,0.12)", backdropFilter: "blur(12px)" }}>
+      <button
+        onClick={() => setAberto(o => !o)}
+        className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-white/[0.02]"
+      >
+        <span className="text-base">🏆</span>
+        <span className="text-sm font-black text-white flex-1">Histórico de Sorteios</span>
+        <span className="text-[11px] px-2.5 py-0.5 rounded-full font-bold"
+          style={{ background: "rgba(255,186,0,0.1)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.25)" }}>
+          {lista.length}
+        </span>
+        {onLimpar && (
+          <button
+            onClick={e => { e.stopPropagation(); onLimpar(); }}
+            disabled={limpando}
+            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[11px] font-black text-red-400 transition-colors hover:bg-red-500/10 disabled:opacity-50"
+            style={{ border: "1px solid rgba(239,68,68,0.24)" }}
+          >
+            <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.75 1A1.75 1.75 0 007 2.75V3H4.25a.75.75 0 000 1.5H5v11.75A2.75 2.75 0 007.75 19h4.5A2.75 2.75 0 0015 16.25V4.5h.75a.75.75 0 000-1.5H13v-.25A1.75 1.75 0 0011.25 1h-2.5zM8.5 3v-.25a.25.25 0 01.25-.25h2.5a.25.25 0 01.25.25V3h-3zM8.75 7.5a.75.75 0 00-1.5 0v7a.75.75 0 001.5 0v-7zm4 0a.75.75 0 00-1.5 0v7a.75.75 0 001.5 0v-7z" clipRule="evenodd" />
+            </svg>
+            {limpando ? "Limpando..." : "Limpar histórico"}
+          </button>
+        )}
+        <svg className={`w-4 h-4 text-gray-500 transition-transform duration-200 flex-shrink-0 ${aberto ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+        </svg>
+      </button>
+
+      {aberto && (
+        <div className="border-t border-white/5">
+          {lista.map((s, idx) => (
+            <div key={s.id}
+              className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-white/[0.025]"
+              style={{ borderTop: idx > 0 ? "1px solid rgba(255,255,255,0.04)" : undefined }}>
+              <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                style={{ background: "rgba(255,186,0,0.1)", border: "1px solid rgba(255,186,0,0.2)" }}>
+                🏆
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-black text-white truncate leading-tight">{s.titulo}</p>
+                {s.valor && (
+                  <p className="text-xs font-bold mt-0.5" style={{
+                    background: "linear-gradient(90deg,#ffba00,#ffdd55)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}>{s.valor}</p>
+                )}
+              </div>
+              {s.vencedor && (
+                <div className="flex items-center gap-2.5 flex-shrink-0">
+                  {s.vencedor.image
+                    ? <img src={s.vencedor.image} alt={s.vencedor.displayName}
+                        className="w-8 h-8 rounded-full object-cover ring-2 ring-[#ffba00]/30" />
+                    : <div className="w-8 h-8 rounded-full bg-[#ffba00]/10 border border-[#ffba00]/20 flex items-center justify-center">
+                        <span className="text-xs font-black text-[#ffba00]">{s.vencedor.displayName[0].toUpperCase()}</span>
+                      </div>
+                  }
+                  <div>
+                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none mb-0.5">Vencedor</p>
+                    <p className="text-xs font-black text-white leading-tight">{s.vencedor.displayName}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SorteioCard({ s }: { s: Sorteio }) {
   const totalTickets = s.participantes.reduce((a, p) => a + p.tickets, 0);
   const pronto = s.status === "pronto";
@@ -135,55 +215,7 @@ export default function SorteioListPage() {
           </div>
         )}
         {finalizados.length > 0 && (
-          <div className="rounded-2xl overflow-hidden"
-            style={{ background: "rgba(8,6,20,0.65)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(12px)" }}>
-            <button
-              onClick={() => setHistoricoAberto(o => !o)}
-              className="w-full flex items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-white/3"
-            >
-              <span className="text-sm font-black text-white flex-1">Histórico de Sorteios</span>
-              <span className="text-xs px-2 py-0.5 rounded-full font-bold"
-                style={{ background: "rgba(255,255,255,0.06)", color: "#9ca3af", border: "1px solid rgba(255,255,255,0.08)" }}>
-                {finalizados.length}
-              </span>
-              <svg className={`w-4 h-4 text-gray-500 transition-transform duration-200 ${historicoAberto ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-
-            {historicoAberto && (
-              <div className="border-t border-white/5 divide-y divide-white/5">
-                {finalizados.map(s => (
-                  <div key={s.id} className="px-5 py-4 flex items-center gap-4">
-                    <div className="flex-1 min-w-0 space-y-1.5">
-                      <div>
-                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Título</p>
-                        <p className="text-sm font-black text-white truncate">{s.titulo}</p>
-                      </div>
-                      {s.valor && (
-                        <div>
-                          <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Premiação</p>
-                          <p className="text-sm font-black" style={{ color: "#ffba00" }}>{s.valor}</p>
-                        </div>
-                      )}
-                    </div>
-                    {s.vencedor && (
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {s.vencedor.image && (
-                          <img src={s.vencedor.image} alt={s.vencedor.displayName}
-                            className="w-7 h-7 rounded-full object-cover border border-[#ffba00]/40" />
-                        )}
-                        <div className="text-right">
-                          <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Vencedor</p>
-                          <p className="text-xs font-black text-white">{s.vencedor.displayName}</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <HistoricoSorteios sorteios={finalizados} />
         )}
 
       </div>
