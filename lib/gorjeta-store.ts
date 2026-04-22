@@ -313,6 +313,17 @@ export async function getHistoricoGorjeta(): Promise<HistoricoItemGorjeta[]> {
   return loadHistorico();
 }
 
+export async function editarCpfCadastro(id: string, cpf: string): Promise<CadastroGorjeta | null> {
+  const cpfNum = cpf.replace(/\D/g, "");
+  if (cpfNum.length !== 11) return null;
+  const list = await loadCadastros();
+  const c = list.find(x => x.id === id);
+  if (!c) return null;
+  c.cpf = cpfNum;
+  await saveCadastros(list);
+  return c;
+}
+
 export function mascarCpf(cpf: string): string {
   const d = cpf.replace(/\D/g, "");
   if (d.length !== 11) return cpf;

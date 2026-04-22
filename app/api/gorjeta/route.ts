@@ -7,6 +7,7 @@ import {
   cadastrar,
   aprovarCadastro,
   rejeitarCadastro,
+  editarCpfCadastro,
   getScreenshot,
   getSessao,
   abrirSessao,
@@ -178,6 +179,14 @@ export async function POST(req: NextRequest) {
 
     const sessaoFinal = await salvarPagamentos(pagamentos);
     return NextResponse.json({ ok: true, pagamentos, sessao: sessaoFinal }, { headers: NO_CACHE });
+  }
+
+  if (action === "editar-cpf") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const c = await editarCpfCadastro(String(body.id ?? ""), String(body.cpf ?? ""));
+    if (!c) return NextResponse.json({ error: "CPF inválido ou cadastro não encontrado" }, { status: 400 });
+    return NextResponse.json({ ok: true, cadastro: c }, { headers: NO_CACHE });
   }
 
   if (action === "cadastrar-webhook") {

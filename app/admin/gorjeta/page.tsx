@@ -7,9 +7,17 @@ import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import type { CadastroGorjeta, SessaoGorjeta } from "@/lib/gorjeta-store";
 
-function formatCpf(cpf: string): string {
+function mascarCpf(cpf: string): string {
   const d = cpf.replace(/\D/g, "");
   if (d.length !== 11) return cpf;
+  return `***.${d.slice(3, 6)}.${d.slice(6, 9)}-**`;
+}
+
+function formatCpfInput(value: string): string {
+  const d = value.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+  if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 }
 
@@ -76,15 +84,44 @@ function ScreenshotModal({ id, onClose }: { id: string; onClose: () => void }) {
   );
 }
 
-function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto }: {
+function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onCpfEditado }: {
   c: CadastroGorjeta;
   onAprovar: () => void;
-  onRejeitar: () => void;
+  onRejeitar: (motivo: string) => void;
   onVerFoto: () => void;
+  onCpfEditado: (novoCpf: string) => void;
 }) {
   const [rejMotivo, setRejMotivo] = useState("");
   const [showRejeitar, setShowRejeitar] = useState(false);
+  const [showEditCpf, setShowEditCpf] = useState(false);
+  const [cpfEdit, setCpfEdit] = useState("");
   const [busy, setBusy] = useState(false);
+  const [editErr, setEditErr] = useState("");
+
+  function abrirEditCpf() {
+    setCpfEdit(formatCpfInput(c.cpf));
+    setEditErr("");
+    setShowEditCpf(true);
+    setShowRejeitar(false);
+  }
+
+  async function salvarCpf() {
+    const d = cpfEdit.replace(/\D/g, "");
+    if (d.length !== 11) { setEditErr("CPF inválido (11 dígitos)"); return; }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/gorjeta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "editar-cpf", id: c.id, cpf: d }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setEditErr(data.error ?? "Erro"); return; }
+      onCpfEditado(d);
+      setShowEditCpf(false);
+    } catch { setEditErr("Erro de conexão"); }
+    finally { setBusy(false); }
+  }
 
   return (
     <div className="rounded-2xl overflow-hidden"
@@ -102,8 +139,8 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto }: {
               <p className="text-xs font-bold text-white">{c.nomeCompleto}</p>
             </div>
             <div>
-              <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-0.5">CPF</p>
-              <p className="text-xs font-bold text-white">{formatCpf(c.cpf)}</p>
+              <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-0.5">PIX (CPF)</p>
+              <p className="text-xs font-bold text-white">{mascarCpf(c.cpf)}</p>
             </div>
           </div>
           {c.motivoRejeicao && (
@@ -112,11 +149,18 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto }: {
           <p className="text-[10px] text-gray-600">{new Date(c.criadoEm).toLocaleString("pt-BR")}</p>
         </div>
         <div className="flex flex-col gap-2 flex-shrink-0">
-          <button onClick={onVerFoto}
-            className="px-3 py-1.5 rounded-lg text-[11px] font-black text-gray-300 transition-colors hover:bg-white/5"
-            style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
-            📎 Ver foto
-          </button>
+          <div className="flex gap-1.5">
+            <button onClick={onVerFoto}
+              className="px-3 py-1.5 rounded-lg text-[11px] font-black text-gray-300 transition-colors hover:bg-white/5"
+              style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+              📎 Ver foto
+            </button>
+            <button onClick={abrirEditCpf} title="Editar CPF/PIX"
+              className="px-2.5 py-1.5 rounded-lg text-[11px] font-black text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+              style={{ border: "1px solid rgba(255,255,255,0.1)" }}>
+              ✏️
+            </button>
+          </div>
           {c.status !== "aprovado" && (
             <button
               disabled={busy}
@@ -128,7 +172,7 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto }: {
           )}
           {c.status !== "rejeitado" && (
             <button
-              onClick={() => setShowRejeitar(s => !s)}
+              onClick={() => { setShowRejeitar(s => !s); setShowEditCpf(false); }}
               className="px-3 py-1.5 rounded-lg text-[11px] font-black text-red-400 transition-colors hover:bg-red-500/10"
               style={{ border: "1px solid rgba(239,68,68,0.25)" }}>
               ✕ Rejeitar
@@ -136,6 +180,35 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto }: {
           )}
         </div>
       </div>
+
+      {showEditCpf && (
+        <div className="px-5 pb-4 space-y-2 border-t border-white/5 pt-3">
+          <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest">Editar CPF/PIX</p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="000.000.000-00"
+              value={cpfEdit}
+              onChange={e => { setCpfEdit(formatCpfInput(e.target.value)); setEditErr(""); }}
+              className="flex-1 px-3 py-2 rounded-lg text-xs text-white placeholder-gray-600 outline-none"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,186,0,0.25)" }}
+            />
+            <button disabled={busy} onClick={salvarCpf}
+              className="px-3 py-2 rounded-lg text-xs font-black text-black disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
+              {busy ? "..." : "Salvar"}
+            </button>
+            <button onClick={() => { setShowEditCpf(false); setEditErr(""); }}
+              className="px-3 py-2 rounded-lg text-xs font-black text-gray-400 transition-colors hover:bg-white/5"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+              Cancelar
+            </button>
+          </div>
+          {editErr && <p className="text-xs text-red-400 font-bold">{editErr}</p>}
+        </div>
+      )}
+
       {showRejeitar && (
         <div className="px-5 pb-4 flex gap-2 border-t border-white/5 pt-3">
           <input
@@ -148,7 +221,7 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto }: {
           />
           <button
             disabled={busy}
-            onClick={async () => { setBusy(true); await Promise.resolve(); onRejeitar(); setBusy(false); setShowRejeitar(false); }}
+            onClick={async () => { setBusy(true); await Promise.resolve(); onRejeitar(rejMotivo); setBusy(false); setShowRejeitar(false); }}
             className="px-3 py-2 rounded-lg text-xs font-black text-red-400 transition-colors hover:bg-red-500/10 disabled:opacity-50"
             style={{ border: "1px solid rgba(239,68,68,0.25)" }}>
             Confirmar
@@ -175,7 +248,6 @@ export default function AdminGorjetaPage() {
   const [screenshotModalId, setScreenshotModalId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ text: string; type: "ok" | "err" } | null>(null);
-  const [rejMotivos, setRejMotivos] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
@@ -262,6 +334,11 @@ export default function AdminGorjetaPage() {
     if (r) flash("Sessão removida", "ok");
   }
 
+  function atualizarCpfLocal(id: string, novoCpf: string) {
+    setCadastros(prev => prev.map(c => c.id === id ? { ...c, cpf: novoCpf } : c));
+    flash("CPF atualizado!", "ok");
+  }
+
   if (loading || status === "loading") {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -270,8 +347,9 @@ export default function AdminGorjetaPage() {
     );
   }
 
-  const pendentes = cadastros.filter(c => c.status === "pendente");
-  const outros = cadastros.filter(c => c.status !== "pendente");
+  const pendentes  = cadastros.filter(c => c.status === "pendente");
+  const aprovados  = cadastros.filter(c => c.status === "aprovado");
+  const rejeitados = cadastros.filter(c => c.status === "rejeitado");
 
   return (
     <div className="page-enter relative min-h-[calc(100vh-4rem)]">
@@ -304,6 +382,7 @@ export default function AdminGorjetaPage() {
           ))}
         </div>
 
+        {/* ── ABA SESSÃO ── */}
         {tab === "sessao" && (
           <div className="space-y-4">
             {!sessao || sessao.status === "fechada" ? (
@@ -384,7 +463,6 @@ export default function AdminGorjetaPage() {
                               : <div className="w-5 h-5 rounded-full bg-[#ffba00]/10 flex items-center justify-center text-[8px] font-black text-[#ffba00] flex-shrink-0">{p.displayName[0].toUpperCase()}</div>
                             }
                             <span className="text-xs font-bold text-white flex-1 truncate">{p.displayName}</span>
-                            <span className="text-[10px] text-gray-600">{formatCpf(p.cpf)}</span>
                           </div>
                         ))}
                       </div>
@@ -410,11 +488,11 @@ export default function AdminGorjetaPage() {
                               }
                               <div className="flex-1 min-w-0">
                                 <p className="text-xs font-black text-white truncate">{v.displayName}</p>
-                                <p className="text-[10px] text-gray-600">{formatCpf(v.cpf)}</p>
+                                <p className="text-[10px] text-gray-600">@{v.username}</p>
                               </div>
                               {pag && <PayStatusBadge status={pag.status as "enviado" | "falhou" | "nao_cadastrado"} />}
                               {pag?.erro && (
-                                <span className="text-[10px] text-red-400 break-all" title={pag.erro}>{pag.erro}</span>
+                                <span className="text-[10px] text-red-400 max-w-[120px] truncate" title={pag.erro}>{pag.erro}</span>
                               )}
                             </div>
                           );
@@ -461,10 +539,10 @@ export default function AdminGorjetaPage() {
                 </div>
               </div>
             )}
-
           </div>
         )}
 
+        {/* ── ABA CADASTROS ── */}
         {tab === "cadastros" && (
           <div className="space-y-3">
             {cadastros.length === 0 && (
@@ -473,31 +551,58 @@ export default function AdminGorjetaPage() {
                 <p className="text-sm font-bold">Nenhum cadastro ainda</p>
               </div>
             )}
+
+            {/* Pendentes */}
             {pendentes.length > 0 && (
               <>
-                <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest px-1">Pendentes ({pendentes.length})</p>
+                <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest px-1">
+                  Pendentes ({pendentes.length})
+                </p>
                 {pendentes.map(c => (
                   <CadastroCard key={c.id} c={c}
                     onAprovar={() => aprovar(c.id)}
-                    onRejeitar={() => rejeitar(c.id, rejMotivos[c.id] ?? "")}
-                    onVerFoto={() => setScreenshotModalId(c.id)} />
+                    onRejeitar={(motivo) => rejeitar(c.id, motivo)}
+                    onVerFoto={() => setScreenshotModalId(c.id)}
+                    onCpfEditado={(cpf) => atualizarCpfLocal(c.id, cpf)} />
                 ))}
               </>
             )}
-            {outros.length > 0 && (
+
+            {/* Aprovados */}
+            {aprovados.length > 0 && (
               <>
-                <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest px-1 mt-4">Outros ({outros.length})</p>
-                {outros.map(c => (
+                <p className="text-[10px] font-black text-green-500 uppercase tracking-widest px-1 mt-4">
+                  Aprovados ({aprovados.length})
+                </p>
+                {aprovados.map(c => (
                   <CadastroCard key={c.id} c={c}
                     onAprovar={() => aprovar(c.id)}
-                    onRejeitar={() => rejeitar(c.id, rejMotivos[c.id] ?? "")}
-                    onVerFoto={() => setScreenshotModalId(c.id)} />
+                    onRejeitar={(motivo) => rejeitar(c.id, motivo)}
+                    onVerFoto={() => setScreenshotModalId(c.id)}
+                    onCpfEditado={(cpf) => atualizarCpfLocal(c.id, cpf)} />
+                ))}
+              </>
+            )}
+
+            {/* Rejeitados */}
+            {rejeitados.length > 0 && (
+              <>
+                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest px-1 mt-4">
+                  Rejeitados ({rejeitados.length})
+                </p>
+                {rejeitados.map(c => (
+                  <CadastroCard key={c.id} c={c}
+                    onAprovar={() => aprovar(c.id)}
+                    onRejeitar={(motivo) => rejeitar(c.id, motivo)}
+                    onVerFoto={() => setScreenshotModalId(c.id)}
+                    onCpfEditado={(cpf) => atualizarCpfLocal(c.id, cpf)} />
                 ))}
               </>
             )}
           </div>
         )}
 
+        {/* ── ABA HISTÓRICO ── */}
         {tab === "historico" && (
           <div className="space-y-3">
             {historico.length === 0 && (
@@ -528,7 +633,6 @@ export default function AdminGorjetaPage() {
                   {h.pagamentos.map(p => (
                     <div key={p.username} className="flex items-center gap-2.5">
                       <span className="text-xs font-bold text-white flex-1">{p.displayName}</span>
-                      <span className="text-[10px] text-gray-600">{formatCpf(p.cpf)}</span>
                       <PayStatusBadge status={p.status as "enviado" | "falhou" | "nao_cadastrado"} />
                     </div>
                   ))}
