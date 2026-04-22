@@ -236,6 +236,7 @@ export default function AdminGorjetaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [tab, setTab] = useState<"cadastros" | "sessao" | "historico">("sessao");
+  const [cadastroFiltro, setCadastroFiltro] = useState<"pendente" | "aprovado" | "rejeitado">("pendente");
   const [cadastros, setCadastros] = useState<CadastroGorjeta[]>([]);
   const [sessao, setSessao] = useState<SessaoGorjeta | null>(null);
   const [historico, setHistorico] = useState<Array<{
@@ -545,60 +546,58 @@ export default function AdminGorjetaPage() {
         {/* ── ABA CADASTROS ── */}
         {tab === "cadastros" && (
           <div className="space-y-3">
-            {cadastros.length === 0 && (
-              <div className="text-center py-16 text-gray-600">
-                <span className="text-4xl block mb-3">📋</span>
-                <p className="text-sm font-bold">Nenhum cadastro ainda</p>
-              </div>
-            )}
+            {/* Sub-filtro */}
+            <div className="flex gap-1.5">
+              {(["pendente", "aprovado", "rejeitado"] as const).map(f => {
+                const count = f === "pendente" ? pendentes.length : f === "aprovado" ? aprovados.length : rejeitados.length;
+                const colors = {
+                  pendente:  { active: "rgba(255,186,0,0.12)",    border: "rgba(255,186,0,0.35)",    text: "#ffba00" },
+                  aprovado:  { active: "rgba(34,197,94,0.12)",    border: "rgba(34,197,94,0.35)",    text: "#22c55e" },
+                  rejeitado: { active: "rgba(239,68,68,0.1)",     border: "rgba(239,68,68,0.3)",     text: "#ef4444" },
+                };
+                const c = colors[f];
+                const isActive = cadastroFiltro === f;
+                const label = f === "pendente" ? "Pendentes" : f === "aprovado" ? "Aprovados" : "Rejeitados";
+                return (
+                  <button key={f} onClick={() => setCadastroFiltro(f)}
+                    className="flex-1 py-2 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-1.5"
+                    style={isActive
+                      ? { background: c.active, color: c.text, border: `1px solid ${c.border}` }
+                      : { color: "#4b5563", border: "1px solid rgba(255,255,255,0.06)" }}>
+                    {label}
+                    {count > 0 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-black"
+                        style={isActive
+                          ? { background: "rgba(0,0,0,0.25)", color: c.text }
+                          : { background: "rgba(255,255,255,0.06)", color: "#6b7280" }}>
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
 
-            {/* Pendentes */}
-            {pendentes.length > 0 && (
-              <>
-                <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest px-1">
-                  Pendentes ({pendentes.length})
-                </p>
-                {pendentes.map(c => (
-                  <CadastroCard key={c.id} c={c}
-                    onAprovar={() => aprovar(c.id)}
-                    onRejeitar={(motivo) => rejeitar(c.id, motivo)}
-                    onVerFoto={() => setScreenshotModalId(c.id)}
-                    onCpfEditado={(cpf) => atualizarCpfLocal(c.id, cpf)} />
-                ))}
-              </>
-            )}
-
-            {/* Aprovados */}
-            {aprovados.length > 0 && (
-              <>
-                <p className="text-[10px] font-black text-green-500 uppercase tracking-widest px-1 mt-4">
-                  Aprovados ({aprovados.length})
-                </p>
-                {aprovados.map(c => (
-                  <CadastroCard key={c.id} c={c}
-                    onAprovar={() => aprovar(c.id)}
-                    onRejeitar={(motivo) => rejeitar(c.id, motivo)}
-                    onVerFoto={() => setScreenshotModalId(c.id)}
-                    onCpfEditado={(cpf) => atualizarCpfLocal(c.id, cpf)} />
-                ))}
-              </>
-            )}
-
-            {/* Rejeitados */}
-            {rejeitados.length > 0 && (
-              <>
-                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest px-1 mt-4">
-                  Rejeitados ({rejeitados.length})
-                </p>
-                {rejeitados.map(c => (
-                  <CadastroCard key={c.id} c={c}
-                    onAprovar={() => aprovar(c.id)}
-                    onRejeitar={(motivo) => rejeitar(c.id, motivo)}
-                    onVerFoto={() => setScreenshotModalId(c.id)}
-                    onCpfEditado={(cpf) => atualizarCpfLocal(c.id, cpf)} />
-                ))}
-              </>
-            )}
+            {/* Lista filtrada */}
+            {(() => {
+              const lista = cadastroFiltro === "pendente" ? pendentes : cadastroFiltro === "aprovado" ? aprovados : rejeitados;
+              if (lista.length === 0) {
+                const label = cadastroFiltro === "pendente" ? "pendentes" : cadastroFiltro === "aprovado" ? "aprovados" : "rejeitados";
+                return (
+                  <div className="text-center py-14 text-gray-600">
+                    <span className="text-3xl block mb-2">📋</span>
+                    <p className="text-sm font-bold">Nenhum cadastro {label}</p>
+                  </div>
+                );
+              }
+              return lista.map(c => (
+                <CadastroCard key={c.id} c={c}
+                  onAprovar={() => aprovar(c.id)}
+                  onRejeitar={(motivo) => rejeitar(c.id, motivo)}
+                  onVerFoto={() => setScreenshotModalId(c.id)}
+                  onCpfEditado={(cpf) => atualizarCpfLocal(c.id, cpf)} />
+              ));
+            })()}
           </div>
         )}
 
