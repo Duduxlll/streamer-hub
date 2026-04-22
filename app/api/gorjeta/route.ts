@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
     for (const v of sessao.vencedores) {
       try {
         const r = await enviarPix(v.cpf, sessao.valorUnitario, "Gorjeta stainzincs");
-        pagamentos.push({ username: v.username, displayName: v.displayName, cpf: v.cpf, nomeCompleto: v.nomeCompleto, status: "enviado", txid: r.txid, e2eid: r.e2eid });
+        pagamentos.push({ username: v.username, displayName: v.displayName, cpf: v.cpf, nomeCompleto: v.nomeCompleto, status: "enviado", txid: r.idEnvio, e2eid: r.e2eId });
       } catch (err) {
         pagamentos.push({
           username: v.username, displayName: v.displayName, cpf: v.cpf, nomeCompleto: v.nomeCompleto,
