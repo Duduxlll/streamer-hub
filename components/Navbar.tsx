@@ -107,9 +107,26 @@ function useImageColor(src: string | null | undefined, name: string): string {
   return color;
 }
 
+function useConfigAlert(admin: boolean) {
+  const [alerta, setAlerta] = useState(false);
+  useEffect(() => {
+    if (!admin) return;
+    fetch("/api/config")
+      .then(r => r.ok ? r.json() : null)
+      .then((d: { efibank?: { credenciaisOk: boolean; webhook: { ok: boolean } }; livepix?: { ok: boolean } } | null) => {
+        if (!d) return;
+        const problema = !d.efibank?.webhook?.ok || !d.livepix?.ok;
+        setAlerta(problema);
+      })
+      .catch(() => {});
+  }, [admin]);
+  return alerta;
+}
+
 function UserMenu({ name, image, admin }: { name: string; image?: string | null; admin: boolean }) {
   const [open, setOpen] = useState(false);
   const color = useImageColor(image, name);
+  const configAlerta = useConfigAlert(admin);
 
   return (
     <div className="relative">
@@ -136,6 +153,9 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
             style={{ background: "rgba(255,186,0,0.15)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.35)" }}>
             👑 Admin
           </span>
+        )}
+        {configAlerta && (
+          <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 animate-pulse" title="Há problemas de configuração" />
         )}
 
         <svg className={`w-3 h-3 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} viewBox="0 0 20 20" fill="currentColor">
@@ -214,6 +234,17 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
                 >
                   <span className="text-base">💰</span>
                   Admin · Gorjeta
+                </Link>
+                <div className="border-t border-white/5 my-1" />
+                <Link
+                  href="/admin/config"
+                  onClick={() => setOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
+                  style={{ color: configAlerta ? "#ef4444" : "#6b7280" }}
+                >
+                  <span className="text-base">{configAlerta ? "⚠️" : "⚙️"}</span>
+                  <span className="flex-1">Configurações</span>
+                  {configAlerta && <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />}
                 </Link>
               </>
             )}
