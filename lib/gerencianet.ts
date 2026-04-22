@@ -97,7 +97,7 @@ export async function cadastrarWebhook(webhookUrl: string): Promise<{ ok: boolea
   if (!chavePagador) return { ok: false, erro: "GERENCIANET_PIX_KEY não configurada" };
 
   const token = await getToken();
-  const bodyStr = JSON.stringify({ webhookUrl, ignorarTLSValidacao: true });
+  const bodyStr = JSON.stringify({ webhookUrl });
 
   const res = await nodeRequest(
     {
@@ -105,9 +105,10 @@ export async function cadastrarWebhook(webhookUrl: string): Promise<{ ok: boolea
       path:     `/v2/webhook/${encodeURIComponent(chavePagador)}`,
       method:   "PUT",
       headers:  {
-        Authorization:    `Bearer ${token}`,
-        "Content-Type":   "application/json",
-        "Content-Length": Buffer.byteLength(bodyStr),
+        Authorization:       `Bearer ${token}`,
+        "Content-Type":      "application/json",
+        "Content-Length":    Buffer.byteLength(bodyStr),
+        "x-skip-mtls-checking": "true",
       },
       agent: agent(),
     },
