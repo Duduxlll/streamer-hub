@@ -97,7 +97,7 @@ export async function cadastrarWebhook(webhookUrl: string): Promise<{ ok: boolea
   if (!chavePagador) return { ok: false, erro: "GERENCIANET_PIX_KEY não configurada" };
 
   const token = await getToken();
-  const bodyStr = JSON.stringify({ webhookUrl });
+  const bodyStr = JSON.stringify({ webhookUrl, ignorarTLSValidacao: true });
 
   const res = await nodeRequest(
     {
