@@ -177,6 +177,7 @@ export default function AdminGorjetaPage() {
   const [msg, setMsg] = useState<{ text: string; type: "ok" | "err" } | null>(null);
   const [rejMotivos, setRejMotivos] = useState<Record<string, string>>({});
   const [diagResult, setDiagResult] = useState<{ ok: boolean; diag?: Record<string, unknown>; erro?: string; resultado?: Record<string, unknown> } | null>(null);
+  const [webhookResult, setWebhookResult] = useState<{ ok: boolean; erro?: string; webhookUrl?: string } | null>(null);
   const [testCpf, setTestCpf] = useState("");
 
   useEffect(() => {
@@ -222,6 +223,21 @@ export default function AdminGorjetaPage() {
       await fetchAll();
       return data;
     } catch { flash("Erro de conexão", "err"); return null; }
+    finally { setBusy(false); }
+  }
+
+  async function cadastrarWebhook() {
+    setBusy(true);
+    setWebhookResult(null);
+    try {
+      const res = await fetch("/api/gorjeta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "cadastrar-webhook" }),
+      });
+      const data = await res.json() as { ok: boolean; erro?: string; webhookUrl?: string };
+      setWebhookResult(data);
+    } catch { setWebhookResult({ ok: false, erro: "Erro de conexão" }); }
     finally { setBusy(false); }
   }
 
@@ -486,10 +502,25 @@ export default function AdminGorjetaPage() {
                 <p className="text-xs font-black text-gray-500 uppercase tracking-widest">🔧 Diagnóstico PIX</p>
               </div>
               <div className="px-5 py-4 space-y-3">
+                <div>
+                  <p className="text-[10px] text-gray-600 mb-2">Se aparecer erro <strong className="text-yellow-400">conta_chave_sem_webhook</strong>, clique abaixo para resolver:</p>
+                  <button onClick={cadastrarWebhook} disabled={busy}
+                    className="w-full py-2 rounded-lg text-xs font-black transition-colors hover:bg-blue-500/10 disabled:opacity-50"
+                    style={{ border: "1px solid rgba(96,165,250,0.3)", color: "#60a5fa" }}>
+                    {busy ? "Aguarde..." : "1. Cadastrar webhook na EfíBank (clique aqui primeiro)"}
+                  </button>
+                  {webhookResult && (
+                    <div className={`mt-2 px-3 py-2 rounded-lg text-xs font-black ${webhookResult.ok ? "text-green-400 bg-green-500/10 border border-green-500/25" : "text-red-400 bg-red-500/10 border border-red-500/25"}`}>
+                      {webhookResult.ok
+                        ? `✓ Webhook cadastrado! URL: ${webhookResult.webhookUrl}`
+                        : `✕ ${webhookResult.erro}`}
+                    </div>
+                  )}
+                </div>
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    placeholder="CPF do destinatário (para teste R$0,01)"
+                    placeholder="2. CPF do destinatário (teste R$0,01)"
                     value={testCpf}
                     onChange={e => setTestCpf(e.target.value)}
                     className="flex-1 px-3 py-2 rounded-lg text-xs text-white placeholder-gray-600 outline-none"
@@ -498,7 +529,7 @@ export default function AdminGorjetaPage() {
                   <button onClick={testarPix} disabled={busy}
                     className="px-4 py-2 rounded-lg text-xs font-black text-[#ffba00] transition-colors hover:bg-[#ffba00]/10 disabled:opacity-50 flex-shrink-0"
                     style={{ border: "1px solid rgba(255,186,0,0.25)" }}>
-                    {busy ? "..." : "Testar"}
+                    {busy ? "..." : "Testar PIX"}
                   </button>
                 </div>
                 {diagResult && (

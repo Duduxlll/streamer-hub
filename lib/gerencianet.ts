@@ -92,6 +92,34 @@ async function getToken(): Promise<string> {
   return _cachedToken;
 }
 
+export async function cadastrarWebhook(webhookUrl: string): Promise<{ ok: boolean; erro?: string }> {
+  const chavePagador = process.env.GERENCIANET_PIX_KEY;
+  if (!chavePagador) return { ok: false, erro: "GERENCIANET_PIX_KEY não configurada" };
+
+  const token = await getToken();
+  const bodyStr = JSON.stringify({ webhookUrl });
+
+  const res = await nodeRequest(
+    {
+      hostname: getHost(),
+      path:     `/v2/webhook/${encodeURIComponent(chavePagador)}`,
+      method:   "PUT",
+      headers:  {
+        Authorization:    `Bearer ${token}`,
+        "Content-Type":   "application/json",
+        "Content-Length": Buffer.byteLength(bodyStr),
+      },
+      agent: agent(),
+    },
+    bodyStr,
+  );
+
+  if (res.status < 200 || res.status >= 300) {
+    return { ok: false, erro: `${res.status}: ${res.text}` };
+  }
+  return { ok: true };
+}
+
 export async function enviarPix(
   cpfDestinatario: string,
   valor: number,

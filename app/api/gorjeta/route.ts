@@ -19,7 +19,7 @@ import {
   mascarCpf,
   type ResultadoPagamento,
 } from "@/lib/gorjeta-store";
-import { enviarPix } from "@/lib/gerencianet";
+import { enviarPix, cadastrarWebhook } from "@/lib/gerencianet";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -178,6 +178,16 @@ export async function POST(req: NextRequest) {
 
     const sessaoFinal = await salvarPagamentos(pagamentos);
     return NextResponse.json({ ok: true, pagamentos, sessao: sessaoFinal }, { headers: NO_CACHE });
+  }
+
+  if (action === "cadastrar-webhook") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const siteUrl = process.env.NEXTAUTH_URL ?? process.env.AUTH_URL ?? process.env.SITE_URL ?? "";
+    if (!siteUrl) return NextResponse.json({ ok: false, erro: "NEXTAUTH_URL não definida no ambiente" }, { headers: NO_CACHE });
+    const webhookUrl = `${siteUrl.replace(/\/+$/, "")}/api/gerencianet/webhook`;
+    const result = await cadastrarWebhook(webhookUrl);
+    return NextResponse.json({ ...result, webhookUrl }, { headers: NO_CACHE });
   }
 
   if (action === "testar-pix") {
