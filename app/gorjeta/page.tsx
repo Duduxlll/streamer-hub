@@ -19,31 +19,82 @@ function mascarCpf(cpf: string): string {
   return `***.${d.slice(3, 6)}.${d.slice(6, 9)}-**`;
 }
 
-function Avatar({ image, name, size = 8 }: { image: string | null; name: string; size?: number }) {
-  const sz = `w-${size} h-${size}`;
-  if (image) {
-    return <img src={image} alt={name} className={`${sz} rounded-full object-cover flex-shrink-0 ring-2 ring-[#ffba00]/20`} />;
-  }
+function ParticipanteCard({ p, isVoce }: { p: { image: string | null; displayName: string; username: string }; isVoce?: boolean }) {
   return (
-    <div className={`${sz} rounded-full flex items-center justify-center flex-shrink-0 font-black text-[#ffba00]`}
-      style={{ background: "rgba(255,186,0,0.1)", border: "1px solid rgba(255,186,0,0.2)", fontSize: size * 1.5 }}>
-      {name[0]?.toUpperCase()}
+    <div className="relative overflow-hidden rounded-2xl flex flex-col items-center flex-shrink-0"
+      style={{ width: 100, background: "rgba(8,6,20,0.9)", border: `1px solid ${isVoce ? "rgba(255,186,0,0.5)" : "rgba(255,255,255,0.07)"}` }}>
+      {p.image && (
+        <img src={p.image} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          style={{ filter: "blur(12px) brightness(0.2)", transform: "scale(1.3)" }} />
+      )}
+      <div className="relative z-10 flex flex-col items-center gap-1.5 px-2 pt-3 pb-2.5 w-full">
+        {p.image
+          ? <img src={p.image} alt={p.displayName} className="w-12 h-12 rounded-full object-cover ring-2"
+              style={{ ringColor: isVoce ? "#ffba00" : "rgba(255,255,255,0.15)", borderRadius: "50%", border: `2px solid ${isVoce ? "rgba(255,186,0,0.7)" : "rgba(255,255,255,0.12)"}` }} />
+          : <div className="w-12 h-12 rounded-full flex items-center justify-center font-black text-[#ffba00] text-lg"
+              style={{ background: "rgba(255,186,0,0.1)", border: "2px solid rgba(255,186,0,0.25)" }}>
+              {p.displayName[0]?.toUpperCase()}
+            </div>
+        }
+        <p className="text-[10px] font-black text-white text-center truncate w-full leading-tight">{p.displayName}</p>
+        {isVoce && (
+          <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full"
+            style={{ background: "rgba(255,186,0,0.15)", color: "#ffba00" }}>você</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function VencedorCard({ v, pos, pag }: {
+  v: { image: string | null; displayName: string; username: string };
+  pos: number;
+  pag?: { status: string } | undefined;
+}) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl flex flex-col items-center"
+      style={{ background: "rgba(8,6,20,0.92)", border: "1px solid rgba(255,186,0,0.35)", boxShadow: "0 0 24px rgba(255,186,0,0.08)" }}>
+      {v.image && (
+        <img src={v.image} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+          style={{ filter: "blur(16px) brightness(0.2)", transform: "scale(1.3)" }} />
+      )}
+      <div className="relative z-10 flex flex-col items-center gap-2 px-4 pt-5 pb-4 w-full">
+        <span className="w-6 h-6 rounded-full text-[10px] font-black flex items-center justify-center mb-1"
+          style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", color: "#000" }}>
+          {pos}
+        </span>
+        {v.image
+          ? <img src={v.image} alt={v.displayName} className="w-16 h-16 rounded-full object-cover"
+              style={{ border: "3px solid rgba(255,186,0,0.6)", boxShadow: "0 0 20px rgba(255,186,0,0.3)" }} />
+          : <div className="w-16 h-16 rounded-full flex items-center justify-center font-black text-[#ffba00] text-2xl"
+              style={{ background: "rgba(255,186,0,0.1)", border: "3px solid rgba(255,186,0,0.4)" }}>
+              {v.displayName[0]?.toUpperCase()}
+            </div>
+        }
+        <p className="text-sm font-black text-white text-center truncate w-full">{v.displayName}</p>
+        {pag && (
+          <span className="text-[9px] font-black px-2 py-0.5 rounded-full"
+            style={pag.status === "enviado"
+              ? { background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }
+              : { background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.25)" }}>
+            {pag.status === "enviado" ? "PIX enviado ✓" : "Falhou"}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
 
 function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: CadastroGorjeta | null }) {
   const isAberta = sessao.status === "aberta";
-  const isSorteada = sessao.status === "sorteada" || sessao.status === "fechada";
   const jaParticipa = cadastro?.status === "aprovado" &&
     sessao.participantes.some(p => p.username === cadastro.username);
 
   return (
     <div className="space-y-4">
-      {/* Header da sessão */}
+      {/* Header */}
       <div className="rounded-2xl overflow-hidden"
         style={{ background: "rgba(8,6,20,0.85)", border: "1px solid rgba(255,186,0,0.3)", backdropFilter: "blur(16px)", boxShadow: "0 0 40px rgba(255,186,0,0.06)" }}>
-
         <div className="flex items-center gap-3 px-5 py-3 border-b border-white/5">
           <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
             {isAberta && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ffba00] opacity-60" />}
@@ -54,32 +105,27 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
           </span>
           {isAberta && (
             <span className="text-[11px] px-2.5 py-1 rounded-full font-black text-black"
-              style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
-              LIVE
-            </span>
+              style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>LIVE</span>
           )}
         </div>
 
-        {/* Stats */}
         <div className="grid grid-cols-3 divide-x divide-white/5 border-b border-white/5">
-          <div className="px-5 py-4 text-center">
+          <div className="py-4 text-center">
             <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Valor</p>
-            <p className="text-xl font-black" style={{
-              background: "linear-gradient(135deg, #ffba00, #ffdd55)",
-              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-            }}>R$ {sessao.valorUnitario.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
+            <p className="text-xl font-black" style={{ background: "linear-gradient(135deg,#ffba00,#ffdd55)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              R$ {sessao.valorUnitario.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </p>
           </div>
-          <div className="px-5 py-4 text-center">
+          <div className="py-4 text-center">
             <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Vencedores</p>
             <p className="text-xl font-black text-white">{sessao.maxVencedores}</p>
           </div>
-          <div className="px-5 py-4 text-center">
+          <div className="py-4 text-center">
             <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Inscritos</p>
             <p className="text-xl font-black text-white">{sessao.participantes.length}</p>
           </div>
         </div>
 
-        {/* Call to action (se aprovado e aberta) */}
         {isAberta && cadastro?.status === "aprovado" && (
           <div className={`px-5 py-3 text-sm font-black text-center ${jaParticipa ? "text-green-400" : "text-[#ffba00]"}`}
             style={{ background: jaParticipa ? "rgba(34,197,94,0.06)" : "rgba(255,186,0,0.06)" }}>
@@ -88,62 +134,36 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
         )}
       </div>
 
-      {/* Vencedores sorteados */}
+      {/* Vencedores — cards com foto grande */}
       {sessao.vencedores.length > 0 && (
-        <div className="rounded-2xl overflow-hidden"
-          style={{ background: "rgba(8,6,20,0.8)", border: "1px solid rgba(255,186,0,0.18)", backdropFilter: "blur(12px)" }}>
-          <div className="px-5 py-3 border-b border-white/5">
-            <p className="text-[11px] font-black text-[#ffba00] uppercase tracking-widest">🏆 Vencedores sorteados</p>
-          </div>
-          <div className="divide-y divide-white/[0.04]">
-            {sessao.vencedores.map((v, i) => {
-              const pag = sessao.pagamentos.find(p => p.username === v.username);
-              return (
-                <div key={v.username} className="flex items-center gap-3 px-5 py-3.5">
-                  <span className="w-6 h-6 rounded-full text-[10px] font-black flex items-center justify-center flex-shrink-0"
-                    style={{ background: "rgba(255,186,0,0.12)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.25)" }}>
-                    {i + 1}
-                  </span>
-                  <Avatar image={v.image} name={v.displayName} size={9} />
-                  <span className="flex-1 text-sm font-black text-white truncate">{v.displayName}</span>
-                  {pag && (
-                    <span className="text-[10px] font-black px-2.5 py-1 rounded-full flex-shrink-0"
-                      style={pag.status === "enviado"
-                        ? { background: "rgba(34,197,94,0.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.25)" }
-                        : { background: "rgba(239,68,68,0.1)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.25)" }}>
-                      {pag.status === "enviado" ? "PIX enviado ✓" : "Falhou"}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+        <div className="space-y-3">
+          <p className="text-[11px] font-black text-[#ffba00] uppercase tracking-widest px-1">🏆 Vencedores</p>
+          <div className={`grid gap-3 ${sessao.vencedores.length === 1 ? "grid-cols-1 max-w-[200px] mx-auto" : sessao.vencedores.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+            {sessao.vencedores.map((v, i) => (
+              <VencedorCard key={v.username} v={v} pos={i + 1}
+                pag={sessao.pagamentos.find(p => p.username === v.username)} />
+            ))}
           </div>
         </div>
       )}
 
-      {/* Lista de participantes */}
+      {/* Participantes — cards com foto + scroll horizontal */}
       {sessao.participantes.length > 0 && (
-        <div className="rounded-2xl overflow-hidden"
-          style={{ background: "rgba(8,6,20,0.7)", border: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(12px)" }}>
-          <div className="px-5 py-3 border-b border-white/5 flex items-center gap-2">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 px-1">
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest flex-1">Participantes</p>
             <span className="text-[10px] px-2 py-0.5 rounded-full font-black"
               style={{ background: "rgba(255,186,0,0.08)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.15)" }}>
               {sessao.participantes.length}
             </span>
           </div>
-          <div className="divide-y divide-white/[0.03] overflow-y-auto" style={{ maxHeight: 280 }}>
-            {sessao.participantes.map((p, i) => (
-              <div key={p.username} className="flex items-center gap-3 px-5 py-2.5 hover:bg-white/[0.02] transition-colors">
-                <span className="text-[10px] text-gray-700 w-5 text-right flex-shrink-0">{i + 1}</span>
-                <Avatar image={p.image} name={p.displayName} size={7} />
-                <span className="text-xs font-bold text-white truncate flex-1">{p.displayName}</span>
-                {jaParticipa && p.username === cadastro?.username && (
-                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full"
-                    style={{ background: "rgba(255,186,0,0.1)", color: "#ffba00" }}>você</span>
-                )}
-              </div>
-            ))}
+          <div className="overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+            <div className="flex gap-2.5" style={{ width: "max-content" }}>
+              {sessao.participantes.map(p => (
+                <ParticipanteCard key={p.username} p={p}
+                  isVoce={jaParticipa && p.username === cadastro?.username} />
+              ))}
+            </div>
           </div>
         </div>
       )}

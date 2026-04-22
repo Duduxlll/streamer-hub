@@ -229,6 +229,7 @@ client.on("message", async (_channel, tags, message, self) => {
 
   if (msg.toLowerCase() === "!gorjeta") {
     try {
+      if (!avatarCache.has(login)) await getUserInfo(login);
       const image = avatarCache.get(login) ?? null;
       const res   = await fetch(`${SITE_URL}/api/gorjeta`, {
         method : "POST",
