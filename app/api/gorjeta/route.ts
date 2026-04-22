@@ -166,16 +166,45 @@ export async function POST(req: NextRequest) {
         const r = await enviarPix(v.cpf, sessao.valorUnitario, "Gorjeta stainzincs");
         pagamentos.push({ username: v.username, displayName: v.displayName, cpf: v.cpf, nomeCompleto: v.nomeCompleto, status: "enviado", txid: r.idEnvio, e2eid: r.e2eId });
       } catch (err) {
+        const erroMsg = err instanceof Error ? err.message : "Erro desconhecido";
+        console.error("[gorjeta/pagar] Falha PIX para", v.username, "—", erroMsg);
         pagamentos.push({
           username: v.username, displayName: v.displayName, cpf: v.cpf, nomeCompleto: v.nomeCompleto,
           status: "falhou",
-          erro: err instanceof Error ? err.message : "Erro desconhecido",
+          erro: erroMsg,
         });
       }
     }
 
     const sessaoFinal = await salvarPagamentos(pagamentos);
     return NextResponse.json({ ok: true, pagamentos, sessao: sessaoFinal }, { headers: NO_CACHE });
+  }
+
+  if (action === "testar-pix") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const diag = {
+      GERENCIANET_CLIENT_ID:      !!process.env.GERENCIANET_CLIENT_ID,
+      GERENCIANET_CLIENT_SECRET:  !!process.env.GERENCIANET_CLIENT_SECRET,
+      GERENCIANET_PIX_KEY:        process.env.GERENCIANET_PIX_KEY ?? "(não definida)",
+      GERENCIANET_CERT_PEM_BASE64: !!process.env.GERENCIANET_CERT_PEM_BASE64,
+      GERENCIANET_KEY_PEM_BASE64:  !!process.env.GERENCIANET_KEY_PEM_BASE64,
+      GERENCIANET_CERT_BASE64:     !!process.env.GERENCIANET_CERT_BASE64,
+      GERENCIANET_SANDBOX:         process.env.GERENCIANET_SANDBOX ?? "(não definida — usa produção)",
+    };
+    try {
+      const { enviarPix: testPix } = await import("@/lib/gerencianet");
+      const cpfTeste = String(body.cpf ?? "").replace(/\D/g, "");
+      if (!cpfTeste || cpfTeste.length !== 11) {
+        return NextResponse.json({ ok: false, diag, erro: "Informe um CPF válido para testar" }, { headers: NO_CACHE });
+      }
+      const r = await testPix(cpfTeste, Number(body.valor ?? 0.01), "Teste gorjeta");
+      return NextResponse.json({ ok: true, diag, resultado: r }, { headers: NO_CACHE });
+    } catch (err) {
+      const erro = err instanceof Error ? err.message : String(err);
+      console.error("[gorjeta/testar-pix]", erro);
+      return NextResponse.json({ ok: false, diag, erro }, { headers: NO_CACHE });
+    }
   }
 
   return NextResponse.json({ error: "Ação inválida" }, { status: 400 });

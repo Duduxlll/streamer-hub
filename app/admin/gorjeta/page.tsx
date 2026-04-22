@@ -176,6 +176,8 @@ export default function AdminGorjetaPage() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ text: string; type: "ok" | "err" } | null>(null);
   const [rejMotivos, setRejMotivos] = useState<Record<string, string>>({});
+  const [diagResult, setDiagResult] = useState<{ ok: boolean; diag?: Record<string, unknown>; erro?: string; resultado?: Record<string, unknown> } | null>(null);
+  const [testCpf, setTestCpf] = useState("");
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
@@ -220,6 +222,21 @@ export default function AdminGorjetaPage() {
       await fetchAll();
       return data;
     } catch { flash("Erro de conexão", "err"); return null; }
+    finally { setBusy(false); }
+  }
+
+  async function testarPix() {
+    setBusy(true);
+    setDiagResult(null);
+    try {
+      const res = await fetch("/api/gorjeta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "testar-pix", cpf: testCpf, valor: 0.01 }),
+      });
+      const data = await res.json();
+      setDiagResult(data as { ok: boolean; diag?: Record<string, unknown>; erro?: string; resultado?: Record<string, unknown> });
+    } catch { setDiagResult({ ok: false, erro: "Erro de conexão" }); }
     finally { setBusy(false); }
   }
 
@@ -413,7 +430,9 @@ export default function AdminGorjetaPage() {
                                 <p className="text-[10px] text-gray-600">{formatCpf(v.cpf)}</p>
                               </div>
                               {pag && <PayStatusBadge status={pag.status as "enviado" | "falhou" | "nao_cadastrado"} />}
-                              {pag?.erro && <span className="text-[10px] text-red-400 max-w-[120px] truncate" title={pag.erro}>{pag.erro}</span>}
+                              {pag?.erro && (
+                                <span className="text-[10px] text-red-400 break-all" title={pag.erro}>{pag.erro}</span>
+                              )}
                             </div>
                           );
                         })}
@@ -459,6 +478,60 @@ export default function AdminGorjetaPage() {
                 </div>
               </div>
             )}
+
+            {/* Painel de diagnóstico PIX */}
+            <div className="rounded-2xl overflow-hidden"
+              style={{ background: "rgba(8,6,20,0.5)", border: "1px solid rgba(255,255,255,0.06)" }}>
+              <div className="px-5 py-3 border-b border-white/5">
+                <p className="text-xs font-black text-gray-500 uppercase tracking-widest">🔧 Diagnóstico PIX</p>
+              </div>
+              <div className="px-5 py-4 space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="CPF do destinatário (para teste R$0,01)"
+                    value={testCpf}
+                    onChange={e => setTestCpf(e.target.value)}
+                    className="flex-1 px-3 py-2 rounded-lg text-xs text-white placeholder-gray-600 outline-none"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                  />
+                  <button onClick={testarPix} disabled={busy}
+                    className="px-4 py-2 rounded-lg text-xs font-black text-[#ffba00] transition-colors hover:bg-[#ffba00]/10 disabled:opacity-50 flex-shrink-0"
+                    style={{ border: "1px solid rgba(255,186,0,0.25)" }}>
+                    {busy ? "..." : "Testar"}
+                  </button>
+                </div>
+                {diagResult && (
+                  <div className="space-y-2">
+                    <div className={`px-3 py-2 rounded-lg text-xs font-black ${diagResult.ok ? "text-green-400 bg-green-500/10 border border-green-500/25" : "text-red-400 bg-red-500/10 border border-red-500/25"}`}>
+                      {diagResult.ok ? "✓ PIX enviado com sucesso!" : `✕ Erro: ${diagResult.erro}`}
+                    </div>
+                    {diagResult.diag && (
+                      <div className="rounded-lg px-3 py-2 space-y-1"
+                        style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                        <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Variáveis de ambiente</p>
+                        {Object.entries(diagResult.diag).map(([k, v]) => (
+                          <div key={k} className="flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full flex-shrink-0 ${v === true ? "bg-green-500" : v === false ? "bg-red-500" : "bg-yellow-500"}`} />
+                            <span className="text-[10px] text-gray-500 font-mono flex-1">{k}</span>
+                            <span className={`text-[10px] font-black ${v === true ? "text-green-400" : v === false ? "text-red-400" : "text-yellow-400"}`}>
+                              {v === true ? "✓ configurada" : v === false ? "✕ faltando" : String(v)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {diagResult.resultado && (
+                      <div className="rounded-lg px-3 py-2"
+                        style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.15)" }}>
+                        <p className="text-[10px] font-black text-green-400 mb-1">Resposta EfíBank</p>
+                        <pre className="text-[10px] text-gray-400 overflow-auto">{JSON.stringify(diagResult.resultado, null, 2) as string}</pre>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
