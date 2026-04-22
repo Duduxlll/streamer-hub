@@ -29,8 +29,8 @@ function ParticipanteCard({ p, isVoce }: { p: { image: string | null; displayNam
       )}
       <div className="relative z-10 flex flex-col items-center gap-1.5 px-2 pt-3 pb-2.5 w-full">
         {p.image
-          ? <img src={p.image} alt={p.displayName} className="w-12 h-12 rounded-full object-cover ring-2"
-              style={{ ringColor: isVoce ? "#ffba00" : "rgba(255,255,255,0.15)", borderRadius: "50%", border: `2px solid ${isVoce ? "rgba(255,186,0,0.7)" : "rgba(255,255,255,0.12)"}` }} />
+          ? <img src={p.image} alt={p.displayName} className="w-12 h-12 rounded-full object-cover"
+              style={{ border: `2px solid ${isVoce ? "rgba(255,186,0,0.7)" : "rgba(255,255,255,0.12)"}` }} />
           : <div className="w-12 h-12 rounded-full flex items-center justify-center font-black text-[#ffba00] text-lg"
               style={{ background: "rgba(255,186,0,0.1)", border: "2px solid rgba(255,186,0,0.25)" }}>
               {p.displayName[0]?.toUpperCase()}
