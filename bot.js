@@ -227,6 +227,27 @@ client.on("message", async (_channel, tags, message, self) => {
     return;
   }
 
+  if (msg.toLowerCase() === "!gorjeta") {
+    try {
+      const image = avatarCache.get(login) ?? null;
+      const res   = await fetch(`${SITE_URL}/api/gorjeta`, {
+        method : "POST",
+        headers: { "Content-Type": "application/json", "x-bot-secret": BOT_SECRET },
+        body   : JSON.stringify({ action: "entrar", username: login, displayName, image }),
+      });
+      const data  = await res.json();
+      if (res.ok && data.ok) {
+        console.log(`💰  Gorjeta ${displayName}: inscrito!`);
+        if (BOT_USER)
+          client.say(_channel, `@${displayName} inscrito na gorjeta! 💰`).catch(() => {});
+      } else if (data.reason === "não cadastrado") {
+        if (BOT_USER)
+          client.say(_channel, `@${displayName} você precisa se cadastrar em ${SITE_URL}/gorjeta para participar!`).catch(() => {});
+      }
+    } catch (err) { console.error("❌  Erro gorjeta:", err.message); }
+    return;
+  }
+
   const matchT = msg.match(/^!time\s+(.+)/i);
   if (matchT) {
     const time = matchT[1].trim();

@@ -206,6 +206,15 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
                   <span className="text-base">🎰</span>
                   Admin · Jackpot
                 </Link>
+                <Link
+                  href="/admin/gorjeta"
+                  onClick={() => setOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
+                  style={{ color: "#ffba00" }}
+                >
+                  <span className="text-base">💰</span>
+                  Admin · Gorjeta
+                </Link>
               </>
             )}
             <button
@@ -266,6 +275,7 @@ export default function Navbar() {
             <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />
             <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" alsoActiveOn={["/admin/palpites", "/admin/torneio", "/admin/batalha", "/admin/jackpot"]} />
             <NavLink href={admin ? "/admin/sorteio" : "/sorteio"} label="Sorteio" from="#ffba00" to="#e6a000" alsoActiveOn={["/admin/sorteio", "/sorteio"]} />
+            <NavLink href={admin ? "/admin/gorjeta" : "/gorjeta"} label="Gorjeta" from="#4ade80" to="#22c55e" alsoActiveOn={["/admin/gorjeta", "/gorjeta"]} />
           </div>
 
           <div className="hidden md:flex items-center">
@@ -312,6 +322,9 @@ export default function Navbar() {
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
               <NavLink href={admin ? "/admin/sorteio" : "/sorteio"} label="Sorteio" from="#ffba00" to="#e6a000" alsoActiveOn={["/admin/sorteio", "/sorteio"]} />
+            </div>
+            <div onClick={() => setOpen(false)} className="block px-0">
+              <NavLink href={admin ? "/admin/gorjeta" : "/gorjeta"} label="Gorjeta" from="#4ade80" to="#22c55e" alsoActiveOn={["/admin/gorjeta", "/gorjeta"]} />
             </div>
             <a
               href="https://twitch.tv/stainzincs"
