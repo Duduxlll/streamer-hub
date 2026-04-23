@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import {
-  getCadastros, getCadastro, cadastrar, aprovarCadastro, rejeitarCadastro, editarCpfCadastro,
+  getCadastros, getCadastro, cadastrar, aprovarCadastro, rejeitarCadastro, editarCpfCadastro, editarChaveCadastro,
   getScreenshot, getSessao, abrirSessao, entrarSessao, sortearGorjeta,
   salvarPagamentos, registrarManual, adicionarParticipanteTeste, fecharSessaoSemPagar, limparSessao,
   getHistoricoGorjeta, mascarCpf,
@@ -111,6 +111,16 @@ export async function POST(req: NextRequest) {
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const c = await editarCpfCadastro(String(body.id ?? ""), String(body.cpf ?? ""));
     if (!c) return NextResponse.json({ error: "CPF inválido ou cadastro não encontrado" }, { status: 400 });
+    return NextResponse.json({ ok: true, cadastro: c }, { headers: NO_CACHE });
+  }
+
+  if (action === "editar-chave") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const tiposValidos = ["cpf", "telefone", "email", "aleatoria"];
+    const tipoChave = tiposValidos.includes(body.tipoChave) ? body.tipoChave : "cpf";
+    const c = await editarChaveCadastro(String(body.id ?? ""), tipoChave, String(body.chave ?? ""));
+    if (!c) return NextResponse.json({ error: "Chave inválida ou cadastro não encontrado" }, { status: 400 });
     return NextResponse.json({ ok: true, cadastro: c }, { headers: NO_CACHE });
   }
 

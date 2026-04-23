@@ -216,6 +216,19 @@ export async function editarCpfCadastro(id: string, cpf: string): Promise<Cadast
   const c = list.find(x => x.id === id);
   if (!c) return null;
   c.cpf = cpfNum;
+  c.tipoChave = "cpf";
+  await saveCadastros(list); return c;
+}
+
+export async function editarChaveCadastro(id: string, tipoChave: TipoChavePix, chave: string): Promise<CadastroGorjeta | null> {
+  const list = await loadCadastros();
+  const c = list.find(x => x.id === id);
+  if (!c) return null;
+  const chaveNorm = normalizarChave(chave, tipoChave);
+  if (!chaveNorm) return null;
+  c.cpf = chaveNorm;
+  c.tipoChave = tipoChave;
+  c.cpfTitular = tipoChave === "cpf" ? chaveNorm : undefined;
   await saveCadastros(list); return c;
 }
 

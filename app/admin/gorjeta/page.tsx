@@ -290,31 +290,41 @@ function SortearModal({ participantes, vencedores, onPagar, onClose }: {
 
 // ─── Card de cadastro ─────────────────────────────────────────────────────
 
-function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onCpfEditado }: {
+function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada }: {
   c: CadastroGorjeta;
   onAprovar: () => void;
   onRejeitar: (motivo: string) => void;
   onVerFoto: () => void;
-  onCpfEditado: (cpf: string) => void;
+  onChaveEditada: () => void;
 }) {
   const [rejMotivo, setRejMotivo] = useState("");
   const [showRejeitar, setShowRejeitar] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [cpfEdit, setCpfEdit] = useState("");
+  const [tipoChaveEdit, setTipoChaveEdit] = useState<TipoChavePix>(c.tipoChave ?? "cpf");
+  const [chaveEdit, setChaveEdit] = useState("");
   const [busy, setBusy] = useState(false);
   const [editErr, setEditErr] = useState("");
 
   const borderColor = c.status === "aprovado" ? "rgba(74,222,128,0.2)" : c.status === "rejeitado" ? "rgba(248,113,113,0.15)" : "rgba(255,186,0,0.15)";
 
-  async function salvarCpf() {
-    const d = cpfEdit.replace(/\D/g, "");
-    if (d.length !== 11) { setEditErr("CPF inválido (11 dígitos)"); return; }
+  const tipoPlaceholder: Record<TipoChavePix, string> = {
+    cpf: "000.000.000-00",
+    telefone: "+55 11 99999-9999",
+    email: "email@exemplo.com",
+    aleatoria: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  };
+
+  async function salvarChave() {
     setBusy(true);
+    setEditErr("");
     try {
-      const res = await fetch("/api/gorjeta", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "editar-cpf", id: c.id, cpf: d }) });
+      const res = await fetch("/api/gorjeta", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "editar-chave", id: c.id, tipoChave: tipoChaveEdit, chave: chaveEdit }),
+      });
       const data = await res.json();
       if (!res.ok) { setEditErr(data.error ?? "Erro"); return; }
-      onCpfEditado(d); setShowEdit(false);
+      onChaveEditada(); setShowEdit(false);
     } catch { setEditErr("Erro de conexão"); }
     finally { setBusy(false); }
   }
@@ -332,7 +342,7 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onCpfEditado }: {
         </div>
         <div className="flex gap-1.5 flex-shrink-0">
           <button onClick={onVerFoto} className="px-2.5 py-1.5 rounded-xl text-[11px] font-black text-gray-400 hover:text-white transition-all hover:bg-white/5" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>📎</button>
-          <button onClick={() => { setCpfEdit(formatCpfInput(c.cpf)); setEditErr(""); setShowEdit(s => !s); setShowRejeitar(false); }}
+          <button onClick={() => { setTipoChaveEdit(c.tipoChave ?? "cpf"); setChaveEdit(c.cpf); setEditErr(""); setShowEdit(s => !s); setShowRejeitar(false); }}
             className="px-2.5 py-1.5 rounded-xl text-[11px] transition-all hover:bg-white/5"
             style={{ border: "1px solid rgba(255,255,255,0.08)", color: showEdit ? "#ffba00" : "#6b7280" }}>✏️</button>
         </div>
@@ -365,14 +375,32 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onCpfEditado }: {
       </div>
       {showEdit && (
         <div className="px-5 pb-4 space-y-2 border-t border-[#ffba00]/10 pt-3" style={{ background: "rgba(255,186,0,0.025)" }}>
-          <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest">Editar PIX / CPF</p>
+          <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest">Editar chave PIX</p>
+          <select value={tipoChaveEdit}
+            onChange={e => { setTipoChaveEdit(e.target.value as TipoChavePix); setChaveEdit(""); setEditErr(""); }}
+            className="w-full px-3 py-2 rounded-xl text-xs text-white outline-none"
+            style={{ background: "rgba(255,186,0,0.06)", border: "1px solid rgba(255,186,0,0.3)" }}>
+            <option value="cpf">CPF</option>
+            <option value="telefone">Telefone</option>
+            <option value="email">E-mail</option>
+            <option value="aleatoria">Chave aleatória (UUID)</option>
+          </select>
           <div className="flex gap-2">
-            <input type="text" inputMode="numeric" placeholder="000.000.000-00" value={cpfEdit}
-              onChange={e => { setCpfEdit(formatCpfInput(e.target.value)); setEditErr(""); }}
+            <input type="text"
+              inputMode={tipoChaveEdit === "cpf" || tipoChaveEdit === "telefone" ? "numeric" : "text"}
+              placeholder={tipoPlaceholder[tipoChaveEdit]}
+              value={tipoChaveEdit === "cpf" ? formatCpfInput(chaveEdit) : chaveEdit}
+              onChange={e => { setChaveEdit(e.target.value); setEditErr(""); }}
               className="flex-1 px-3 py-2 rounded-xl text-xs text-white placeholder-gray-600 outline-none"
               style={{ background: "rgba(255,186,0,0.06)", border: "1px solid rgba(255,186,0,0.3)" }} />
-            <button disabled={busy} onClick={salvarCpf} className="px-4 py-2 rounded-xl text-xs font-black text-black disabled:opacity-50" style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>{busy ? "..." : "Salvar"}</button>
-            <button onClick={() => { setShowEdit(false); setEditErr(""); }} className="px-3 py-2 rounded-xl text-xs font-black text-gray-500 hover:text-white transition-colors" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>✕</button>
+            <button disabled={busy} onClick={salvarChave}
+              className="px-4 py-2 rounded-xl text-xs font-black text-black disabled:opacity-50"
+              style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
+              {busy ? "..." : "Salvar"}
+            </button>
+            <button onClick={() => { setShowEdit(false); setEditErr(""); }}
+              className="px-3 py-2 rounded-xl text-xs font-black text-gray-500 hover:text-white transition-colors"
+              style={{ border: "1px solid rgba(255,255,255,0.08)" }}>✕</button>
           </div>
           {editErr && <p className="text-xs text-red-400 font-bold">{editErr}</p>}
         </div>
@@ -449,7 +477,7 @@ export default function AdminGorjetaPage() {
     finally { setBusy(false); }
   }
 
-  function atualizarCpfLocal(id: string, cpf: string) { setCadastros(prev => prev.map(c => c.id === id ? { ...c, cpf } : c)); flash("CPF atualizado!", "ok"); }
+  async function onChaveEditada() { await fetchAll(); flash("Chave PIX atualizada!", "ok"); }
   async function aprovar(id: string) { const r = await apiCall({ action: "aprovar", id }); if (r) flash("Aprovado!", "ok"); }
   async function rejeitar(id: string, motivo: string) { const r = await apiCall({ action: "rejeitar", id, motivo }); if (r) flash("Rejeitado", "ok"); }
 
@@ -850,7 +878,7 @@ export default function AdminGorjetaPage() {
                       onAprovar={() => aprovar(c.id)}
                       onRejeitar={(motivo) => rejeitar(c.id, motivo)}
                       onVerFoto={() => setScreenshotModalId(c.id)}
-                      onCpfEditado={(cpf) => atualizarCpfLocal(c.id, cpf)} />
+                      onChaveEditada={onChaveEditada} />
                   ))}
                 </div>
               );
