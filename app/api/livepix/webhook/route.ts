@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import crypto from "crypto";
 import { getMessage } from "@/lib/livepix";
 import { getJackpot, setJackpot, type JackpotJogador } from "@/lib/jackpotStore";
 import { dbGet, dbSet } from "@/lib/store";
@@ -14,28 +13,17 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const secret = process.env.LIVEPIX_WEBHOOK_SECRET;
 
-  // Se o secret estiver configurado, valida — senão, aceita (segurança vem do messageId verificado na API)
   if (secret) {
-    const candidate =
-      req.nextUrl.searchParams.get("secret") ??
-      req.headers.get("x-webhook-secret") ??
-      req.headers.get("x-livepix-secret") ??
-      req.headers.get("x-signature") ??
-      "";
-
-    let authorized = false;
+    const candidate = req.nextUrl.searchParams.get("secret") ?? "";
+    let ok = false;
     try {
       if (candidate.length > 0 && candidate.length === secret.length) {
-        authorized = crypto.timingSafeEqual(Buffer.from(candidate), Buffer.from(secret));
+        ok = require("crypto").timingSafeEqual(Buffer.from(candidate), Buffer.from(secret));
       }
-    } catch {
-      authorized = false;
-    }
+    } catch { ok = false; }
 
-    if (!authorized) {
-      console.error(
-        `[livepix/webhook] ❌ Auth falhou — candidate="${candidate.slice(0, 6) || "(vazio)"}" secret-len=${secret.length} candidate-len=${candidate.length}`
-      );
+    if (!ok) {
+      console.error("[livepix/webhook] ❌ Secret inválido ou ausente na URL");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
