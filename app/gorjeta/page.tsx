@@ -56,66 +56,40 @@ function mascarCpf(cpf: string): string {
   return `***.${d.slice(3, 6)}.${d.slice(6, 9)}-**`;
 }
 
-const posMeta: Record<number, { icon: string; grad: string; ringColor: string }> = {
-  1: { icon: "👑", grad: "linear-gradient(135deg,#ffe55a,#ffba00)", ringColor: "rgba(255,186,0,0.85)" },
-  2: { icon: "🥈", grad: "linear-gradient(135deg,#d8dee8,#a8b4c0)", ringColor: "rgba(200,210,220,0.7)"  },
-  3: { icon: "🥉", grad: "linear-gradient(135deg,#e8a060,#c97030)", ringColor: "rgba(210,140,80,0.7)"   },
-};
-
-function VencedorCard({ v, pos, pag, delay }: {
+function VencedorCard({ v, pag, delay }: {
   v: { image: string | null; displayName: string; username: string };
-  pos: number;
   pag?: TransacaoGorjeta;
   delay: number;
 }) {
-  const meta = posMeta[pos] ?? { icon: `#${pos}`, grad: "linear-gradient(135deg,#ffdd55,#ffba00)", ringColor: "rgba(255,186,0,0.6)" };
-  const isFirst = pos === 1;
-
   return (
-    <div className={`relative overflow-hidden rounded-2xl flex flex-col items-center${isFirst ? " winner-glow" : ""}`}
+    <div className="relative overflow-hidden rounded-2xl flex flex-col items-center winner-glow"
       style={{
         background: "linear-gradient(160deg,rgba(28,22,6,0.98) 0%,rgba(14,10,2,0.99) 100%)",
-        border: `2px solid ${isFirst ? "rgba(255,186,0,0.6)" : pos === 2 ? "rgba(200,210,220,0.35)" : "rgba(210,140,80,0.35)"}`,
+        border: "2px solid rgba(255,186,0,0.55)",
         animation: `winnerDrop 0.65s cubic-bezier(0.34,1.56,0.64,1) ${delay}ms both`,
       }}>
-      {/* Ambient glow from avatar */}
       {v.image && (
         <img src={v.image} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           style={{ filter: "blur(24px) brightness(0.15) saturate(1.5)", transform: "scale(1.4)" }} />
       )}
-      {/* Gold shimmer overlay for 1st */}
-      {isFirst && (
-        <div className="absolute inset-0 pointer-events-none"
-          style={{
-            background: "linear-gradient(105deg, transparent 40%, rgba(255,215,0,0.06) 50%, transparent 60%)",
-            backgroundSize: "200% 100%",
-            animation: "shimmer 3s linear infinite",
-          }} />
-      )}
+      <div className="absolute inset-0 pointer-events-none"
+        style={{
+          background: "linear-gradient(105deg, transparent 40%, rgba(255,215,0,0.05) 50%, transparent 60%)",
+          backgroundSize: "200% 100%",
+          animation: "shimmer 3s linear infinite",
+        }} />
 
       <div className="relative z-10 flex flex-col items-center gap-2 px-4 pt-5 pb-4 w-full">
-        {/* Position badge */}
-        <div className="float-badge">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center text-base shadow-lg"
-            style={{ background: meta.grad, boxShadow: `0 4px 14px ${meta.ringColor}` }}>
-            <span style={{ filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.5))" }}>{meta.icon}</span>
-          </div>
-        </div>
-
-        {/* Avatar */}
         {v.image
-          ? <img src={v.image} alt={v.displayName}
-              className={`object-cover rounded-full ${isFirst ? "w-20 h-20" : "w-16 h-16"}`}
-              style={{ border: `3px solid ${meta.ringColor}`, boxShadow: `0 0 20px ${meta.ringColor}` }} />
-          : <div className={`rounded-full flex items-center justify-center font-black text-[#ffba00] ${isFirst ? "w-20 h-20 text-3xl" : "w-16 h-16 text-2xl"}`}
-              style={{ background: "rgba(255,186,0,0.08)", border: `3px solid ${meta.ringColor}` }}>
+          ? <img src={v.image} alt={v.displayName} className="w-16 h-16 object-cover rounded-full"
+              style={{ border: "3px solid rgba(255,186,0,0.75)", boxShadow: "0 0 20px rgba(255,186,0,0.35)" }} />
+          : <div className="w-16 h-16 rounded-full flex items-center justify-center font-black text-[#ffba00] text-2xl"
+              style={{ background: "rgba(255,186,0,0.08)", border: "3px solid rgba(255,186,0,0.5)" }}>
               {v.displayName[0]?.toUpperCase()}
             </div>
         }
 
-        <p className={`font-black text-white text-center truncate w-full ${isFirst ? "text-base" : "text-sm"}`}>
-          {v.displayName}
-        </p>
+        <p className="text-sm font-black text-white text-center truncate w-full">{v.displayName}</p>
 
         {pag && (
           <span className="text-[10px] font-black px-3 py-1 rounded-full"
@@ -275,7 +249,7 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
             "grid-cols-3"
           }`}>
             {shownWinners.map((v, i) => (
-              <VencedorCard key={v.username} v={v} pos={i + 1} delay={0}
+              <VencedorCard key={v.username} v={v} delay={0}
                 pag={sessao.transacoes?.find(t => t.username === v.username && t.tipo === "sorteio")} />
             ))}
           </div>
