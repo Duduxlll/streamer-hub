@@ -174,6 +174,10 @@ export async function enviarPix(
     },
   });
 
+  const sandbox = process.env.GERENCIANET_SANDBOX === "true";
+  console.log(`[enviarPix] host=${getHost()} sandbox=${sandbox} chave="${cpfDestinatario}" valor=${valor.toFixed(2)} idEnvio=${idEnvio}`);
+  console.log(`[enviarPix] body=${bodyStr}`);
+
   const res = await nodeRequest(
     {
       hostname: getHost(),
@@ -189,10 +193,15 @@ export async function enviarPix(
     bodyStr,
   );
 
+  console.log(`[enviarPix] status=${res.status} response=${res.text}`);
+
   if (res.status < 200 || res.status >= 300) {
     throw new Error(`Falha no envio PIX (${res.status}): ${res.text}`);
   }
 
-  const data = JSON.parse(res.text) as { idEnvio?: string; e2eId?: string };
+  const data = JSON.parse(res.text) as { idEnvio?: string; e2eId?: string; status?: string };
+  if (data.status && data.status !== "CONCLUÍDA" && data.status !== "PROCESSANDO" && data.status !== "EM_PROCESSAMENTO") {
+    console.warn(`[enviarPix] status inesperado="${data.status}" para chave="${cpfDestinatario}"`);
+  }
   return { idEnvio: data.idEnvio ?? idEnvio, e2eId: data.e2eId };
 }
