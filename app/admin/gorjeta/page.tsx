@@ -319,6 +319,51 @@ function SortearModal({ participantes, vencedores, onPagar, onClose }: {
   );
 }
 
+// ─── Modal de confirmação ────────────────────────────────────────────────
+
+function ConfirmModal({ title, desc, icon, confirmLabel = "Confirmar", onConfirm, onClose }: {
+  title: string; desc: string; icon: string; confirmLabel?: string;
+  onConfirm: () => void; onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md" onClick={onClose}>
+      <div className="w-full max-w-xs rounded-3xl overflow-hidden"
+        style={{
+          background: "rgba(6,4,18,0.99)",
+          border: "1px solid rgba(248,113,113,0.25)",
+          boxShadow: "0 0 80px rgba(248,113,113,0.1), 0 24px 60px rgba(0,0,0,0.7)",
+          animation: "fadeInUp 0.25s ease-out",
+        }}
+        onClick={e => e.stopPropagation()}>
+        <div className="px-6 pt-8 pb-5 text-center">
+          <div className="inline-flex w-14 h-14 items-center justify-center rounded-2xl mb-4 text-2xl"
+            style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>
+            {icon}
+          </div>
+          <h3 className="text-base font-black text-white mb-2">{title}</h3>
+          <p className="text-xs text-gray-500 leading-relaxed">{desc}</p>
+        </div>
+        <div className="px-5 pb-6 flex gap-2">
+          <button onClick={onClose}
+            className="flex-1 py-2.5 rounded-2xl text-xs font-black transition-all hover:bg-white/[0.04]"
+            style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.07)" }}>
+            Cancelar
+          </button>
+          <button onClick={() => { onConfirm(); onClose(); }}
+            className="flex-1 py-2.5 rounded-2xl text-xs font-black text-white transition-all hover:scale-[1.02] active:scale-95"
+            style={{
+              background: "linear-gradient(135deg, rgba(239,68,68,0.55), rgba(220,38,38,0.4))",
+              border: "1px solid rgba(248,113,113,0.35)",
+              boxShadow: "0 4px 20px rgba(239,68,68,0.2)",
+            }}>
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Card de cadastro ─────────────────────────────────────────────────────
 
 function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onDeletar }: {
@@ -475,6 +520,7 @@ export default function AdminGorjetaPage() {
   const [sortearVencedores, setSortearVencedores] = useState<ParticipanteSessao[]>([]);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ text: string; type: "ok" | "err" } | null>(null);
+  const [confirmModal, setConfirmModal] = useState<{ title: string; desc: string; icon: string; confirmLabel?: string; onConfirm: () => void } | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
@@ -511,15 +557,23 @@ export default function AdminGorjetaPage() {
   }
 
   async function onChaveEditada() { await fetchAll(); flash("Chave PIX atualizada!", "ok"); }
-  async function deletar(id: string) {
-    if (!window.confirm("Apagar este cadastro? A pessoa poderá se recadastrar.")) return;
-    const r = await apiCall({ action: "deletar-cadastro", id });
-    if (r) flash("Cadastro apagado", "ok");
+  function deletar(id: string) {
+    setConfirmModal({
+      title: "Apagar cadastro?",
+      desc: "A pessoa será removida e poderá se recadastrar normalmente.",
+      icon: "🗑️",
+      confirmLabel: "Apagar",
+      onConfirm: () => { apiCall({ action: "deletar-cadastro", id }).then(r => { if (r) flash("Cadastro apagado", "ok"); }); },
+    });
   }
-  async function limparHistoricoAction() {
-    if (!window.confirm("Limpar todo o histórico de gorjetas?")) return;
-    const r = await apiCall({ action: "limpar-historico" });
-    if (r) flash("Histórico limpo", "ok");
+  function limparHistoricoAction() {
+    setConfirmModal({
+      title: "Limpar histórico?",
+      desc: "Todas as sessões encerradas serão removidas permanentemente.",
+      icon: "📜",
+      confirmLabel: "Limpar tudo",
+      onConfirm: () => { apiCall({ action: "limpar-historico" }).then(r => { if (r) flash("Histórico limpo", "ok"); }); },
+    });
   }
   async function aprovar(id: string) { const r = await apiCall({ action: "aprovar", id }); if (r) flash("Aprovado!", "ok"); }
   async function rejeitar(id: string, motivo: string) { const r = await apiCall({ action: "rejeitar", id, motivo }); if (r) flash("Rejeitado", "ok"); }
@@ -589,6 +643,7 @@ export default function AdminGorjetaPage() {
       </div>
 
       {screenshotModalId && <ScreenshotModal id={screenshotModalId} onClose={() => setScreenshotModalId(null)} />}
+      {confirmModal && <ConfirmModal {...confirmModal} onClose={() => setConfirmModal(null)} />}
       {showSortearModal && sessao && (
         <SortearModal
           participantes={sessao.participantes}

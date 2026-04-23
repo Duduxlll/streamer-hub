@@ -74,9 +74,14 @@ export async function POST(req: NextRequest) {
       if (tipoChave === "cpf") {
         cpfTitular = chaveNorm; // CPF é o próprio identificador do titular
       } else {
-        // Para outros tipos, consulta o DICT para descobrir o CPF do titular
+        // Para outros tipos, tenta DICT primeiro; se falhar, usa CPF de verificação informado pelo usuário
         const titular = await consultarTitularChave(chaveNorm).catch(() => null);
-        if (titular) cpfTitular = titular;
+        if (titular) {
+          cpfTitular = titular;
+        } else if (body.cpfVerificacao) {
+          const cpfVer = normalizarChave(String(body.cpfVerificacao), "cpf");
+          if (cpfVer) cpfTitular = cpfVer;
+        }
       }
     }
 

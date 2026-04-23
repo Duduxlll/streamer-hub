@@ -44,6 +44,19 @@ const CSS = `
 
 type TipoChave = "cpf" | "telefone" | "email" | "aleatoria";
 
+function validarCpfSimples(cpf: string): boolean {
+  const d = cpf.replace(/\D/g, "");
+  if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += +d[i] * (10 - i);
+  let r = (s * 10) % 11; if (r >= 10) r = 0;
+  if (r !== +d[9]) return false;
+  s = 0;
+  for (let i = 0; i < 10; i++) s += +d[i] * (11 - i);
+  r = (s * 10) % 11; if (r >= 10) r = 0;
+  return r === +d[10];
+}
+
 function formatCpfInput(value: string): string {
   const d = value.replace(/\D/g, "").slice(0, 11);
   if (d.length <= 3) return d;
@@ -322,7 +335,7 @@ export default function GorjetaPage() {
   const [cadastro, setCadastro] = useState<CadastroGorjeta | null | undefined>(undefined);
   const [sessao, setSessao] = useState<SessaoGorjeta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ nomeCompleto: "", chave: "", tipoChave: "cpf" as TipoChave, screenshot: "" });
+  const [form, setForm] = useState({ nomeCompleto: "", chave: "", tipoChave: "cpf" as TipoChave, screenshot: "", cpfVerificacao: "" });
   const [screenshotName, setScreenshotName] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
@@ -364,13 +377,25 @@ export default function GorjetaPage() {
     setErro("");
     if (!form.nomeCompleto.trim()) return setErro("Informe seu nome completo");
     if (!form.chave.trim()) return setErro("Informe sua chave PIX");
+    if (form.tipoChave !== "cpf") {
+      if (!form.cpfVerificacao.trim()) return setErro("Informe seu CPF para verificação de identidade");
+      if (!validarCpfSimples(form.cpfVerificacao)) return setErro("CPF de verificação inválido");
+    }
     if (!form.screenshot) return setErro("Envie o comprovante de depósito");
     setEnviando(true);
     try {
+      const body: Record<string, string> = {
+        action: "cadastrar",
+        nomeCompleto: form.nomeCompleto,
+        tipoChave: form.tipoChave,
+        chave: form.chave,
+        screenshot: form.screenshot,
+      };
+      if (form.tipoChave !== "cpf") body.cpfVerificacao = form.cpfVerificacao;
       const res = await fetch("/api/gorjeta", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "cadastrar", nomeCompleto: form.nomeCompleto, tipoChave: form.tipoChave, chave: form.chave, screenshot: form.screenshot }),
+        body: JSON.stringify(body),
       });
       const data = await res.json();
       if (!res.ok) { setErro(data.error ?? "Erro ao enviar"); return; }
@@ -493,6 +518,17 @@ export default function GorjetaPage() {
                   className="w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
               </div>
+              {form.tipoChave !== "cpf" && (
+                <div>
+                  <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">CPF (verificação de identidade)</label>
+                  <input type="text" inputMode="numeric" placeholder="000.000.000-00"
+                    value={form.cpfVerificacao}
+                    onChange={e => setForm(f => ({ ...f, cpfVerificacao: formatCpfInput(e.target.value) }))}
+                    className="w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
+                  <p className="text-[10px] text-gray-600 mt-1">Usado só para verificar identidade. O PIX vai para a chave acima.</p>
+                </div>
+              )}
               <div>
                 <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Comprovante de depósito</label>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden"
@@ -568,7 +604,7 @@ export default function GorjetaPage() {
                     style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.15)" }}>
                     ❌ Rejeitado{cadastro.motivoRejeicao ? `: ${cadastro.motivoRejeicao}` : "."}
                   </div>
-                  <button onClick={() => { setCadastro(null); setErro(""); setForm({ nomeCompleto: "", chave: "", tipoChave: "cpf", screenshot: "" }); setScreenshotName(""); }}
+                  <button onClick={() => { setCadastro(null); setErro(""); setForm({ nomeCompleto: "", chave: "", tipoChave: "cpf", screenshot: "", cpfVerificacao: "" }); setScreenshotName(""); }}
                     className="w-full py-2.5 rounded-xl font-black text-sm text-black transition-all hover:scale-[1.02]"
                     style={{ background: "linear-gradient(135deg,#ffe55a,#ffba00)" }}>
                     Enviar novo cadastro
