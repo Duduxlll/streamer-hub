@@ -238,7 +238,7 @@ export async function sortearGorjeta(params?: {
 }): Promise<{ ok: true; sessao: SessaoGorjeta } | { ok: false; error: string }> {
   const sessao = await loadSessao();
   if (!sessao) return { ok: false, error: "Sem sessão ativa" };
-  if (sessao.status !== "aberta") return { ok: false, error: "Sessão não está aberta" };
+  if (sessao.status === "fechada") return { ok: false, error: "Sessão encerrada" };
   if (sessao.participantes.length === 0) return { ok: false, error: "Sem participantes" };
 
   if (params?.valorUnitario && params.valorUnitario > 0) sessao.valorUnitario = params.valorUnitario;
