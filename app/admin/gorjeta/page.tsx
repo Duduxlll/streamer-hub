@@ -6,12 +6,17 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import type { CadastroGorjeta, SessaoGorjeta, ParticipanteSessao, TransacaoGorjeta, TipoChavePix } from "@/lib/gorjeta-store";
-import { mascarChave } from "@/lib/gorjeta-store";
 
-function mascarCpf(cpf: string) { return mascarChave(cpf, "cpf"); }
-function mascarChaveAdmin(c: { cpf: string; tipoChave?: TipoChavePix }) {
-  return mascarChave(c.cpf, c.tipoChave ?? "cpf");
+function mascarChave(chave: string, tipo: TipoChavePix = "cpf"): string {
+  switch (tipo) {
+    case "cpf": { const d = chave.replace(/\D/g, ""); return d.length === 11 ? `***.${d.slice(3,6)}.${d.slice(6,9)}-**` : chave; }
+    case "telefone": { const d = chave.replace(/\D/g, ""); return d.length >= 4 ? `+55 (${d.slice(2,4)}) *****-${d.slice(-4)}` : "***"; }
+    case "email": { const [l, d] = chave.split("@"); return d ? `${l[0] ?? "*"}***@${d}` : "***@***"; }
+    case "aleatoria": return chave.length >= 8 ? `${chave.slice(0,8)}-****-****-****-${chave.slice(-4)}` : "****";
+  }
 }
+function mascarCpf(cpf: string) { return mascarChave(cpf, "cpf"); }
+function mascarChaveAdmin(c: { cpf: string; tipoChave?: TipoChavePix }) { return mascarChave(c.cpf, c.tipoChave ?? "cpf"); }
 function formatCpfInput(value: string): string {
   const d = value.replace(/\D/g, "").slice(0, 11);
   if (d.length <= 3) return d;
