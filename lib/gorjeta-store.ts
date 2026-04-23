@@ -166,12 +166,17 @@ export async function cadastrar(params: {
 
   // Bloqueia mesmo titular (mesmo CPF identificado via DICT) em contas diferentes
   if (params.cpfTitular) {
-    const titularDup = list.find(c =>
-      c.cpfTitular &&
-      c.cpfTitular === params.cpfTitular &&
-      c.username.toLowerCase() !== params.username.toLowerCase() &&
-      c.status !== "rejeitado"
-    );
+    const titularDup = list.find(c => {
+      if (c.username.toLowerCase() === params.username.toLowerCase()) return false;
+      if (c.status === "rejeitado") return false;
+      // Checa campo cpfTitular (cadastros novos)
+      if (c.cpfTitular && c.cpfTitular === params.cpfTitular) return true;
+      // Retrocompatibilidade: cadastros antigos com CPF não têm cpfTitular,
+      // mas o próprio campo cpf É o CPF do titular
+      const tipo = c.tipoChave ?? "cpf";
+      if (tipo === "cpf" && c.cpf === params.cpfTitular) return true;
+      return false;
+    });
     if (titularDup) return { ok: false, error: "Você já possui um cadastro em outra conta com o mesmo titular bancário" };
   }
 
