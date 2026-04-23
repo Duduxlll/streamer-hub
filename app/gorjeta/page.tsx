@@ -42,6 +42,8 @@ const CSS = `
   .float-badge { animation: floatBadge 3s ease-in-out infinite; }
 `;
 
+type TipoChave = "cpf" | "telefone" | "email" | "aleatoria";
+
 function formatCpfInput(value: string): string {
   const d = value.replace(/\D/g, "").slice(0, 11);
   if (d.length <= 3) return d;
@@ -50,10 +52,27 @@ function formatCpfInput(value: string): string {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 }
 
-function mascarCpf(cpf: string): string {
-  const d = cpf.replace(/\D/g, "");
-  if (d.length !== 11) return cpf;
-  return `***.${d.slice(3, 6)}.${d.slice(6, 9)}-**`;
+function mascarChaveLocal(chave: string, tipo: TipoChave): string {
+  switch (tipo) {
+    case "cpf": {
+      const d = chave.replace(/\D/g, "");
+      if (d.length !== 11) return chave;
+      return `***.${d.slice(3, 6)}.${d.slice(6, 9)}-**`;
+    }
+    case "telefone": {
+      const d = chave.replace(/\D/g, "");
+      if (d.length < 4) return "***";
+      return `+55 (${d.slice(2, 4)}) *****-${d.slice(-4)}`;
+    }
+    case "email": {
+      const [local, domain] = chave.split("@");
+      if (!domain) return "***@***";
+      return `${local[0] ?? "*"}***@${domain}`;
+    }
+    case "aleatoria":
+      if (chave.length < 8) return "****";
+      return `${chave.slice(0, 8)}-****-****-****-${chave.slice(-4)}`;
+  }
 }
 
 function VencedorCard({ v, pag, delay }: {
@@ -303,7 +322,7 @@ export default function GorjetaPage() {
   const [cadastro, setCadastro] = useState<CadastroGorjeta | null | undefined>(undefined);
   const [sessao, setSessao] = useState<SessaoGorjeta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ nomeCompleto: "", cpf: "", screenshot: "" });
+  const [form, setForm] = useState({ nomeCompleto: "", chave: "", tipoChave: "cpf" as TipoChave, screenshot: "" });
   const [screenshotName, setScreenshotName] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
@@ -336,14 +355,14 @@ export default function GorjetaPage() {
   async function enviar() {
     setErro("");
     if (!form.nomeCompleto.trim()) return setErro("Informe seu nome completo");
-    if (form.cpf.replace(/\D/g, "").length !== 11) return setErro("CPF inválido (11 dígitos)");
+    if (!form.chave.trim()) return setErro("Informe sua chave PIX");
     if (!form.screenshot) return setErro("Envie o comprovante de depósito");
     setEnviando(true);
     try {
       const res = await fetch("/api/gorjeta", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "cadastrar", ...form }),
+        body: JSON.stringify({ action: "cadastrar", nomeCompleto: form.nomeCompleto, tipoChave: form.tipoChave, chave: form.chave, screenshot: form.screenshot }),
       });
       const data = await res.json();
       if (!res.ok) { setErro(data.error ?? "Erro ao enviar"); return; }
@@ -432,11 +451,34 @@ export default function GorjetaPage() {
                   className="w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none transition-all"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
               </div>
-              <div>
-                <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">CPF (chave PIX)</label>
-                <input type="text" placeholder="000.000.000-00" inputMode="numeric"
-                  value={form.cpf}
-                  onChange={e => setForm(f => ({ ...f, cpf: formatCpfInput(e.target.value) }))}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block">Tipo de chave PIX</label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {([ ["cpf","CPF"], ["telefone","Telefone"], ["email","E-mail"], ["aleatoria","Aleatória"] ] as [TipoChave, string][]).map(([v, l]) => (
+                    <button key={v} type="button"
+                      onClick={() => setForm(f => ({ ...f, tipoChave: v, chave: "" }))}
+                      className="py-2 rounded-xl text-xs font-black transition-all"
+                      style={form.tipoChave === v
+                        ? { background: "linear-gradient(135deg,#ffe55a,#ffba00)", color: "#000" }
+                        : { background: "rgba(255,255,255,0.04)", color: "#6b7280", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      {l}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type={form.tipoChave === "email" ? "email" : "text"}
+                  inputMode={form.tipoChave === "cpf" || form.tipoChave === "telefone" ? "numeric" : "text"}
+                  placeholder={
+                    form.tipoChave === "cpf" ? "000.000.000-00" :
+                    form.tipoChave === "telefone" ? "+55 (11) 99999-9999" :
+                    form.tipoChave === "email" ? "seu@email.com" :
+                    "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                  }
+                  value={form.chave}
+                  onChange={e => {
+                    const v = form.tipoChave === "cpf" ? formatCpfInput(e.target.value) : e.target.value;
+                    setForm(f => ({ ...f, chave: v }));
+                  }}
                   className="w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
               </div>
@@ -484,8 +526,12 @@ export default function GorjetaPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl px-3 py-2.5"
                   style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                  <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">CPF</p>
-                  <p className="text-sm font-black text-white">{mascarCpf(cadastro.cpf)}</p>
+                  <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">
+                    {(cadastro as CadastroGorjeta & { tipoChave?: string }).tipoChave?.toUpperCase() ?? "CPF"}
+                  </p>
+                  <p className="text-sm font-black text-white">
+                    {mascarChaveLocal(cadastro.cpf, ((cadastro as CadastroGorjeta & { tipoChave?: TipoChave }).tipoChave) ?? "cpf")}
+                  </p>
                 </div>
                 <div className="rounded-xl px-3 py-2.5"
                   style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>

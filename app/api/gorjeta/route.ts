@@ -62,9 +62,12 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     if (!session?.user) return NextResponse.json({ error: "Login necessário" }, { status: 401 });
     const login = (session.user.twitchLogin ?? session.user.name ?? "").toLowerCase();
+    const tiposValidos = ["cpf", "telefone", "email", "aleatoria"];
+    const tipoChave = tiposValidos.includes(body.tipoChave) ? body.tipoChave : "cpf";
     const result = await cadastrar({
       username: login, displayName: session.user.name ?? login,
-      cpf: String(body.cpf ?? ""), nomeCompleto: String(body.nomeCompleto ?? ""),
+      tipoChave, chave: String(body.chave ?? body.cpf ?? ""),
+      nomeCompleto: String(body.nomeCompleto ?? ""),
       screenshot: String(body.screenshot ?? ""),
     });
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });

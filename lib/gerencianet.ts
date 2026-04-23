@@ -130,7 +130,6 @@ export async function enviarPix(
   if (!chavePagador) throw new Error("GERENCIANET_PIX_KEY não configurada");
 
   const token  = await getToken();
-  const cpfNum = cpfDestinatario.replace(/\D/g, "");
   const idEnvio = `gorjeta${Date.now()}${Math.random().toString(36).slice(2, 8)}`.slice(0, 35);
 
   const bodyStr = JSON.stringify({
@@ -140,7 +139,7 @@ export async function enviarPix(
       infoPagador,
     },
     favorecido: {
-      chave: cpfNum,
+      chave: cpfDestinatario, // já normalizado pelo gorjeta-store
     },
   });
 

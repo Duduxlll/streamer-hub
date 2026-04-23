@@ -5,12 +5,12 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
-import type { CadastroGorjeta, SessaoGorjeta, ParticipanteSessao, TransacaoGorjeta } from "@/lib/gorjeta-store";
+import type { CadastroGorjeta, SessaoGorjeta, ParticipanteSessao, TransacaoGorjeta, TipoChavePix } from "@/lib/gorjeta-store";
+import { mascarChave } from "@/lib/gorjeta-store";
 
-function mascarCpf(cpf: string): string {
-  const d = cpf.replace(/\D/g, "");
-  if (d.length !== 11) return cpf;
-  return `***.${d.slice(3, 6)}.${d.slice(6, 9)}-**`;
+function mascarCpf(cpf: string) { return mascarChave(cpf, "cpf"); }
+function mascarChaveAdmin(c: { cpf: string; tipoChave?: TipoChavePix }) {
+  return mascarChave(c.cpf, c.tipoChave ?? "cpf");
 }
 function formatCpfInput(value: string): string {
   const d = value.replace(/\D/g, "").slice(0, 11);
@@ -61,6 +61,51 @@ function PayBadge({ status, erro }: { status: string; erro?: string }) {
       style={{ color: "#f87171", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)" }}>
       ✕ falhou
     </span>
+  );
+}
+
+type HistoricoItem = { id: string; saldoTotal: number; totalEnviado: number; transacoes: TransacaoGorjeta[]; abertaEm: number; fechadaEm: number };
+
+function HistoricoCard({ h, num }: { h: HistoricoItem; num: number }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,4,18,0.85)", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <button className="w-full px-5 py-4 flex items-center gap-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors text-left" onClick={() => setExpanded(e => !e)}>
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-xs text-black" style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>#{num}</div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-black text-white">Saldo R$ {fmtBRL(h.saldoTotal)}</p>
+          <p className="text-[10px] text-gray-600">{new Date(h.fechadaEm).toLocaleString("pt-BR")} · {h.transacoes.length} transaç{h.transacoes.length === 1 ? "ão" : "ões"}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Enviado</p>
+            <p className="text-base font-black" style={{ background: "linear-gradient(135deg, #ffba00, #ffdd55)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+              R$ {fmtBRL(h.totalEnviado)}
+            </p>
+          </div>
+          <span className="text-gray-600 text-xs ml-1">{expanded ? "▲" : "▼"}</span>
+        </div>
+      </button>
+      {expanded && h.transacoes.length > 0 && (
+        <div className="overflow-y-auto px-5 py-3 space-y-2"
+          style={{ maxHeight: 240, scrollbarWidth: "thin", scrollbarColor: "rgba(255,186,0,0.15) transparent" }}>
+          {h.transacoes.map((t, i) => (
+            <div key={`${t.id}-${i}`} className="flex items-center gap-2.5 py-1 border-b border-white/[0.03] last:border-0">
+              <span className="text-[10px] px-1.5 py-0.5 rounded font-black flex-shrink-0"
+                style={{ background: t.tipo === "manual" ? "rgba(139,92,246,0.15)" : "rgba(255,186,0,0.1)", color: t.tipo === "manual" ? "#a78bfa" : "#ffba00" }}>
+                {t.tipo}
+              </span>
+              <span className="text-xs font-black text-white flex-1 truncate">{t.displayName}</span>
+              <span className="text-xs text-gray-500 flex-shrink-0">R$ {fmtBRL(t.valor)}</span>
+              <PayBadge status={t.status} erro={t.erro} />
+            </div>
+          ))}
+        </div>
+      )}
+      {expanded && h.transacoes.length === 0 && (
+        <p className="px-5 py-3 text-xs text-gray-600">Nenhuma transação registrada.</p>
+      )}
+    </div>
   );
 }
 
@@ -289,7 +334,10 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onCpfEditado }: {
       </div>
       <div className="px-5 pb-3 grid grid-cols-2 gap-3 border-t border-white/5 pt-3">
         <div><p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Nome</p><p className="text-xs font-bold text-white truncate">{c.nomeCompleto}</p></div>
-        <div><p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">PIX</p><p className="text-xs font-bold text-white">{mascarCpf(c.cpf)}</p></div>
+        <div>
+          <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">{(c.tipoChave ?? "cpf").toUpperCase()}</p>
+          <p className="text-xs font-bold text-white">{mascarChaveAdmin(c)}</p>
+        </div>
       </div>
       {c.motivoRejeicao && (
         <div className="mx-5 mb-3 px-3 py-2 rounded-xl text-xs text-red-400" style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.15)" }}>
@@ -807,7 +855,7 @@ export default function AdminGorjetaPage() {
 
         {/* ── ABA HISTÓRICO ── */}
         {tab === "historico" && (
-          <div className="space-y-3">
+          <div>
             {historico.length === 0 && (
               <div className="text-center py-16">
                 <div className="inline-flex w-16 h-16 rounded-2xl items-center justify-center mb-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
@@ -816,33 +864,14 @@ export default function AdminGorjetaPage() {
                 <p className="text-sm font-bold text-gray-600">Nenhuma gorjeta encerrada ainda</p>
               </div>
             )}
-            {historico.map((h, idx) => (
-              <div key={h.id} className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,4,18,0.85)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <div className="px-5 py-4 flex items-center gap-4 border-b border-white/5">
-                  <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-xs text-black" style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>#{historico.length - idx}</div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-white">Saldo R$ {fmtBRL(h.saldoTotal)}</p>
-                    <p className="text-[10px] text-gray-600">{new Date(h.fechadaEm).toLocaleString("pt-BR")}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Enviado</p>
-                    <p className="text-base font-black" style={{ background: "linear-gradient(135deg, #ffba00, #ffdd55)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                      R$ {fmtBRL(h.totalEnviado)}
-                    </p>
-                  </div>
-                </div>
-                <div className="px-5 py-3 space-y-2">
-                  {h.transacoes.map((t, i) => (
-                    <div key={`${t.id}-${i}`} className="flex items-center gap-2.5 py-1">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded font-black" style={{ background: t.tipo === "manual" ? "rgba(139,92,246,0.15)" : "rgba(255,186,0,0.1)", color: t.tipo === "manual" ? "#a78bfa" : "#ffba00" }}>{t.tipo}</span>
-                      <span className="text-xs font-black text-white flex-1 truncate">{t.displayName}</span>
-                      <span className="text-xs text-gray-500">R$ {fmtBRL(t.valor)}</span>
-                      <PayBadge status={t.status} erro={t.erro} />
-                    </div>
-                  ))}
-                </div>
+            {historico.length > 0 && (
+              <div className="overflow-y-auto space-y-3 pr-1"
+                style={{ maxHeight: "calc(100vh - 260px)", scrollbarWidth: "thin", scrollbarColor: "rgba(255,186,0,0.2) transparent" }}>
+                {historico.map((h, idx) => (
+                  <HistoricoCard key={h.id} h={h} num={historico.length - idx} />
+                ))}
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

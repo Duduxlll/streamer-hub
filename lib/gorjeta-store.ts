@@ -1,10 +1,13 @@
 import { dbGet, dbSet } from "./store";
 
+export type TipoChavePix = "cpf" | "telefone" | "email" | "aleatoria";
+
 export interface CadastroGorjeta {
   id: string;
   username: string;
   displayName: string;
-  cpf: string;
+  cpf: string;          // campo legado — armazena a chave PIX normalizada
+  tipoChave: TipoChavePix;
   nomeCompleto: string;
   status: "pendente" | "aprovado" | "rejeitado";
   criadoEm: number;
@@ -16,7 +19,8 @@ export interface ParticipanteSessao {
   username: string;
   displayName: string;
   image: string | null;
-  cpf: string;
+  cpf: string;          // chave PIX normalizada
+  tipoChave?: TipoChavePix;
   nomeCompleto: string;
   entradaEm: number;
 }
@@ -130,23 +134,38 @@ export async function getCadastro(username: string): Promise<CadastroGorjeta | n
 }
 
 export async function cadastrar(params: {
-  username: string; displayName: string; cpf: string; nomeCompleto: string; screenshot: string;
+  username: string; displayName: string;
+  tipoChave: TipoChavePix; chave: string;
+  nomeCompleto: string; screenshot: string;
 }): Promise<{ ok: true; cadastro: CadastroGorjeta } | { ok: false; error: string }> {
   const list = await loadCadastros();
   const existing = list.find(c => c.username.toLowerCase() === params.username.toLowerCase());
   if (existing?.status === "aprovado") return { ok: false, error: "Já aprovado" };
   if (existing?.status === "pendente") return { ok: false, error: "Cadastro já enviado — aguarde aprovação" };
 
-  const cpfNum = params.cpf.replace(/\D/g, "");
-  if (cpfNum.length !== 11) return { ok: false, error: "CPF inválido" };
+  const chaveNorm = normalizarChave(params.chave, params.tipoChave);
+  if (!chaveNorm) {
+    const msgs: Record<TipoChavePix, string> = {
+      cpf: "CPF inválido",
+      telefone: "Telefone inválido — use o formato +5511999999999",
+      email: "E-mail inválido",
+      aleatoria: "Chave aleatória inválida — deve ser um UUID (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)",
+    };
+    return { ok: false, error: msgs[params.tipoChave] };
+  }
 
-  const cpfDup = list.find(c => c.cpf === cpfNum && c.username.toLowerCase() !== params.username.toLowerCase() && c.status !== "rejeitado");
-  if (cpfDup) return { ok: false, error: "CPF já cadastrado por outro usuário" };
+  const chaveDup = list.find(c =>
+    c.cpf === chaveNorm &&
+    c.username.toLowerCase() !== params.username.toLowerCase() &&
+    c.status !== "rejeitado"
+  );
+  if (chaveDup) return { ok: false, error: "Esta chave PIX já está cadastrada por outro usuário" };
 
   const id = Date.now().toString();
   const cadastro: CadastroGorjeta = {
     id, username: params.username.toLowerCase(), displayName: params.displayName,
-    cpf: cpfNum, nomeCompleto: params.nomeCompleto.trim(), status: "pendente", criadoEm: Date.now(),
+    cpf: chaveNorm, tipoChave: params.tipoChave,
+    nomeCompleto: params.nomeCompleto.trim(), status: "pendente", criadoEm: Date.now(),
   };
   const filtered = list.filter(c => c.username.toLowerCase() !== params.username.toLowerCase());
   await saveCadastros([cadastro, ...filtered]);
@@ -227,7 +246,8 @@ export async function entrarSessao(
 
   sessao.participantes.push({
     username: username.toLowerCase(), displayName, image,
-    cpf: cadastro.cpf, nomeCompleto: cadastro.nomeCompleto, entradaEm: Date.now(),
+    cpf: cadastro.cpf, tipoChave: cadastro.tipoChave ?? "cpf",
+    nomeCompleto: cadastro.nomeCompleto, entradaEm: Date.now(),
   });
   await saveSessao(sessao);
   return { ok: true };
@@ -364,11 +384,71 @@ export async function limparSessao(): Promise<void> { await saveSessao(null); }
 
 export async function getHistoricoGorjeta(): Promise<HistoricoItemGorjeta[]> { return loadHistorico(); }
 
-export function mascarCpf(cpf: string): string {
+// ─── Validação & Normalização ──────────────────────────────────────────────
+
+function validarCpf(cpf: string): boolean {
   const d = cpf.replace(/\D/g, "");
-  if (d.length !== 11) return cpf;
-  return `***.${d.slice(3, 6)}.${d.slice(6, 9)}-**`;
+  if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
+  let s = 0;
+  for (let i = 0; i < 9; i++) s += +d[i] * (10 - i);
+  let r = (s * 10) % 11; if (r >= 10) r = 0;
+  if (r !== +d[9]) return false;
+  s = 0;
+  for (let i = 0; i < 10; i++) s += +d[i] * (11 - i);
+  r = (s * 10) % 11; if (r >= 10) r = 0;
+  return r === +d[10];
 }
+
+export function normalizarChave(chave: string, tipo: TipoChavePix): string | null {
+  switch (tipo) {
+    case "cpf": {
+      const d = chave.replace(/\D/g, "");
+      return validarCpf(d) ? d : null;
+    }
+    case "telefone": {
+      const d = chave.replace(/\D/g, "");
+      if (d.length === 11) return `+55${d}`;
+      if (d.length === 13 && d.startsWith("55")) return `+${d}`;
+      if (d.length === 12 && d.startsWith("55")) return `+${d}`;
+      return null;
+    }
+    case "email": {
+      const e = chave.trim().toLowerCase();
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) ? e : null;
+    }
+    case "aleatoria": {
+      const k = chave.trim().toLowerCase();
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(k) ? k : null;
+    }
+  }
+}
+
+export function mascarChave(chave: string, tipo?: TipoChavePix): string {
+  const t = tipo ?? "cpf";
+  switch (t) {
+    case "cpf": {
+      const d = chave.replace(/\D/g, "");
+      if (d.length !== 11) return chave;
+      return `***.${d.slice(3, 6)}.${d.slice(6, 9)}-**`;
+    }
+    case "telefone": {
+      const d = chave.replace(/\D/g, "");
+      if (d.length < 4) return "***";
+      return `+55 (${d.slice(2, 4)}) *****-${d.slice(-4)}`;
+    }
+    case "email": {
+      const [local, domain] = chave.split("@");
+      if (!domain) return "***@***";
+      return `${local[0] ?? "*"}***@${domain}`;
+    }
+    case "aleatoria": {
+      if (chave.length < 8) return "****";
+      return `${chave.slice(0, 8)}-****-****-****-${chave.slice(-4)}`;
+    }
+  }
+}
+
+export function mascarCpf(cpf: string): string { return mascarChave(cpf, "cpf"); }
 
 export function formatCpf(cpf: string): string {
   const d = cpf.replace(/\D/g, "");
