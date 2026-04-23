@@ -17,13 +17,20 @@ async function getClientToken(): Promise<string> {
     return cached.access_token;
   }
 
+  const clientId = process.env.LIVEPIX_CLIENT_ID ?? "";
+  const clientSecret = process.env.LIVEPIX_CLIENT_SECRET ?? "";
+
+  if (!clientId || !clientSecret) {
+    throw new Error("LIVEPIX_CLIENT_ID ou LIVEPIX_CLIENT_SECRET não configurados");
+  }
+
   const res = await fetch("https://oauth.livepix.gg/oauth2/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type:    "client_credentials",
-      client_id:     process.env.LIVEPIX_CLIENT_ID     ?? "",
-      client_secret: process.env.LIVEPIX_CLIENT_SECRET ?? "",
+      client_id:     clientId,
+      client_secret: clientSecret,
       scope:         "messages:read",
     }),
     cache: "no-store",
@@ -31,6 +38,7 @@ async function getClientToken(): Promise<string> {
 
   if (!res.ok) {
     const text = await res.text();
+    console.error(`[livepix] ❌ Falha ao obter token OAuth: HTTP ${res.status} — ${text}`);
     throw new Error(`LivePix auth ${res.status}: ${text}`);
   }
 
@@ -61,8 +69,10 @@ export async function getMessage(messageId: string): Promise<LivePixMessage> {
   });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
+    console.error(`[livepix] ❌ getMessage ${messageId} falhou: HTTP ${res.status} — ${body}`);
     throw new Error(`LivePix getMessage ${res.status}: ${body}`);
   }
   const json = await res.json();
-  return json.data ?? json;
+  const msg: LivePixMessage = json.data ?? json;
+  return msg;
 }
