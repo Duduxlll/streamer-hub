@@ -21,6 +21,42 @@ export interface ParticipanteSessao {
   entradaEm: number;
 }
 
+export interface TransacaoGorjeta {
+  id: string;
+  username: string;
+  displayName: string;
+  valor: number;
+  status: "enviado" | "falhou";
+  tipo: "sorteio" | "manual";
+  timestamp: number;
+  txid?: string;
+  e2eid?: string;
+  erro?: string;
+}
+
+export interface SessaoGorjeta {
+  id: string;
+  status: "aberta" | "sorteada" | "fechada";
+  saldoTotal: number;
+  saldoRestante: number;
+  valorUnitario: number;
+  maxVencedores: number;
+  participantes: ParticipanteSessao[];
+  vencedores: ParticipanteSessao[];
+  transacoes: TransacaoGorjeta[];
+  abertaEm: number;
+  fechadaEm?: number;
+}
+
+export interface HistoricoItemGorjeta {
+  id: string;
+  saldoTotal: number;
+  totalEnviado: number;
+  transacoes: TransacaoGorjeta[];
+  abertaEm: number;
+  fechadaEm: number;
+}
+
 export interface ResultadoPagamento {
   username: string;
   displayName: string;
@@ -32,34 +68,11 @@ export interface ResultadoPagamento {
   erro?: string;
 }
 
-export interface SessaoGorjeta {
-  id: string;
-  status: "aberta" | "sorteada" | "fechada";
-  valorUnitario: number;
-  maxVencedores: number;
-  participantes: ParticipanteSessao[];
-  vencedores: ParticipanteSessao[];
-  pagamentos: ResultadoPagamento[];
-  abertaEm: number;
-  fechadaEm?: number;
-}
-
-export interface HistoricoItemGorjeta {
-  id: string;
-  valorUnitario: number;
-  totalEnviado: number;
-  pagamentos: ResultadoPagamento[];
-  abertaEm: number;
-  fechadaEm: number;
-}
-
 const KEY_CADASTROS = "gorjeta:cadastros:v1";
-const KEY_SESSAO = "gorjeta:sessao:v1";
-const KEY_HISTORICO = "gorjeta:historico:v1";
+const KEY_SESSAO    = "gorjeta:sessao:v2";
+const KEY_HISTORICO = "gorjeta:historico:v2";
 
-function screenshotKey(id: string) {
-  return `gorjeta:screenshot:${id}:v1`;
-}
+function screenshotKey(id: string) { return `gorjeta:screenshot:${id}:v1`; }
 
 declare global {
   var __gorjetaCadastros: CadastroGorjeta[] | undefined;
@@ -72,9 +85,7 @@ async function loadCadastros(): Promise<CadastroGorjeta[]> {
     const raw = await dbGet(KEY_CADASTROS);
     const parsed = raw ? JSON.parse(raw) : null;
     return Array.isArray(parsed) ? parsed : (globalThis.__gorjetaCadastros ?? []);
-  } catch {
-    return globalThis.__gorjetaCadastros ?? [];
-  }
+  } catch { return globalThis.__gorjetaCadastros ?? []; }
 }
 
 async function saveCadastros(list: CadastroGorjeta[]): Promise<void> {
@@ -87,9 +98,7 @@ async function loadSessao(): Promise<SessaoGorjeta | null> {
     const raw = await dbGet(KEY_SESSAO);
     if (!raw) return globalThis.__gorjetaSessao ?? null;
     return JSON.parse(raw) as SessaoGorjeta;
-  } catch {
-    return globalThis.__gorjetaSessao ?? null;
-  }
+  } catch { return globalThis.__gorjetaSessao ?? null; }
 }
 
 async function saveSessao(s: SessaoGorjeta | null): Promise<void> {
@@ -102,9 +111,7 @@ async function loadHistorico(): Promise<HistoricoItemGorjeta[]> {
     const raw = await dbGet(KEY_HISTORICO);
     const parsed = raw ? JSON.parse(raw) : null;
     return Array.isArray(parsed) ? parsed : (globalThis.__gorjetaHistorico ?? []);
-  } catch {
-    return globalThis.__gorjetaHistorico ?? [];
-  }
+  } catch { return globalThis.__gorjetaHistorico ?? []; }
 }
 
 async function saveHistorico(list: HistoricoItemGorjeta[]): Promise<void> {
@@ -113,9 +120,9 @@ async function saveHistorico(list: HistoricoItemGorjeta[]): Promise<void> {
   try { await dbSet(KEY_HISTORICO, JSON.stringify(trimmed)); } catch {}
 }
 
-export async function getCadastros(): Promise<CadastroGorjeta[]> {
-  return loadCadastros();
-}
+// ─── Cadastros ─────────────────────────────────────────────────────────────
+
+export async function getCadastros(): Promise<CadastroGorjeta[]> { return loadCadastros(); }
 
 export async function getCadastro(username: string): Promise<CadastroGorjeta | null> {
   const list = await loadCadastros();
@@ -123,46 +130,27 @@ export async function getCadastro(username: string): Promise<CadastroGorjeta | n
 }
 
 export async function cadastrar(params: {
-  username: string;
-  displayName: string;
-  cpf: string;
-  nomeCompleto: string;
-  screenshot: string;
+  username: string; displayName: string; cpf: string; nomeCompleto: string; screenshot: string;
 }): Promise<{ ok: true; cadastro: CadastroGorjeta } | { ok: false; error: string }> {
   const list = await loadCadastros();
   const existing = list.find(c => c.username.toLowerCase() === params.username.toLowerCase());
-
-  if (existing && existing.status === "aprovado") {
-    return { ok: false, error: "Já aprovado" };
-  }
-  if (existing && existing.status === "pendente") {
-    return { ok: false, error: "Cadastro já enviado — aguarde aprovação" };
-  }
+  if (existing?.status === "aprovado") return { ok: false, error: "Já aprovado" };
+  if (existing?.status === "pendente") return { ok: false, error: "Cadastro já enviado — aguarde aprovação" };
 
   const cpfNum = params.cpf.replace(/\D/g, "");
   if (cpfNum.length !== 11) return { ok: false, error: "CPF inválido" };
 
-  const cpfDuplicado = list.find(
-    c => c.cpf === cpfNum && c.username.toLowerCase() !== params.username.toLowerCase() && c.status !== "rejeitado"
-  );
-  if (cpfDuplicado) return { ok: false, error: "CPF já cadastrado por outro usuário" };
+  const cpfDup = list.find(c => c.cpf === cpfNum && c.username.toLowerCase() !== params.username.toLowerCase() && c.status !== "rejeitado");
+  if (cpfDup) return { ok: false, error: "CPF já cadastrado por outro usuário" };
 
   const id = Date.now().toString();
   const cadastro: CadastroGorjeta = {
-    id,
-    username: params.username.toLowerCase(),
-    displayName: params.displayName,
-    cpf: cpfNum,
-    nomeCompleto: params.nomeCompleto.trim(),
-    status: "pendente",
-    criadoEm: Date.now(),
+    id, username: params.username.toLowerCase(), displayName: params.displayName,
+    cpf: cpfNum, nomeCompleto: params.nomeCompleto.trim(), status: "pendente", criadoEm: Date.now(),
   };
-
   const filtered = list.filter(c => c.username.toLowerCase() !== params.username.toLowerCase());
   await saveCadastros([cadastro, ...filtered]);
-
   try { await dbSet(screenshotKey(id), params.screenshot); } catch {}
-
   return { ok: true, cadastro };
 }
 
@@ -170,47 +158,54 @@ export async function aprovarCadastro(id: string): Promise<CadastroGorjeta | nul
   const list = await loadCadastros();
   const c = list.find(x => x.id === id);
   if (!c) return null;
-  c.status = "aprovado";
-  c.avaliadoEm = Date.now();
-  delete c.motivoRejeicao;
-  await saveCadastros(list);
-  return c;
+  c.status = "aprovado"; c.avaliadoEm = Date.now(); delete c.motivoRejeicao;
+  await saveCadastros(list); return c;
 }
 
 export async function rejeitarCadastro(id: string, motivo: string): Promise<CadastroGorjeta | null> {
   const list = await loadCadastros();
   const c = list.find(x => x.id === id);
   if (!c) return null;
-  c.status = "rejeitado";
-  c.avaliadoEm = Date.now();
-  c.motivoRejeicao = motivo || "Não aprovado";
-  await saveCadastros(list);
-  return c;
+  c.status = "rejeitado"; c.avaliadoEm = Date.now(); c.motivoRejeicao = motivo || "Não aprovado";
+  await saveCadastros(list); return c;
+}
+
+export async function editarCpfCadastro(id: string, cpf: string): Promise<CadastroGorjeta | null> {
+  const cpfNum = cpf.replace(/\D/g, "");
+  if (cpfNum.length !== 11) return null;
+  const list = await loadCadastros();
+  const c = list.find(x => x.id === id);
+  if (!c) return null;
+  c.cpf = cpfNum;
+  await saveCadastros(list); return c;
 }
 
 export async function getScreenshot(id: string): Promise<string | null> {
   try { return await dbGet(screenshotKey(id)); } catch { return null; }
 }
 
-export async function getSessao(): Promise<SessaoGorjeta | null> {
-  return loadSessao();
-}
+// ─── Sessão ────────────────────────────────────────────────────────────────
+
+export async function getSessao(): Promise<SessaoGorjeta | null> { return loadSessao(); }
 
 export async function abrirSessao(params: {
-  valorUnitario: number;
-  maxVencedores: number;
+  saldoTotal: number;
 }): Promise<{ ok: true; sessao: SessaoGorjeta } | { ok: false; error: string }> {
   const atual = await loadSessao();
-  if (atual && atual.status === "aberta") return { ok: false, error: "Já existe uma sessão aberta" };
+  if (atual && (atual.status === "aberta" || atual.status === "sorteada")) {
+    return { ok: false, error: "Já existe uma sessão ativa" };
+  }
 
   const sessao: SessaoGorjeta = {
     id: Date.now().toString(),
     status: "aberta",
-    valorUnitario: Math.max(0.01, params.valorUnitario),
-    maxVencedores: Math.max(1, params.maxVencedores),
+    saldoTotal: Math.max(0.01, params.saldoTotal),
+    saldoRestante: Math.max(0.01, params.saldoTotal),
+    valorUnitario: 0,
+    maxVencedores: 0,
     participantes: [],
     vencedores: [],
-    pagamentos: [],
+    transacoes: [],
     abertaEm: Date.now(),
   };
   await saveSessao(sessao);
@@ -218,47 +213,49 @@ export async function abrirSessao(params: {
 }
 
 export async function entrarSessao(
-  username: string,
-  displayName: string,
-  image: string | null,
+  username: string, displayName: string, image: string | null,
 ): Promise<{ ok: boolean; reason?: string }> {
   const sessao = await loadSessao();
   if (!sessao || sessao.status !== "aberta") return { ok: false, reason: "sem sessão aberta" };
 
-  const jaParticipa = sessao.participantes.some(
-    p => p.username.toLowerCase() === username.toLowerCase()
-  );
+  const jaParticipa = sessao.participantes.some(p => p.username.toLowerCase() === username.toLowerCase());
   if (jaParticipa) return { ok: false, reason: "já participa" };
 
   const cadastros = await loadCadastros();
-  const cadastro = cadastros.find(
-    c => c.username.toLowerCase() === username.toLowerCase() && c.status === "aprovado"
-  );
+  const cadastro = cadastros.find(c => c.username.toLowerCase() === username.toLowerCase() && c.status === "aprovado");
   if (!cadastro) return { ok: false, reason: "não cadastrado" };
 
   sessao.participantes.push({
-    username: username.toLowerCase(),
-    displayName,
-    image,
-    cpf: cadastro.cpf,
-    nomeCompleto: cadastro.nomeCompleto,
-    entradaEm: Date.now(),
+    username: username.toLowerCase(), displayName, image,
+    cpf: cadastro.cpf, nomeCompleto: cadastro.nomeCompleto, entradaEm: Date.now(),
   });
   await saveSessao(sessao);
   return { ok: true };
 }
 
-export async function sortearGorjeta(): Promise<{ ok: true; sessao: SessaoGorjeta } | { ok: false; error: string }> {
+export async function sortearGorjeta(params?: {
+  valorUnitario?: number; maxVencedores?: number;
+}): Promise<{ ok: true; sessao: SessaoGorjeta } | { ok: false; error: string }> {
   const sessao = await loadSessao();
   if (!sessao) return { ok: false, error: "Sem sessão ativa" };
   if (sessao.status !== "aberta") return { ok: false, error: "Sessão não está aberta" };
   if (sessao.participantes.length === 0) return { ok: false, error: "Sem participantes" };
 
+  if (params?.valorUnitario && params.valorUnitario > 0) sessao.valorUnitario = params.valorUnitario;
+  if (params?.maxVencedores && params.maxVencedores > 0) sessao.maxVencedores = params.maxVencedores;
+
+  if (!sessao.valorUnitario || sessao.valorUnitario <= 0) return { ok: false, error: "Defina o valor por vencedor" };
+  if (!sessao.maxVencedores || sessao.maxVencedores <= 0) return { ok: false, error: "Defina a quantidade de vencedores" };
+
+  const qtd = Math.min(sessao.maxVencedores, sessao.participantes.length);
+  const custo = sessao.valorUnitario * qtd;
+  if (custo > sessao.saldoRestante) {
+    return { ok: false, error: `Saldo insuficiente. Disponível: R$ ${sessao.saldoRestante.toFixed(2)}, necessário: R$ ${custo.toFixed(2)}` };
+  }
+
   const pool = [...sessao.participantes];
   const vencedores: ParticipanteSessao[] = [];
-  const max = Math.min(sessao.maxVencedores, pool.length);
-
-  for (let i = 0; i < max; i++) {
+  for (let i = 0; i < qtd; i++) {
     const idx = Math.floor(Math.random() * (pool.length - i));
     vencedores.push(pool[idx]);
     pool[idx] = pool[pool.length - 1 - i];
@@ -272,57 +269,81 @@ export async function sortearGorjeta(): Promise<{ ok: true; sessao: SessaoGorjet
 
 export async function salvarPagamentos(
   pagamentos: ResultadoPagamento[],
+  valorUnitario: number,
 ): Promise<SessaoGorjeta | null> {
   const sessao = await loadSessao();
   if (!sessao) return null;
-  sessao.pagamentos = pagamentos;
-  sessao.status = "fechada";
-  sessao.fechadaEm = Date.now();
+
+  for (const p of pagamentos) {
+    const t: TransacaoGorjeta = {
+      id: `s_${Date.now()}_${Math.random().toString(36).slice(2)}_${p.username}`,
+      username: p.username, displayName: p.displayName,
+      valor: valorUnitario,
+      status: p.status === "enviado" ? "enviado" : "falhou",
+      tipo: "sorteio",
+      timestamp: Date.now(),
+      txid: p.txid, e2eid: p.e2eid, erro: p.erro,
+    };
+    sessao.transacoes.push(t);
+    if (p.status === "enviado") {
+      sessao.saldoRestante = Math.max(0, sessao.saldoRestante - valorUnitario);
+    }
+  }
+
+  sessao.status = "aberta";
+  sessao.vencedores = [];
   await saveSessao(sessao);
+  return sessao;
+}
 
-  const totalEnviado = pagamentos
-    .filter(p => p.status === "enviado")
-    .reduce((acc) => acc + sessao.valorUnitario, 0);
+export async function registrarManual(
+  username: string, displayName: string, valor: number,
+  result: { status: "enviado" | "falhou"; txid?: string; e2eid?: string; erro?: string },
+): Promise<SessaoGorjeta | null> {
+  const sessao = await loadSessao();
+  if (!sessao) return null;
 
-  const historico = await loadHistorico();
-  const item: HistoricoItemGorjeta = {
-    id: sessao.id,
-    valorUnitario: sessao.valorUnitario,
-    totalEnviado,
-    pagamentos,
-    abertaEm: sessao.abertaEm,
-    fechadaEm: sessao.fechadaEm,
+  const t: TransacaoGorjeta = {
+    id: `m_${Date.now()}_${Math.random().toString(36).slice(2)}_${username}`,
+    username, displayName, valor,
+    status: result.status, tipo: "manual",
+    timestamp: Date.now(),
+    txid: result.txid, e2eid: result.e2eid, erro: result.erro,
   };
-  await saveHistorico([item, ...historico]);
+  sessao.transacoes.push(t);
+  if (result.status === "enviado") {
+    sessao.saldoRestante = Math.max(0, sessao.saldoRestante - valor);
+  }
+  await saveSessao(sessao);
   return sessao;
 }
 
 export async function fecharSessaoSemPagar(): Promise<void> {
   const sessao = await loadSessao();
   if (!sessao) return;
+
+  const totalEnviado = sessao.transacoes
+    .filter(t => t.status === "enviado")
+    .reduce((acc, t) => acc + t.valor, 0);
+
+  const historico = await loadHistorico();
+  await saveHistorico([{
+    id: sessao.id,
+    saldoTotal: sessao.saldoTotal,
+    totalEnviado,
+    transacoes: sessao.transacoes,
+    abertaEm: sessao.abertaEm,
+    fechadaEm: Date.now(),
+  }, ...historico]);
+
   sessao.status = "fechada";
   sessao.fechadaEm = Date.now();
   await saveSessao(sessao);
 }
 
-export async function limparSessao(): Promise<void> {
-  await saveSessao(null);
-}
+export async function limparSessao(): Promise<void> { await saveSessao(null); }
 
-export async function getHistoricoGorjeta(): Promise<HistoricoItemGorjeta[]> {
-  return loadHistorico();
-}
-
-export async function editarCpfCadastro(id: string, cpf: string): Promise<CadastroGorjeta | null> {
-  const cpfNum = cpf.replace(/\D/g, "");
-  if (cpfNum.length !== 11) return null;
-  const list = await loadCadastros();
-  const c = list.find(x => x.id === id);
-  if (!c) return null;
-  c.cpf = cpfNum;
-  await saveCadastros(list);
-  return c;
-}
+export async function getHistoricoGorjeta(): Promise<HistoricoItemGorjeta[]> { return loadHistorico(); }
 
 export function mascarCpf(cpf: string): string {
   const d = cpf.replace(/\D/g, "");

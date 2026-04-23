@@ -2,22 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import {
-  getCadastros,
-  getCadastro,
-  cadastrar,
-  aprovarCadastro,
-  rejeitarCadastro,
-  editarCpfCadastro,
-  getScreenshot,
-  getSessao,
-  abrirSessao,
-  entrarSessao,
-  sortearGorjeta,
-  salvarPagamentos,
-  fecharSessaoSemPagar,
-  limparSessao,
-  getHistoricoGorjeta,
-  mascarCpf,
+  getCadastros, getCadastro, cadastrar, aprovarCadastro, rejeitarCadastro, editarCpfCadastro,
+  getScreenshot, getSessao, abrirSessao, entrarSessao, sortearGorjeta,
+  salvarPagamentos, registrarManual, fecharSessaoSemPagar, limparSessao,
+  getHistoricoGorjeta, mascarCpf,
   type ResultadoPagamento,
 } from "@/lib/gorjeta-store";
 import { enviarPix, cadastrarWebhook } from "@/lib/gerencianet";
@@ -47,16 +35,12 @@ export async function GET(req: NextRequest) {
 
   const [sessaoRaw, historico] = await Promise.all([getSessao(), getHistoricoGorjeta()]);
 
-  const sessao = sessaoRaw
-    ? {
-        ...sessaoRaw,
-        participantes: sessaoRaw.participantes.map(p => ({ ...p, cpf: mascarCpf(p.cpf) })),
-        vencedores: sessaoRaw.vencedores.map(p => ({ ...p, cpf: mascarCpf(p.cpf) })),
-        pagamentos: sessaoRaw.pagamentos.map(p => ({ ...p, cpf: mascarCpf(p.cpf) })),
-      }
-    : null;
-
-  const sessaoAdmin = adminUser ? sessaoRaw : undefined;
+  // Public view: mask CPF in participantes/vencedores, strip CPF from transacoes
+  const sessaoPublic = sessaoRaw ? {
+    ...sessaoRaw,
+    participantes: sessaoRaw.participantes.map(p => ({ ...p, cpf: mascarCpf(p.cpf) })),
+    vencedores: sessaoRaw.vencedores.map(p => ({ ...p, cpf: mascarCpf(p.cpf) })),
+  } : null;
 
   let meucadastro = null;
   if (session?.user) {
@@ -65,7 +49,7 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json(
-    { sessao: adminUser ? sessaoAdmin : sessao, historico, meucadastro },
+    { sessao: adminUser ? sessaoRaw : sessaoPublic, historico, meucadastro },
     { headers: NO_CACHE },
   );
 }
@@ -79,10 +63,8 @@ export async function POST(req: NextRequest) {
     if (!session?.user) return NextResponse.json({ error: "Login necessário" }, { status: 401 });
     const login = (session.user.twitchLogin ?? session.user.name ?? "").toLowerCase();
     const result = await cadastrar({
-      username: login,
-      displayName: session.user.name ?? login,
-      cpf: String(body.cpf ?? ""),
-      nomeCompleto: String(body.nomeCompleto ?? ""),
+      username: login, displayName: session.user.name ?? login,
+      cpf: String(body.cpf ?? ""), nomeCompleto: String(body.nomeCompleto ?? ""),
       screenshot: String(body.screenshot ?? ""),
     });
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
@@ -105,13 +87,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, cadastro: c }, { headers: NO_CACHE });
   }
 
+  if (action === "editar-cpf") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const c = await editarCpfCadastro(String(body.id ?? ""), String(body.cpf ?? ""));
+    if (!c) return NextResponse.json({ error: "CPF inválido ou cadastro não encontrado" }, { status: 400 });
+    return NextResponse.json({ ok: true, cadastro: c }, { headers: NO_CACHE });
+  }
+
   if (action === "abrir-sessao") {
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const result = await abrirSessao({
-      valorUnitario: Number(body.valorUnitario) || 10,
-      maxVencedores: Number(body.maxVencedores) || 3,
-    });
+    const result = await abrirSessao({ saldoTotal: Number(body.saldoTotal) || 100 });
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
     return NextResponse.json({ ok: true, sessao: result.sessao }, { headers: NO_CACHE });
   }
@@ -137,18 +124,17 @@ export async function POST(req: NextRequest) {
     }
     const { username, displayName, image } = body;
     if (!username) return NextResponse.json({ error: "username obrigatório" }, { status: 400 });
-    const result = await entrarSessao(
-      String(username),
-      typeof displayName === "string" ? displayName : String(username),
-      typeof image === "string" ? image : null,
-    );
+    const result = await entrarSessao(String(username), typeof displayName === "string" ? displayName : String(username), typeof image === "string" ? image : null);
     return NextResponse.json(result, { headers: NO_CACHE });
   }
 
   if (action === "sortear") {
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const result = await sortearGorjeta();
+    const result = await sortearGorjeta({
+      valorUnitario: body.valorUnitario ? Number(body.valorUnitario) : undefined,
+      maxVencedores: body.maxVencedores ? Number(body.maxVencedores) : undefined,
+    });
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
     return NextResponse.json({ ok: true, sessao: result.sessao }, { headers: NO_CACHE });
   }
@@ -169,24 +155,44 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         const erroMsg = err instanceof Error ? err.message : "Erro desconhecido";
         console.error("[gorjeta/pagar] Falha PIX para", v.username, "—", erroMsg);
-        pagamentos.push({
-          username: v.username, displayName: v.displayName, cpf: v.cpf, nomeCompleto: v.nomeCompleto,
-          status: "falhou",
-          erro: erroMsg,
-        });
+        pagamentos.push({ username: v.username, displayName: v.displayName, cpf: v.cpf, nomeCompleto: v.nomeCompleto, status: "falhou", erro: erroMsg });
       }
     }
 
-    const sessaoFinal = await salvarPagamentos(pagamentos);
+    const sessaoFinal = await salvarPagamentos(pagamentos, sessao.valorUnitario);
     return NextResponse.json({ ok: true, pagamentos, sessao: sessaoFinal }, { headers: NO_CACHE });
   }
 
-  if (action === "editar-cpf") {
+  if (action === "enviar-manual") {
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const c = await editarCpfCadastro(String(body.id ?? ""), String(body.cpf ?? ""));
-    if (!c) return NextResponse.json({ error: "CPF inválido ou cadastro não encontrado" }, { status: 400 });
-    return NextResponse.json({ ok: true, cadastro: c }, { headers: NO_CACHE });
+    const { username, valor } = body;
+    if (!username || !valor) return NextResponse.json({ error: "username e valor obrigatórios" }, { status: 400 });
+    const valorNum = Number(valor);
+    if (isNaN(valorNum) || valorNum <= 0) return NextResponse.json({ error: "Valor inválido" }, { status: 400 });
+
+    const sessao = await getSessao();
+    if (!sessao || sessao.status === "fechada") return NextResponse.json({ error: "Sem sessão ativa" }, { status: 400 });
+
+    const participante = sessao.participantes.find(p => p.username === String(username).toLowerCase());
+    if (!participante) return NextResponse.json({ error: "Participante não encontrado na sessão" }, { status: 404 });
+
+    if (valorNum > sessao.saldoRestante) {
+      return NextResponse.json({ error: `Saldo insuficiente (disponível: R$ ${sessao.saldoRestante.toFixed(2)})` }, { status: 400 });
+    }
+
+    let result: { status: "enviado" | "falhou"; txid?: string; e2eid?: string; erro?: string };
+    try {
+      const r = await enviarPix(participante.cpf, valorNum, "Gorjeta");
+      result = { status: "enviado", txid: r.idEnvio, e2eid: r.e2eId };
+    } catch (err) {
+      const erroMsg = err instanceof Error ? err.message : "Erro";
+      console.error("[gorjeta/manual] Falha PIX para", username, "—", erroMsg);
+      result = { status: "falhou", erro: erroMsg };
+    }
+
+    const sessaoAtualizada = await registrarManual(participante.username, participante.displayName, valorNum, result);
+    return NextResponse.json({ ok: true, result, sessao: sessaoAtualizada }, { headers: NO_CACHE });
   }
 
   if (action === "cadastrar-webhook") {
@@ -203,25 +209,19 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const diag = {
-      GERENCIANET_CLIENT_ID:      !!process.env.GERENCIANET_CLIENT_ID,
-      GERENCIANET_CLIENT_SECRET:  !!process.env.GERENCIANET_CLIENT_SECRET,
-      GERENCIANET_PIX_KEY:        process.env.GERENCIANET_PIX_KEY ?? "(não definida)",
+      GERENCIANET_CLIENT_ID: !!process.env.GERENCIANET_CLIENT_ID,
+      GERENCIANET_CLIENT_SECRET: !!process.env.GERENCIANET_CLIENT_SECRET,
+      GERENCIANET_PIX_KEY: process.env.GERENCIANET_PIX_KEY ?? "(não definida)",
       GERENCIANET_CERT_PEM_BASE64: !!process.env.GERENCIANET_CERT_PEM_BASE64,
-      GERENCIANET_KEY_PEM_BASE64:  !!process.env.GERENCIANET_KEY_PEM_BASE64,
-      GERENCIANET_CERT_BASE64:     !!process.env.GERENCIANET_CERT_BASE64,
-      GERENCIANET_SANDBOX:         process.env.GERENCIANET_SANDBOX ?? "(não definida — usa produção)",
+      GERENCIANET_KEY_PEM_BASE64: !!process.env.GERENCIANET_KEY_PEM_BASE64,
     };
     try {
-      const { enviarPix: testPix } = await import("@/lib/gerencianet");
       const cpfTeste = String(body.cpf ?? "").replace(/\D/g, "");
-      if (!cpfTeste || cpfTeste.length !== 11) {
-        return NextResponse.json({ ok: false, diag, erro: "Informe um CPF válido para testar" }, { headers: NO_CACHE });
-      }
-      const r = await testPix(cpfTeste, Number(body.valor ?? 0.01), "Teste gorjeta");
+      if (!cpfTeste || cpfTeste.length !== 11) return NextResponse.json({ ok: false, diag, erro: "Informe um CPF válido para testar" }, { headers: NO_CACHE });
+      const r = await enviarPix(cpfTeste, Number(body.valor ?? 0.01), "Teste gorjeta");
       return NextResponse.json({ ok: true, diag, resultado: r }, { headers: NO_CACHE });
     } catch (err) {
       const erro = err instanceof Error ? err.message : String(err);
-      console.error("[gorjeta/testar-pix]", erro);
       return NextResponse.json({ ok: false, diag, erro }, { headers: NO_CACHE });
     }
   }

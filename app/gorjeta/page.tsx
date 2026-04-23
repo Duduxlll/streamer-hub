@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import type { CadastroGorjeta, SessaoGorjeta } from "@/lib/gorjeta-store";
+import type { CadastroGorjeta, SessaoGorjeta, TransacaoGorjeta } from "@/lib/gorjeta-store";
 
 function formatCpfInput(value: string): string {
   const d = value.replace(/\D/g, "").slice(0, 11);
@@ -49,7 +49,7 @@ function ParticipanteCard({ p, isVoce }: { p: { image: string | null; displayNam
 function VencedorCard({ v, pos, pag }: {
   v: { image: string | null; displayName: string; username: string };
   pos: number;
-  pag?: { status: string } | undefined;
+  pag?: TransacaoGorjeta | undefined;
 }) {
   return (
     <div className="relative overflow-hidden rounded-2xl flex flex-col items-center"
@@ -111,18 +111,18 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
 
         <div className="grid grid-cols-3 divide-x divide-white/5 border-b border-white/5">
           <div className="py-4 text-center">
-            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Valor</p>
+            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Saldo</p>
             <p className="text-xl font-black" style={{ background: "linear-gradient(135deg,#ffba00,#ffdd55)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              R$ {sessao.valorUnitario.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+              R$ {((sessao as SessaoGorjeta & { saldoRestante?: number }).saldoRestante ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </p>
-          </div>
-          <div className="py-4 text-center">
-            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Vencedores</p>
-            <p className="text-xl font-black text-white">{sessao.maxVencedores}</p>
           </div>
           <div className="py-4 text-center">
             <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Inscritos</p>
             <p className="text-xl font-black text-white">{sessao.participantes.length}</p>
+          </div>
+          <div className="py-4 text-center">
+            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-1">Vencedores</p>
+            <p className="text-xl font-black text-white">{sessao.vencedores.length || sessao.maxVencedores || "—"}</p>
           </div>
         </div>
 
@@ -141,7 +141,7 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
           <div className={`grid gap-3 ${sessao.vencedores.length === 1 ? "grid-cols-1 max-w-[200px] mx-auto" : sessao.vencedores.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
             {sessao.vencedores.map((v, i) => (
               <VencedorCard key={v.username} v={v} pos={i + 1}
-                pag={sessao.pagamentos.find(p => p.username === v.username)} />
+                pag={sessao.transacoes?.find(t => t.username === v.username && t.tipo === "sorteio")} />
             ))}
           </div>
         </div>
