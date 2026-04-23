@@ -6,46 +6,38 @@ import { dbGet, dbSet } from "@/lib/store";
 
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
+export async function GET() {
+  // LivePix valida o endpoint com um GET antes de ativar o webhook
+  return new NextResponse("OK", { status: 200 });
+}
+
 export async function POST(req: NextRequest) {
   const secret = process.env.LIVEPIX_WEBHOOK_SECRET;
 
-  if (!secret) {
-    console.error("[livepix/webhook] ❌ LIVEPIX_WEBHOOK_SECRET não configurado");
-    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
-  }
+  // Se o secret estiver configurado, valida — senão, aceita (segurança vem do messageId verificado na API)
+  if (secret) {
+    const candidate =
+      req.nextUrl.searchParams.get("secret") ??
+      req.headers.get("x-webhook-secret") ??
+      req.headers.get("x-livepix-secret") ??
+      req.headers.get("x-signature") ??
+      "";
 
-  // Log all headers relacionados à autenticação para diagnóstico
-  const headerAuth  = req.headers.get("x-webhook-secret");
-  const headerAlt   = req.headers.get("x-livepix-secret");
-  const headerSig   = req.headers.get("x-signature");
-  const headerAuth2 = req.headers.get("authorization");
-  const header = headerAuth ?? headerAlt ?? headerSig ?? "";
-
-  let authorized = false;
-  try {
-    if (header.length > 0 && header.length === secret.length) {
-      authorized = crypto.timingSafeEqual(Buffer.from(header), Buffer.from(secret));
-    } else if (header.length === 0 && headerAuth2) {
-      // Tenta Authorization: Bearer <secret>
-      const bearer = headerAuth2.replace(/^Bearer\s+/i, "");
-      if (bearer.length === secret.length) {
-        authorized = crypto.timingSafeEqual(Buffer.from(bearer), Buffer.from(secret));
+    let authorized = false;
+    try {
+      if (candidate.length > 0 && candidate.length === secret.length) {
+        authorized = crypto.timingSafeEqual(Buffer.from(candidate), Buffer.from(secret));
       }
+    } catch {
+      authorized = false;
     }
-  } catch {
-    authorized = false;
-  }
 
-  if (!authorized) {
-    console.error(
-      "[livepix/webhook] ❌ Auth falhou." +
-      ` x-webhook-secret=${headerAuth ? `"${headerAuth.slice(0, 6)}..."` : "(ausente)"}` +
-      ` x-livepix-secret=${headerAlt ? `"${headerAlt.slice(0, 6)}..."` : "(ausente)"}` +
-      ` x-signature=${headerSig ? `"${headerSig.slice(0, 6)}..."` : "(ausente)"}` +
-      ` authorization=${headerAuth2 ? "(presente)" : "(ausente)"}` +
-      ` secret-len=${secret.length} header-len=${header.length}`
-    );
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!authorized) {
+      console.error(
+        `[livepix/webhook] ❌ Auth falhou — candidate="${candidate.slice(0, 6) || "(vazio)"}" secret-len=${secret.length} candidate-len=${candidate.length}`
+      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
   }
 
   let body: { event?: string; resource?: { id?: string; type?: string; reference?: string } };
