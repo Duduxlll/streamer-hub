@@ -8,7 +8,7 @@ import {
   getHistoricoGorjeta, mascarCpf,
   type ResultadoPagamento,
 } from "@/lib/gorjeta-store";
-import { enviarPix, cadastrarWebhook } from "@/lib/gerencianet";
+import { enviarPix, cadastrarWebhook, consultarChavePix } from "@/lib/gerencianet";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -237,6 +237,15 @@ export async function POST(req: NextRequest) {
       const erro = err instanceof Error ? err.message : String(err);
       return NextResponse.json({ ok: false, diag, erro }, { headers: NO_CACHE });
     }
+  }
+
+  if (action === "testar-dict") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const chave = String(body.chave ?? process.env.GERENCIANET_PIX_KEY ?? "");
+    if (!chave) return NextResponse.json({ ok: false, erro: "Informe uma chave para testar (ou configure GERENCIANET_PIX_KEY)" }, { headers: NO_CACHE });
+    const resultado = await consultarChavePix(chave);
+    return NextResponse.json({ chave, resultado }, { headers: NO_CACHE });
   }
 
   return NextResponse.json({ error: "Ação inválida" }, { status: 400 });
