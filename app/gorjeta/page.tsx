@@ -90,6 +90,21 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
   const jaParticipa = cadastro?.status === "aprovado" &&
     sessao.participantes.some(p => p.username === cadastro.username);
 
+  // Revelar vencedores um a um com animação
+  const [shownWinners, setShownWinners] = useState<typeof sessao.vencedores>([]);
+  const winnersKey = useRef("");
+  useEffect(() => {
+    const key = sessao.vencedores.map(v => v.username).join(",");
+    if (key === winnersKey.current) return;
+    winnersKey.current = key;
+    setShownWinners([]);
+    if (sessao.vencedores.length === 0) return;
+    sessao.vencedores.forEach((v, i) => {
+      setTimeout(() => setShownWinners(prev => [...prev, v]), (i + 1) * 1400);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessao.vencedores.map(v => v.username).join(",")]);
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -134,20 +149,22 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
         )}
       </div>
 
-      {/* Vencedores — cards com foto grande */}
-      {sessao.vencedores.length > 0 && (
+      {/* Vencedores — revelados um a um */}
+      {shownWinners.length > 0 && (
         <div className="space-y-3">
           <p className="text-[11px] font-black text-[#ffba00] uppercase tracking-widest px-1">🏆 Vencedores</p>
-          <div className={`grid gap-3 ${sessao.vencedores.length === 1 ? "grid-cols-1 max-w-[200px] mx-auto" : sessao.vencedores.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
-            {sessao.vencedores.map((v, i) => (
-              <VencedorCard key={v.username} v={v} pos={i + 1}
-                pag={sessao.transacoes?.find(t => t.username === v.username && t.tipo === "sorteio")} />
+          <div className={`grid gap-3 ${shownWinners.length === 1 ? "grid-cols-1 max-w-[200px] mx-auto" : shownWinners.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+            {shownWinners.map((v, i) => (
+              <div key={v.username} style={{ animation: "fadeInUp 0.5s ease-out" }}>
+                <VencedorCard v={v} pos={i + 1}
+                  pag={sessao.transacoes?.find(t => t.username === v.username && t.tipo === "sorteio")} />
+              </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Participantes — cards com foto + scroll horizontal */}
+      {/* Participantes — grid com scroll vertical */}
       {sessao.participantes.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center gap-2 px-1">
@@ -157,8 +174,8 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
               {sessao.participantes.length}
             </span>
           </div>
-          <div className="overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
-            <div className="flex gap-2.5" style={{ width: "max-content" }}>
+          <div className="overflow-y-auto pr-1" style={{ maxHeight: 280, scrollbarWidth: "thin", scrollbarColor: "rgba(255,186,0,0.2) transparent" }}>
+            <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))" }}>
               {sessao.participantes.map(p => (
                 <ParticipanteCard key={p.username} p={p}
                   isVoce={jaParticipa && p.username === cadastro?.username} />
@@ -167,6 +184,7 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
           </div>
         </div>
       )}
+      <style>{`@keyframes fadeInUp { from { opacity:0; transform:translateY(16px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }`}</style>
     </div>
   );
 }

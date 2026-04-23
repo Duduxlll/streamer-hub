@@ -96,12 +96,13 @@ function ScreenshotModal({ id, onClose }: { id: string; onClose: () => void }) {
 function SortearModal({ participantes, vencedores, onPagar, onClose }: {
   participantes: ParticipanteSessao[];
   vencedores: ParticipanteSessao[];
-  onPagar: () => void;
+  onPagar: () => Promise<void>;
   onClose: () => void;
 }) {
   const [spinDisplay, setSpinDisplay] = useState<ParticipanteSessao>(participantes[0] ?? vencedores[0]);
   const [revealedWinners, setRevealedWinners] = useState<ParticipanteSessao[]>([]);
   const [done, setDone] = useState(false);
+  const [paying, setPaying] = useState(false);
   const cancelRef = useRef(false);
 
   useEffect(() => {
@@ -217,10 +218,12 @@ function SortearModal({ participantes, vencedores, onPagar, onClose }: {
         {/* Ações */}
         <div className="px-5 pb-6 space-y-2 border-t border-white/5 pt-4">
           {done && (
-            <button onClick={onPagar}
-              className="w-full py-3.5 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95"
+            <button
+              disabled={paying}
+              onClick={async () => { setPaying(true); await onPagar(); setPaying(false); }}
+              className="w-full py-3.5 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:scale-100"
               style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", boxShadow: "0 4px 20px rgba(255,186,0,0.3)" }}>
-              💸 Enviar PIX para os vencedores
+              {paying ? "⏳ Enviando PIX..." : "💸 Enviar PIX para os vencedores"}
             </button>
           )}
           <button onClick={onClose}
@@ -416,7 +419,7 @@ export default function AdminGorjetaPage() {
     }
   }
 
-  async function pagar() {
+  async function pagar(): Promise<void> {
     const r = await apiCall({ action: "pagar" });
     if (r) {
       setShowSortearModal(false);
@@ -587,11 +590,11 @@ export default function AdminGorjetaPage() {
                       <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex-1">Inscritos</p>
                       <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full" style={{ background: "rgba(255,186,0,0.1)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.2)" }}>{sessao.participantes.length}</span>
                     </div>
-                    <div className="p-4 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
-                      <div className="flex gap-2.5" style={{ width: "max-content" }}>
+                    <div className="p-4 overflow-y-auto" style={{ maxHeight: 260, scrollbarWidth: "thin", scrollbarColor: "rgba(255,186,0,0.2) transparent" }}>
+                      <div className="grid gap-2" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(82px, 1fr))" }}>
                         {sessao.participantes.map(p => (
-                          <div key={p.username} className="relative overflow-hidden rounded-2xl flex flex-col items-center flex-shrink-0"
-                            style={{ width: 88, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                          <div key={p.username} className="relative overflow-hidden rounded-2xl flex flex-col items-center"
+                            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
                             {p.image && <img src={p.image} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover pointer-events-none" style={{ filter: "blur(10px) brightness(0.18)", transform: "scale(1.3)" }} />}
                             <div className="relative z-10 flex flex-col items-center gap-1.5 px-2 pt-3 pb-2.5 w-full">
                               <Avatar image={p.image} name={p.displayName} size={40} />
