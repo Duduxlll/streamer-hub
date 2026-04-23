@@ -8,7 +8,8 @@ import {
   getHistoricoGorjeta, mascarCpf,
   type ResultadoPagamento,
 } from "@/lib/gorjeta-store";
-import { enviarPix, cadastrarWebhook, consultarChavePix } from "@/lib/gerencianet";
+import { enviarPix, cadastrarWebhook, consultarTitularChave } from "@/lib/gerencianet";
+import { normalizarChave } from "@/lib/gorjeta-store";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -64,9 +65,24 @@ export async function POST(req: NextRequest) {
     const login = (session.user.twitchLogin ?? session.user.name ?? "").toLowerCase();
     const tiposValidos = ["cpf", "telefone", "email", "aleatoria"];
     const tipoChave = tiposValidos.includes(body.tipoChave) ? body.tipoChave : "cpf";
+    const chaveRaw = String(body.chave ?? body.cpf ?? "");
+
+    // Consulta DICT para identificar o titular da chave e bloquear duplicatas entre contas
+    let cpfTitular: string | undefined;
+    const chaveNorm = normalizarChave(chaveRaw, tipoChave);
+    if (chaveNorm) {
+      if (tipoChave === "cpf") {
+        cpfTitular = chaveNorm; // CPF é o próprio identificador do titular
+      } else {
+        // Para outros tipos, consulta o DICT para descobrir o CPF do titular
+        const titular = await consultarTitularChave(chaveNorm).catch(() => null);
+        if (titular) cpfTitular = titular;
+      }
+    }
+
     const result = await cadastrar({
       username: login, displayName: session.user.name ?? login,
-      tipoChave, chave: String(body.chave ?? body.cpf ?? ""),
+      tipoChave, chave: chaveRaw, cpfTitular,
       nomeCompleto: String(body.nomeCompleto ?? ""),
       screenshot: String(body.screenshot ?? ""),
     });
@@ -237,15 +253,6 @@ export async function POST(req: NextRequest) {
       const erro = err instanceof Error ? err.message : String(err);
       return NextResponse.json({ ok: false, diag, erro }, { headers: NO_CACHE });
     }
-  }
-
-  if (action === "testar-dict") {
-    const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const chave = String(body.chave ?? process.env.GERENCIANET_PIX_KEY ?? "");
-    if (!chave) return NextResponse.json({ ok: false, erro: "Informe uma chave para testar (ou configure GERENCIANET_PIX_KEY)" }, { headers: NO_CACHE });
-    const resultado = await consultarChavePix(chave);
-    return NextResponse.json({ chave, resultado }, { headers: NO_CACHE });
   }
 
   return NextResponse.json({ error: "Ação inválida" }, { status: 400 });

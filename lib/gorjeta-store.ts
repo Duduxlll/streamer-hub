@@ -8,6 +8,7 @@ export interface CadastroGorjeta {
   displayName: string;
   cpf: string;          // campo legado — armazena a chave PIX normalizada
   tipoChave: TipoChavePix;
+  cpfTitular?: string;  // CPF do titular da chave (obtido via DICT), para detecção de duplicatas
   nomeCompleto: string;
   status: "pendente" | "aprovado" | "rejeitado";
   criadoEm: number;
@@ -136,6 +137,7 @@ export async function getCadastro(username: string): Promise<CadastroGorjeta | n
 export async function cadastrar(params: {
   username: string; displayName: string;
   tipoChave: TipoChavePix; chave: string;
+  cpfTitular?: string;
   nomeCompleto: string; screenshot: string;
 }): Promise<{ ok: true; cadastro: CadastroGorjeta } | { ok: false; error: string }> {
   const list = await loadCadastros();
@@ -154,6 +156,7 @@ export async function cadastrar(params: {
     return { ok: false, error: msgs[params.tipoChave] };
   }
 
+  // Bloqueia mesma chave em contas diferentes
   const chaveDup = list.find(c =>
     c.cpf === chaveNorm &&
     c.username.toLowerCase() !== params.username.toLowerCase() &&
@@ -161,10 +164,22 @@ export async function cadastrar(params: {
   );
   if (chaveDup) return { ok: false, error: "Esta chave PIX já está cadastrada por outro usuário" };
 
+  // Bloqueia mesmo titular (mesmo CPF identificado via DICT) em contas diferentes
+  if (params.cpfTitular) {
+    const titularDup = list.find(c =>
+      c.cpfTitular &&
+      c.cpfTitular === params.cpfTitular &&
+      c.username.toLowerCase() !== params.username.toLowerCase() &&
+      c.status !== "rejeitado"
+    );
+    if (titularDup) return { ok: false, error: "Você já possui um cadastro em outra conta com o mesmo titular bancário" };
+  }
+
   const id = Date.now().toString();
   const cadastro: CadastroGorjeta = {
     id, username: params.username.toLowerCase(), displayName: params.displayName,
     cpf: chaveNorm, tipoChave: params.tipoChave,
+    cpfTitular: params.cpfTitular,
     nomeCompleto: params.nomeCompleto.trim(), status: "pendente", criadoEm: Date.now(),
   };
   const filtered = list.filter(c => c.username.toLowerCase() !== params.username.toLowerCase());

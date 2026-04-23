@@ -121,47 +121,34 @@ export async function cadastrarWebhook(webhookUrl: string): Promise<{ ok: boolea
   return { ok: true };
 }
 
-export interface DictResult {
-  chave: string;
-  tipo: string;
-  cpfTitular?: string; // pode vir mascarado ex: ***.456.789-**
-  nomeTitular?: string;
-  ispb?: string;
-}
-
-export async function consultarChavePix(chave: string): Promise<{ ok: true; dados: DictResult } | { ok: false; status: number; erro: string }> {
-  const token = await getToken();
-  const res = await nodeRequest(
-    {
-      hostname: getHost(),
-      path:     `/v2/gn/pix/dict/${encodeURIComponent(chave)}`,
-      method:   "GET",
-      headers:  { Authorization: `Bearer ${token}` },
-      agent:    agent(),
-    },
-  );
-
-  if (res.status === 403 || res.status === 404) {
-    return { ok: false, status: res.status, erro: res.text };
-  }
-  if (res.status < 200 || res.status >= 300) {
-    return { ok: false, status: res.status, erro: res.text };
-  }
-
+export async function consultarTitularChave(chave: string): Promise<string | null> {
   try {
-    const data = JSON.parse(res.text);
-    return {
-      ok: true,
-      dados: {
-        chave: data.chave ?? chave,
-        tipo: data.tipoConta ?? data.tipo ?? "",
-        cpfTitular: data.chaveEndereçamento?.cpf ?? data.cpf ?? data.titular?.cpf,
-        nomeTitular: data.nomeTitular ?? data.titular?.nome,
-        ispb: data.ispb,
+    const token = await getToken();
+    const res = await nodeRequest(
+      {
+        hostname: getHost(),
+        path:     `/v2/gn/pix/dict/${encodeURIComponent(chave)}`,
+        method:   "GET",
+        headers:  { Authorization: `Bearer ${token}` },
+        agent:    agent(),
       },
-    };
+    );
+
+    if (res.status !== 200) return null;
+
+    // Tenta extrair o CPF do titular de diferentes formatos de resposta
+    const d = JSON.parse(res.text);
+    const cpf: string | undefined =
+      d.cpfCnpjProprietario ??
+      d.cpf ??
+      d.dono?.cpf ??
+      d.titular?.cpf ??
+      d.infoPagador?.cpf ??
+      d.chaveEndereçamento?.cpf;
+
+    return cpf ?? null;
   } catch {
-    return { ok: false, status: res.status, erro: "Resposta inesperada: " + res.text };
+    return null;
   }
 }
 
