@@ -4,7 +4,7 @@ import { isAdmin } from "@/lib/admins";
 import {
   getCadastros, getCadastro, cadastrar, aprovarCadastro, rejeitarCadastro, editarCpfCadastro,
   getScreenshot, getSessao, abrirSessao, entrarSessao, sortearGorjeta,
-  salvarPagamentos, registrarManual, fecharSessaoSemPagar, limparSessao,
+  salvarPagamentos, registrarManual, adicionarParticipanteTeste, fecharSessaoSemPagar, limparSessao,
   getHistoricoGorjeta, mascarCpf,
   type ResultadoPagamento,
 } from "@/lib/gorjeta-store";
@@ -193,6 +193,16 @@ export async function POST(req: NextRequest) {
 
     const sessaoAtualizada = await registrarManual(participante.username, participante.displayName, valorNum, result);
     return NextResponse.json({ ok: true, result, sessao: sessaoAtualizada }, { headers: NO_CACHE });
+  }
+
+  if (action === "add-teste") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const username = String(body.username ?? `teste_${Date.now()}`);
+    const displayName = String(body.displayName ?? username);
+    const image = typeof body.image === "string" ? body.image : null;
+    const result = await adicionarParticipanteTeste(username, displayName, image);
+    return NextResponse.json(result, { headers: NO_CACHE });
   }
 
   if (action === "cadastrar-webhook") {

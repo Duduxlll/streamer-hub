@@ -296,6 +296,25 @@ export async function salvarPagamentos(
   return sessao;
 }
 
+export async function adicionarParticipanteTeste(
+  username: string,
+  displayName: string,
+  image: string | null,
+): Promise<{ ok: boolean; error?: string }> {
+  const sessao = await loadSessao();
+  if (!sessao || sessao.status === "fechada") return { ok: false, error: "Sem sessão ativa" };
+  const uLower = username.toLowerCase().replace(/\s+/g, "_");
+  if (sessao.participantes.some(p => p.username === uLower)) return { ok: false, error: "Já participa" };
+  sessao.participantes.push({
+    username: uLower, displayName, image,
+    cpf: "00000000000",
+    nomeCompleto: displayName,
+    entradaEm: Date.now(),
+  });
+  await saveSessao(sessao);
+  return { ok: true };
+}
+
 export async function registrarManual(
   username: string, displayName: string, valor: number,
   result: { status: "enviado" | "falhou"; txid?: string; e2eid?: string; erro?: string },
