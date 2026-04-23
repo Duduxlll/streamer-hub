@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import {
-  getCadastros, getCadastro, cadastrar, aprovarCadastro, rejeitarCadastro, editarCpfCadastro, editarChaveCadastro,
+  getCadastros, getCadastro, cadastrar, aprovarCadastro, rejeitarCadastro, editarCpfCadastro, editarChaveCadastro, deletarCadastro,
   getScreenshot, getSessao, abrirSessao, entrarSessao, sortearGorjeta,
   salvarPagamentos, registrarManual, adicionarParticipanteTeste, fecharSessaoSemPagar, limparSessao,
-  getHistoricoGorjeta, mascarCpf,
+  getHistoricoGorjeta, limparHistorico, mascarCpf,
   type ResultadoPagamento,
 } from "@/lib/gorjeta-store";
 import { enviarPix, cadastrarWebhook, consultarTitularChave } from "@/lib/gerencianet";
@@ -222,6 +222,21 @@ export async function POST(req: NextRequest) {
 
     const sessaoAtualizada = await registrarManual(participante.username, participante.displayName, valorNum, result);
     return NextResponse.json({ ok: true, result, sessao: sessaoAtualizada }, { headers: NO_CACHE });
+  }
+
+  if (action === "deletar-cadastro") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const ok = await deletarCadastro(String(body.id ?? ""));
+    if (!ok) return NextResponse.json({ error: "Cadastro não encontrado" }, { status: 404 });
+    return NextResponse.json({ ok: true }, { headers: NO_CACHE });
+  }
+
+  if (action === "limpar-historico") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    await limparHistorico();
+    return NextResponse.json({ ok: true }, { headers: NO_CACHE });
   }
 
   if (action === "add-teste") {

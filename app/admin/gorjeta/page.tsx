@@ -54,6 +54,18 @@ function StatusBadge({ status }: { status: "pendente" | "aprovado" | "rejeitado"
   );
 }
 
+function labelErro(erro?: string): string {
+  if (!erro) return "falhou";
+  const e = erro.toLowerCase();
+  if (e.includes("chave_pix") || e.includes("chave pix") || e.includes("chave_invalida") ||
+      (e.includes("chave") && (e.includes("inválid") || e.includes("invalid") || e.includes("não encontrad") || e.includes("nao encontrad"))) ||
+      e.includes("favorecido") || e.includes("destinatário")) {
+    return "chave PIX errada";
+  }
+  if (e.includes("saldo") && (e.includes("insuficiente") || e.includes("insufficient"))) return "saldo insuficiente";
+  return "falhou";
+}
+
 function PayBadge({ status, erro }: { status: string; erro?: string }) {
   if (status === "enviado") return (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black whitespace-nowrap"
@@ -61,10 +73,11 @@ function PayBadge({ status, erro }: { status: string; erro?: string }) {
       ✓ enviado
     </span>
   );
+  const label = labelErro(erro);
   return (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black whitespace-nowrap" title={erro}
       style={{ color: "#f87171", background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)" }}>
-      ✕ falhou
+      ✕ {label}
     </span>
   );
 }
@@ -116,23 +129,41 @@ function HistoricoCard({ h, num }: { h: HistoricoItem; num: number }) {
 
 function ScreenshotModal({ id, onClose }: { id: string; onClose: () => void }) {
   const [src, setSrc] = useState<string | null>(null);
+  const [zoomed, setZoomed] = useState(false);
   useEffect(() => {
     fetch(`/api/gorjeta?screenshot=${id}`).then(r => r.json()).then(d => setSrc(d.screenshot ?? null)).catch(() => setSrc(null));
   }, [id]);
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
-      <div className="relative max-w-lg w-full rounded-3xl overflow-hidden"
+      <div className={`relative w-full rounded-3xl overflow-hidden transition-all duration-300 ${zoomed ? "max-w-4xl" : "max-w-lg"}`}
         style={{ background: "rgba(6,4,18,0.98)", border: "1px solid rgba(255,186,0,0.2)", boxShadow: "0 0 60px rgba(255,186,0,0.08)" }}
         onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
           <span className="text-sm font-black text-white">Comprovante de depósito</span>
-          <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-gray-500 hover:text-white transition-colors hover:bg-white/5">
-            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-          </button>
+          <div className="flex items-center gap-2">
+            {src && (
+              <button onClick={() => setZoomed(z => !z)}
+                className="w-7 h-7 rounded-full flex items-center justify-center text-gray-500 hover:text-[#ffba00] transition-colors hover:bg-white/5"
+                title={zoomed ? "Reduzir" : "Ampliar"}>
+                <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                  {zoomed
+                    ? <path fillRule="evenodd" d="M5 10a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1z" clipRule="evenodd" />
+                    : <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                  }
+                </svg>
+              </button>
+            )}
+            <button onClick={onClose} className="w-7 h-7 rounded-full flex items-center justify-center text-gray-500 hover:text-white transition-colors hover:bg-white/5">
+              <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+            </button>
+          </div>
         </div>
-        <div className="p-5">
+        <div className="p-5 overflow-y-auto" style={{ maxHeight: "calc(100vh - 120px)" }}>
           {src
-            ? <img src={src} alt="comprovante" className="w-full rounded-2xl object-contain max-h-[70vh]" />
+            ? <img src={src} alt="comprovante"
+                className="w-full rounded-2xl object-contain transition-all duration-300"
+                style={{ maxHeight: zoomed ? "none" : "65vh", cursor: zoomed ? "zoom-out" : "zoom-in" }}
+                onClick={() => setZoomed(z => !z)} />
             : <div className="h-40 flex items-center justify-center text-gray-600 text-sm">Carregando...</div>
           }
         </div>
@@ -290,12 +321,13 @@ function SortearModal({ participantes, vencedores, onPagar, onClose }: {
 
 // ─── Card de cadastro ─────────────────────────────────────────────────────
 
-function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada }: {
+function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onDeletar }: {
   c: CadastroGorjeta;
   onAprovar: () => void;
   onRejeitar: (motivo: string) => void;
   onVerFoto: () => void;
   onChaveEditada: () => void;
+  onDeletar: () => void;
 }) {
   const [rejMotivo, setRejMotivo] = useState("");
   const [showRejeitar, setShowRejeitar] = useState(false);
@@ -345,6 +377,7 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada }: {
           <button onClick={() => { setTipoChaveEdit(c.tipoChave ?? "cpf"); setChaveEdit(c.cpf); setEditErr(""); setShowEdit(s => !s); setShowRejeitar(false); }}
             className="px-2.5 py-1.5 rounded-xl text-[11px] transition-all hover:bg-white/5"
             style={{ border: "1px solid rgba(255,255,255,0.08)", color: showEdit ? "#ffba00" : "#6b7280" }}>✏️</button>
+          <button onClick={onDeletar} className="px-2.5 py-1.5 rounded-xl text-[11px] font-black text-gray-500 hover:text-red-400 transition-all hover:bg-red-500/5" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>🗑️</button>
         </div>
       </div>
       <div className="px-5 pb-3 grid grid-cols-2 gap-3 border-t border-white/5 pt-3">
@@ -478,6 +511,16 @@ export default function AdminGorjetaPage() {
   }
 
   async function onChaveEditada() { await fetchAll(); flash("Chave PIX atualizada!", "ok"); }
+  async function deletar(id: string) {
+    if (!window.confirm("Apagar este cadastro? A pessoa poderá se recadastrar.")) return;
+    const r = await apiCall({ action: "deletar-cadastro", id });
+    if (r) flash("Cadastro apagado", "ok");
+  }
+  async function limparHistoricoAction() {
+    if (!window.confirm("Limpar todo o histórico de gorjetas?")) return;
+    const r = await apiCall({ action: "limpar-historico" });
+    if (r) flash("Histórico limpo", "ok");
+  }
   async function aprovar(id: string) { const r = await apiCall({ action: "aprovar", id }); if (r) flash("Aprovado!", "ok"); }
   async function rejeitar(id: string, motivo: string) { const r = await apiCall({ action: "rejeitar", id, motivo }); if (r) flash("Rejeitado", "ok"); }
 
@@ -878,7 +921,8 @@ export default function AdminGorjetaPage() {
                       onAprovar={() => aprovar(c.id)}
                       onRejeitar={(motivo) => rejeitar(c.id, motivo)}
                       onVerFoto={() => setScreenshotModalId(c.id)}
-                      onChaveEditada={onChaveEditada} />
+                      onChaveEditada={onChaveEditada}
+                      onDeletar={() => deletar(c.id)} />
                   ))}
                 </div>
               );
@@ -888,7 +932,7 @@ export default function AdminGorjetaPage() {
 
         {/* ── ABA HISTÓRICO ── */}
         {tab === "historico" && (
-          <div>
+          <div className="space-y-4">
             {historico.length === 0 && (
               <div className="text-center py-16">
                 <div className="inline-flex w-16 h-16 rounded-2xl items-center justify-center mb-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
@@ -898,12 +942,24 @@ export default function AdminGorjetaPage() {
               </div>
             )}
             {historico.length > 0 && (
-              <div className="overflow-y-auto space-y-3 pr-1"
-                style={{ maxHeight: "calc(100vh - 260px)", scrollbarWidth: "thin", scrollbarColor: "rgba(255,186,0,0.2) transparent" }}>
-                {historico.map((h, idx) => (
-                  <HistoricoCard key={h.id} h={h} num={historico.length - idx} />
-                ))}
-              </div>
+              <>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">
+                    {historico.length} sessão{historico.length !== 1 ? "ões" : ""} encerrada{historico.length !== 1 ? "s" : ""}
+                  </p>
+                  <button onClick={limparHistoricoAction} disabled={busy}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all hover:text-red-400 disabled:opacity-50"
+                    style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.07)" }}>
+                    🗑️ Limpar histórico
+                  </button>
+                </div>
+                <div className="overflow-y-auto space-y-3 pr-1"
+                  style={{ maxHeight: "calc(100vh - 310px)", scrollbarWidth: "thin", scrollbarColor: "rgba(255,186,0,0.2) transparent" }}>
+                  {historico.map((h, idx) => (
+                    <HistoricoCard key={h.id} h={h} num={historico.length - idx} />
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}

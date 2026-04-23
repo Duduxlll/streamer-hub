@@ -417,6 +417,19 @@ export async function limparSessao(): Promise<void> { await saveSessao(null); }
 
 export async function getHistoricoGorjeta(): Promise<HistoricoItemGorjeta[]> { return loadHistorico(); }
 
+export async function deletarCadastro(id: string): Promise<boolean> {
+  const list = await loadCadastros();
+  const idx = list.findIndex(x => x.id === id);
+  if (idx === -1) return false;
+  list.splice(idx, 1);
+  await saveCadastros(list);
+  return true;
+}
+
+export async function limparHistorico(): Promise<void> {
+  await saveHistorico([]);
+}
+
 // ─── Validação & Normalização ──────────────────────────────────────────────
 
 function validarCpf(cpf: string): boolean {
