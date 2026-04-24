@@ -59,7 +59,7 @@ export default function AdminConfigPage() {
     );
   }
 
-  const tudo_ok = config?.ggpix.ok && config?.livepix.ok;
+  const tudo_ok = config?.ggpix.ok;
 
   return (
     <div className="page-enter relative min-h-[calc(100vh-4rem)]">
