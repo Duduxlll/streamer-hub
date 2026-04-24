@@ -5,16 +5,19 @@ import {
   getCadastros, getCadastro, cadastrar, aprovarCadastro, rejeitarCadastro, editarCpfCadastro, editarChaveCadastro, deletarCadastro,
   getScreenshot, getSessao, abrirSessao, entrarSessao, sortearGorjeta,
   salvarPagamentos, registrarManual, adicionarParticipanteTeste, fecharSessaoSemPagar, limparSessao,
-  getHistoricoGorjeta, limparHistorico, mascarCpf,
+  getHistoricoGorjeta, limparHistorico, mascarCpf, normalizarChave,
   type ResultadoPagamento,
 } from "@/lib/gorjeta-store";
-import { enviarPix, cadastrarWebhook, consultarTitularChave } from "@/lib/gerencianet";
-import { normalizarChave } from "@/lib/gorjeta-store";
+import { enviarPix } from "@/lib/ggpix";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const NO_CACHE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
+
+function gerarExternalId(): string {
+  return `gorjeta${Date.now()}${Math.random().toString(36).slice(2, 8)}`.slice(0, 35);
+}
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -36,7 +39,6 @@ export async function GET(req: NextRequest) {
 
   const [sessaoRaw, historico] = await Promise.all([getSessao(), getHistoricoGorjeta()]);
 
-  // Public view: mask CPF in participantes/vencedores, strip CPF from transacoes
   const sessaoPublic = sessaoRaw ? {
     ...sessaoRaw,
     participantes: sessaoRaw.participantes.map(p => ({ ...p, cpf: mascarCpf(p.cpf) })),
@@ -67,21 +69,14 @@ export async function POST(req: NextRequest) {
     const tipoChave = tiposValidos.includes(body.tipoChave) ? body.tipoChave : "cpf";
     const chaveRaw = String(body.chave ?? body.cpf ?? "");
 
-    // Consulta DICT para identificar o titular da chave e bloquear duplicatas entre contas
     let cpfTitular: string | undefined;
     const chaveNorm = normalizarChave(chaveRaw, tipoChave);
     if (chaveNorm) {
       if (tipoChave === "cpf") {
-        cpfTitular = chaveNorm; // CPF é o próprio identificador do titular
-      } else {
-        // Para outros tipos, tenta DICT primeiro; se falhar, usa CPF de verificação informado pelo usuário
-        const titular = await consultarTitularChave(chaveNorm).catch(() => null);
-        if (titular) {
-          cpfTitular = titular;
-        } else if (body.cpfVerificacao) {
-          const cpfVer = normalizarChave(String(body.cpfVerificacao), "cpf");
-          if (cpfVer) cpfTitular = cpfVer;
-        }
+        cpfTitular = chaveNorm;
+      } else if (body.cpfVerificacao) {
+        const cpfVer = normalizarChave(String(body.cpfVerificacao), "cpf");
+        if (cpfVer) cpfTitular = cpfVer;
       }
     }
 
@@ -183,9 +178,10 @@ export async function POST(req: NextRequest) {
 
     const pagamentos: ResultadoPagamento[] = [];
     for (const v of sessao.vencedores) {
+      const externalId = gerarExternalId();
       try {
-        const r = await enviarPix(v.cpf, sessao.valorUnitario, "Gorjeta stainzincs");
-        pagamentos.push({ username: v.username, displayName: v.displayName, cpf: v.cpf, nomeCompleto: v.nomeCompleto, status: "enviado", txid: r.idEnvio, e2eid: r.e2eId });
+        await enviarPix(v.cpf, v.tipoChave ?? "cpf", sessao.valorUnitario, externalId);
+        pagamentos.push({ username: v.username, displayName: v.displayName, cpf: v.cpf, nomeCompleto: v.nomeCompleto, status: "enviado", txid: externalId });
       } catch (err) {
         const erroMsg = err instanceof Error ? err.message : "Erro desconhecido";
         console.error("[gorjeta/pagar] Falha PIX para", v.username, "—", erroMsg);
@@ -215,10 +211,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Saldo insuficiente (disponível: R$ ${sessao.saldoRestante.toFixed(2)})` }, { status: 400 });
     }
 
-    let result: { status: "enviado" | "falhou"; txid?: string; e2eid?: string; erro?: string };
+    const externalId = gerarExternalId();
+    let result: { status: "enviado" | "falhou"; txid?: string; erro?: string };
     try {
-      const r = await enviarPix(participante.cpf, valorNum, "Gorjeta");
-      result = { status: "enviado", txid: r.idEnvio, e2eid: r.e2eId };
+      await enviarPix(participante.cpf, participante.tipoChave ?? "cpf", valorNum, externalId);
+      result = { status: "enviado", txid: externalId };
     } catch (err) {
       const erroMsg = err instanceof Error ? err.message : "Erro";
       console.error("[gorjeta/manual] Falha PIX para", username, "—", erroMsg);
@@ -252,37 +249,6 @@ export async function POST(req: NextRequest) {
     const image = typeof body.image === "string" ? body.image : null;
     const result = await adicionarParticipanteTeste(username, displayName, image);
     return NextResponse.json(result, { headers: NO_CACHE });
-  }
-
-  if (action === "cadastrar-webhook") {
-    const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const siteUrl = process.env.NEXTAUTH_URL ?? process.env.AUTH_URL ?? process.env.SITE_URL ?? "";
-    if (!siteUrl) return NextResponse.json({ ok: false, erro: "NEXTAUTH_URL não definida no ambiente" }, { headers: NO_CACHE });
-    const webhookUrl = `${siteUrl.replace(/\/+$/, "")}/api/gerencianet/webhook`;
-    const result = await cadastrarWebhook(webhookUrl);
-    return NextResponse.json({ ...result, webhookUrl }, { headers: NO_CACHE });
-  }
-
-  if (action === "testar-pix") {
-    const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const diag = {
-      GERENCIANET_CLIENT_ID: !!process.env.GERENCIANET_CLIENT_ID,
-      GERENCIANET_CLIENT_SECRET: !!process.env.GERENCIANET_CLIENT_SECRET,
-      GERENCIANET_PIX_KEY: process.env.GERENCIANET_PIX_KEY ?? "(não definida)",
-      GERENCIANET_CERT_PEM_BASE64: !!process.env.GERENCIANET_CERT_PEM_BASE64,
-      GERENCIANET_KEY_PEM_BASE64: !!process.env.GERENCIANET_KEY_PEM_BASE64,
-    };
-    try {
-      const cpfTeste = String(body.cpf ?? "").replace(/\D/g, "");
-      if (!cpfTeste || cpfTeste.length !== 11) return NextResponse.json({ ok: false, diag, erro: "Informe um CPF válido para testar" }, { headers: NO_CACHE });
-      const r = await enviarPix(cpfTeste, Number(body.valor ?? 0.01), "Teste gorjeta");
-      return NextResponse.json({ ok: true, diag, resultado: r }, { headers: NO_CACHE });
-    } catch (err) {
-      const erro = err instanceof Error ? err.message : String(err);
-      return NextResponse.json({ ok: false, diag, erro }, { headers: NO_CACHE });
-    }
   }
 
   return NextResponse.json({ error: "Ação inválida" }, { status: 400 });

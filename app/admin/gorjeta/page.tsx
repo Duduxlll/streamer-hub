@@ -63,6 +63,7 @@ function labelErro(erro?: string): string {
     return "chave PIX errada";
   }
   if (e.includes("saldo") && (e.includes("insuficiente") || e.includes("insufficient"))) return "saldo insuficiente";
+  if (e.includes("limite") || e.includes("limit")) return "limite excedido";
   return "falhou";
 }
 

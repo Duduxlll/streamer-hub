@@ -417,6 +417,34 @@ export async function limparSessao(): Promise<void> { await saveSessao(null); }
 
 export async function getHistoricoGorjeta(): Promise<HistoricoItemGorjeta[]> { return loadHistorico(); }
 
+export async function atualizarTransacaoPorTxid(
+  txid: string,
+  status: "enviado" | "falhou",
+  erro?: string,
+): Promise<boolean> {
+  const sessao = await loadSessao();
+  if (sessao) {
+    const t = sessao.transacoes.find(x => x.txid === txid);
+    if (t) {
+      t.status = status;
+      if (erro) t.erro = erro;
+      await saveSessao(sessao);
+      return true;
+    }
+  }
+  const historico = await loadHistorico();
+  for (const h of historico) {
+    const t = h.transacoes.find(x => x.txid === txid);
+    if (t) {
+      t.status = status;
+      if (erro) t.erro = erro;
+      await saveHistorico(historico);
+      return true;
+    }
+  }
+  return false;
+}
+
 export async function deletarCadastro(id: string): Promise<boolean> {
   const list = await loadCadastros();
   const idx = list.findIndex(x => x.id === id);
