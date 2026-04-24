@@ -9,10 +9,10 @@ function getApiKey(): string {
 }
 
 const TIPO_MAP: Record<TipoChavePix, string> = {
-  cpf:      "cpf",
-  telefone: "phone",
-  email:    "email",
-  aleatoria: "random",
+  cpf:      "CPF",
+  telefone: "PHONE",
+  email:    "EMAIL",
+  aleatoria: "EVP",
 };
 
 export async function enviarPix(
