@@ -59,7 +59,8 @@ export default function AdminConfigPage() {
     );
   }
 
-  const tudo_ok = config?.ggpix.ok;
+  const ggpixOk = config?.ggpix.ok ?? false;
+  const livepixOk = config?.livepix.ok ?? false;
 
   return (
     <div className="page-enter relative min-h-[calc(100vh-4rem)]">
@@ -70,79 +71,77 @@ export default function AdminConfigPage() {
           <span className="text-gray-400">Admin · Configurações</span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-black text-white flex-1">Configurações</h1>
-        </div>
+        <h1 className="text-3xl font-black text-white">Configurações</h1>
 
-        {tudo_ok && (
+        {/* Banner de status geral */}
+        {ggpixOk ? (
           <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-green-400"
             style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
             <StatusDot ok={true} />
             Tudo conectado e funcionando
           </div>
+        ) : (
+          <div className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-yellow-400"
+            style={{ background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.25)" }}>
+            <span>⚠️</span>
+            Configure o GGPix para ativar o envio de gorjetas
+          </div>
         )}
 
         {/* GGPix / Gorjeta */}
         <Card>
-          <div className="px-5 py-4 border-b border-white/5 flex items-center gap-3">
+          <div className="px-5 py-4 flex items-center gap-3">
             <span className="text-xl">💰</span>
             <div className="flex-1">
               <p className="text-sm font-black text-white">GGPix · Gorjeta</p>
               <p className="text-[11px] text-gray-600">API PIX para envio automático de gorjetas</p>
             </div>
-            <StatusDot ok={config?.ggpix.ok ?? false} />
-          </div>
-          <div className="px-5 py-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <StatusDot ok={config?.ggpix.ok ?? false} />
-              <span className="text-xs text-gray-400 flex-1">API Key (GGPIX_API_KEY)</span>
-              <span className={`text-[11px] font-black ${config?.ggpix.ok ? "text-green-400" : "text-red-400"}`}>
-                {config?.ggpix.ok ? "Configurada" : "Não configurada"}
+            <div className="flex items-center gap-2">
+              <span className={`text-[11px] font-black ${ggpixOk ? "text-green-400" : "text-red-400"}`}>
+                {ggpixOk ? "Conectado" : "Não configurado"}
               </span>
+              <StatusDot ok={ggpixOk} />
             </div>
-
-            {!config?.ggpix.ok && (
+          </div>
+          {!ggpixOk && (
+            <div className="px-5 pb-4">
               <div className="px-4 py-3 rounded-xl text-xs text-yellow-400"
                 style={{ background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.2)" }}>
-                Adicione a variável <code className="text-white">GGPIX_API_KEY</code> no Render para ativar o envio de gorjetas.
+                Configure a chave de API do GGPix no painel do Render para ativar o envio de gorjetas.
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </Card>
 
         {/* LivePix / Jackpot */}
         <Card>
-          <div className="px-5 py-4 border-b border-white/5 flex items-center gap-3">
+          <div className="px-5 py-4 flex items-center gap-3">
             <span className="text-xl">🎰</span>
             <div className="flex-1">
               <p className="text-sm font-black text-white">LivePix · Jackpot</p>
               <p className="text-[11px] text-gray-600">Integração de doações para o jackpot</p>
             </div>
-            <StatusDot ok={config?.livepix.ok ?? false} />
-          </div>
-          <div className="px-5 py-4 space-y-4">
-            <div className="flex items-center gap-3">
-              <StatusDot ok={config?.livepix.ok ?? false} />
-              <span className="text-xs text-gray-400 flex-1">Credenciais LivePix</span>
-              <span className={`text-[11px] font-black ${config?.livepix.ok ? "text-green-400" : "text-red-400"}`}>
-                {config?.livepix.ok ? "Configuradas" : "Não configuradas"}
+            <div className="flex items-center gap-2">
+              <span className={`text-[11px] font-black ${livepixOk ? "text-green-400" : "text-gray-600"}`}>
+                {livepixOk ? "Conectado" : "Não configurado"}
               </span>
+              <StatusDot ok={livepixOk} />
             </div>
-
-            {!config?.livepix.ok && (
-              <div className="px-4 py-3 rounded-xl text-xs text-yellow-400"
-                style={{ background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.2)" }}>
-                Adicione <code className="text-white">LIVEPIX_CLIENT_ID</code> e <code className="text-white">LIVEPIX_CLIENT_SECRET</code> no Render para ativar o jackpot.
+          </div>
+          <div className="px-5 pb-4 space-y-3">
+            {!livepixOk && (
+              <div className="px-4 py-3 rounded-xl text-xs text-gray-500"
+                style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                Configure as credenciais do LivePix no Render para ativar o jackpot.
               </div>
             )}
-
             <Link
               href="/api/livepix/connect"
               className="w-full py-2.5 rounded-xl font-black text-sm text-center block transition-all hover:scale-[1.02]"
-              style={config?.livepix.ok
+              style={livepixOk
                 ? { background: "rgba(255,255,255,0.04)", color: "#6b7280", border: "1px solid rgba(255,255,255,0.08)" }
                 : { background: "linear-gradient(135deg, #c084fc, #9146ff)", color: "#fff" }}>
-              {config?.livepix.ok ? "Reconectar LivePix" : "Conectar LivePix"}
+              {livepixOk ? "Reconectar LivePix" : "Conectar LivePix"}
             </Link>
           </div>
         </Card>

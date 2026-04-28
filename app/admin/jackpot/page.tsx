@@ -162,6 +162,10 @@ export default function AdminJackpotPage() {
   const [editValorId, setEditValorId] = useState<string | null>(null);
   const [editValor,   setEditValor]   = useState("");
 
+  const [addingInRun, setAddingInRun] = useState(false);
+  const [runNome,     setRunNome]     = useState("");
+  const [runJogo,     setRunJogo]     = useState("");
+
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
   useEffect(() => {
@@ -624,9 +628,43 @@ export default function AdminJackpotPage() {
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
-            <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-3">
-              Aguardando ({restantes})
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">
+                Aguardando ({restantes})
+              </p>
+              <button
+                onClick={() => { setAddingInRun(v => !v); setRunNome(""); setRunJogo(""); }}
+                className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-lg transition-all hover:scale-110"
+                style={{ background: addingInRun ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.06)", color: addingInRun ? "#f59e0b" : "#6b7280", border: `1px solid ${addingInRun ? "rgba(245,158,11,0.4)" : "rgba(255,255,255,0.08)"}` }}
+                title="Adicionar jogador"
+              >+</button>
+            </div>
+
+            {addingInRun && (
+              <div className="flex gap-2 mb-3">
+                <input value={runNome} onChange={e => setRunNome(e.target.value)}
+                  placeholder="Nome do jogador"
+                  autoFocus
+                  onKeyDown={e => e.key === "Enter" && document.getElementById("btn-add-run")?.click()}
+                  className="flex-1 bg-white/5 border border-[#f59e0b]/40 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#f59e0b]/70 transition-colors" />
+                <input value={runJogo} onChange={e => setRunJogo(e.target.value)}
+                  placeholder="Jogo"
+                  onKeyDown={e => e.key === "Enter" && document.getElementById("btn-add-run")?.click()}
+                  className="w-28 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#f59e0b]/50 transition-colors" />
+                <button
+                  id="btn-add-run"
+                  onClick={async () => {
+                    if (!runNome.trim()) return;
+                    await post({ action: "add-jogador", nome: runNome, jogo: runJogo });
+                    setRunNome(""); setRunJogo(""); setAddingInRun(false);
+                  }}
+                  disabled={!runNome.trim() || loading}
+                  className="px-3 py-2 rounded-xl font-black text-black text-sm disabled:opacity-40 flex-shrink-0"
+                  style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}
+                >✓</button>
+              </div>
+            )}
+
             <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
               {jackpot.jogadores
                 .map((j, i) => ({ ...j, origIdx: i }))
@@ -634,23 +672,47 @@ export default function AdminJackpotPage() {
                 .map(j => {
                   const isAtual = j.origIdx === jackpot.jogadorAtualIdx && !waitingToSpin && !spinning;
                   return (
-                    <div key={j.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all"
-                      style={{
-                        background: isAtual ? "rgba(34,197,94,0.08)" : "rgba(255,255,255,0.03)",
-                        border: `1px solid ${isAtual ? "rgba(34,197,94,0.25)" : "rgba(255,255,255,0.05)"}`,
-                      }}>
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
-                        style={{
-                          background: isAtual ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.06)",
-                          color: isAtual ? "#22c55e" : "#6b7280",
-                        }}>
-                        {j.origIdx + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-bold text-white text-sm truncate">{j.nome}</p>
-                        {j.jogo && <p className="text-[11px] text-gray-600 truncate">{j.jogo}</p>}
-                      </div>
-                      {isAtual && <span className="text-[10px] font-black text-green-400 flex-shrink-0">AGORA</span>}
+                    <div key={j.id}>
+                      {editingId === j.id ? (
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                          <input value={editNome} onChange={e => setEditNome(e.target.value)}
+                            className="flex-1 bg-white/5 border border-[#f59e0b]/50 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none" autoFocus />
+                          <input value={editJogo} onChange={e => setEditJogo(e.target.value)}
+                            placeholder="Jogo"
+                            className="w-24 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none" />
+                          <button onClick={async () => { if (!editNome.trim()) return; await post({ action: "edit-jogador", id: j.id, nome: editNome, jogo: editJogo }); setEditingId(null); }}
+                            className="px-2 py-1.5 rounded-lg text-xs font-black text-black" style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}>✓</button>
+                          <button onClick={() => setEditingId(null)} className="text-gray-600 hover:text-white text-xs transition-colors">✕</button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all"
+                          style={{
+                            background: isAtual ? "rgba(34,197,94,0.08)" : "rgba(255,255,255,0.03)",
+                            border: `1px solid ${isAtual ? "rgba(34,197,94,0.25)" : "rgba(255,255,255,0.05)"}`,
+                          }}>
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0"
+                            style={{ background: isAtual ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.06)", color: isAtual ? "#22c55e" : "#6b7280" }}>
+                            {j.origIdx + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-white text-sm truncate">{j.nome}</p>
+                            {j.jogo && <p className="text-[11px] text-gray-600 truncate">{j.jogo}</p>}
+                          </div>
+                          {isAtual
+                            ? <span className="text-[10px] font-black text-green-400 flex-shrink-0">AGORA</span>
+                            : (
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                <button onClick={() => { setEditingId(j.id); setEditNome(j.nome); setEditJogo(j.jogo); }}
+                                  className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-600 hover:text-amber-400 hover:bg-amber-500/10 transition-colors text-xs"
+                                  title="Editar">✏️</button>
+                                <button onClick={() => post({ action: "remove-jogador", id: j.id })}
+                                  className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-colors text-xs"
+                                  title="Remover">✕</button>
+                              </div>
+                            )
+                          }
+                        </div>
+                      )}
                     </div>
                   );
                 })}
