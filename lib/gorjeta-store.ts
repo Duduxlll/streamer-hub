@@ -503,7 +503,7 @@ export function mascarChave(chave: string, tipo?: TipoChavePix): string {
     case "cpf": {
       const d = chave.replace(/\D/g, "");
       if (d.length !== 11) return chave;
-      return `***.${d.slice(3, 6)}.${d.slice(6, 9)}-**`;
+      return `***.***.***-**`;
     }
     case "telefone": {
       const d = chave.replace(/\D/g, "");

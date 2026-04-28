@@ -7,16 +7,7 @@ import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import type { CadastroGorjeta, SessaoGorjeta, ParticipanteSessao, TransacaoGorjeta, TipoChavePix } from "@/lib/gorjeta-store";
 
-function mascarChave(chave: string, tipo: TipoChavePix = "cpf"): string {
-  switch (tipo) {
-    case "cpf": { const d = chave.replace(/\D/g, ""); return d.length === 11 ? `***.${d.slice(3,6)}.${d.slice(6,9)}-**` : chave; }
-    case "telefone": { const d = chave.replace(/\D/g, ""); return d.length >= 4 ? `+55 (${d.slice(2,4)}) *****-${d.slice(-4)}` : "***"; }
-    case "email": { const [l, d] = chave.split("@"); return d ? `${l[0] ?? "*"}***@${d}` : "***@***"; }
-    case "aleatoria": return chave.length >= 8 ? `${chave.slice(0,8)}-****-****-****-${chave.slice(-4)}` : "****";
-  }
-}
-function mascarCpf(cpf: string) { return mascarChave(cpf, "cpf"); }
-function mascarChaveAdmin(c: { cpf: string; tipoChave?: TipoChavePix }) { return mascarChave(c.cpf, c.tipoChave ?? "cpf"); }
+function mascarChaveAdmin(_c: { cpf: string; tipoChave?: TipoChavePix }) { return `***.***.***-**`; }
 function formatCpfInput(value: string): string {
   const d = value.replace(/\D/g, "").slice(0, 11);
   if (d.length <= 3) return d;
@@ -378,19 +369,11 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onD
   const [rejMotivo, setRejMotivo] = useState("");
   const [showRejeitar, setShowRejeitar] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
-  const [tipoChaveEdit, setTipoChaveEdit] = useState<TipoChavePix>(c.tipoChave ?? "cpf");
   const [chaveEdit, setChaveEdit] = useState("");
   const [busy, setBusy] = useState(false);
   const [editErr, setEditErr] = useState("");
 
   const borderColor = c.status === "aprovado" ? "rgba(74,222,128,0.2)" : c.status === "rejeitado" ? "rgba(248,113,113,0.15)" : "rgba(255,186,0,0.15)";
-
-  const tipoPlaceholder: Record<TipoChavePix, string> = {
-    cpf: "000.000.000-00",
-    telefone: "+55 11 99999-9999",
-    email: "email@exemplo.com",
-    aleatoria: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-  };
 
   async function salvarChave() {
     setBusy(true);
@@ -398,7 +381,7 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onD
     try {
       const res = await fetch("/api/gorjeta", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "editar-chave", id: c.id, tipoChave: tipoChaveEdit, chave: chaveEdit }),
+        body: JSON.stringify({ action: "editar-chave", id: c.id, tipoChave: "cpf", chave: chaveEdit }),
       });
       const data = await res.json();
       if (!res.ok) { setEditErr(data.error ?? "Erro"); return; }
@@ -420,7 +403,7 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onD
         </div>
         <div className="flex gap-1.5 flex-shrink-0">
           <button onClick={onVerFoto} className="px-2.5 py-1.5 rounded-xl text-[11px] font-black text-gray-400 hover:text-white transition-all hover:bg-white/5" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>📎</button>
-          <button onClick={() => { setTipoChaveEdit(c.tipoChave ?? "cpf"); setChaveEdit(c.cpf); setEditErr(""); setShowEdit(s => !s); setShowRejeitar(false); }}
+          <button onClick={() => { setChaveEdit(c.cpf); setEditErr(""); setShowEdit(s => !s); setShowRejeitar(false); }}
             className="px-2.5 py-1.5 rounded-xl text-[11px] transition-all hover:bg-white/5"
             style={{ border: "1px solid rgba(255,255,255,0.08)", color: showEdit ? "#ffba00" : "#6b7280" }}>✏️</button>
           <button onClick={onDeletar} className="px-2.5 py-1.5 rounded-xl text-[11px] font-black text-gray-500 hover:text-red-400 transition-all hover:bg-red-500/5" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>🗑️</button>
@@ -429,7 +412,7 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onD
       <div className="px-5 pb-3 grid grid-cols-2 gap-3 border-t border-white/5 pt-3">
         <div><p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Nome</p><p className="text-xs font-bold text-white truncate">{c.nomeCompleto}</p></div>
         <div>
-          <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">{(c.tipoChave ?? "cpf").toUpperCase()}</p>
+          <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">CPF</p>
           <p className="text-xs font-bold text-white">{mascarChaveAdmin(c)}</p>
         </div>
       </div>
@@ -454,21 +437,10 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onD
       </div>
       {showEdit && (
         <div className="px-5 pb-4 space-y-2 border-t border-[#ffba00]/10 pt-3" style={{ background: "rgba(255,186,0,0.025)" }}>
-          <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest">Editar chave PIX</p>
-          <select value={tipoChaveEdit}
-            onChange={e => { setTipoChaveEdit(e.target.value as TipoChavePix); setChaveEdit(""); setEditErr(""); }}
-            className="w-full px-3 py-2 rounded-xl text-xs text-white outline-none"
-            style={{ background: "rgba(255,186,0,0.06)", border: "1px solid rgba(255,186,0,0.3)" }}>
-            <option value="cpf">CPF</option>
-            <option value="telefone">Telefone</option>
-            <option value="email">E-mail</option>
-            <option value="aleatoria">Chave aleatória (UUID)</option>
-          </select>
+          <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest">Editar CPF</p>
           <div className="flex gap-2">
-            <input type="text"
-              inputMode={tipoChaveEdit === "cpf" || tipoChaveEdit === "telefone" ? "numeric" : "text"}
-              placeholder={tipoPlaceholder[tipoChaveEdit]}
-              value={tipoChaveEdit === "cpf" ? formatCpfInput(chaveEdit) : chaveEdit}
+            <input type="text" inputMode="numeric" placeholder="000.000.000-00"
+              value={formatCpfInput(chaveEdit)}
               onChange={e => { setChaveEdit(e.target.value); setEditErr(""); }}
               className="flex-1 px-3 py-2 rounded-xl text-xs text-white placeholder-gray-600 outline-none"
               style={{ background: "rgba(255,186,0,0.06)", border: "1px solid rgba(255,186,0,0.3)" }} />

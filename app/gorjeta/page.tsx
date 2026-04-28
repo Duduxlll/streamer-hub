@@ -335,7 +335,7 @@ export default function GorjetaPage() {
   const [cadastro, setCadastro] = useState<CadastroGorjeta | null | undefined>(undefined);
   const [sessao, setSessao] = useState<SessaoGorjeta | null>(null);
   const [loading, setLoading] = useState(true);
-  const [form, setForm] = useState({ nomeCompleto: "", chave: "", tipoChave: "cpf" as TipoChave, screenshot: "" });
+  const [form, setForm] = useState({ nomeCompleto: "", cpf: "", screenshot: "" });
   const [screenshotName, setScreenshotName] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
@@ -376,15 +376,15 @@ export default function GorjetaPage() {
   async function enviar() {
     setErro("");
     if (!form.nomeCompleto.trim()) return setErro("Informe seu nome completo");
-    if (!form.chave.trim()) return setErro("Informe sua chave PIX");
+    if (!validarCpfSimples(form.cpf)) return setErro("CPF inválido");
     if (!form.screenshot) return setErro("Envie o comprovante de depósito");
     setEnviando(true);
     try {
       const body: Record<string, string> = {
         action: "cadastrar",
         nomeCompleto: form.nomeCompleto,
-        tipoChave: form.tipoChave,
-        chave: form.chave,
+        tipoChave: "cpf",
+        chave: form.cpf,
         screenshot: form.screenshot,
       };
       const res = await fetch("/api/gorjeta", {
@@ -479,37 +479,11 @@ export default function GorjetaPage() {
                   className="w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none transition-all"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block">Chave PIX</label>
-                <select
-                  value={form.tipoChave}
-                  onChange={e => {
-                    const t = e.target.value as TipoChave;
-                    setForm(f => ({ ...f, tipoChave: t, chave: t === "telefone" ? "+55" : "" }));
-                  }}
-                  className="w-full px-4 py-2.5 rounded-xl text-sm text-white outline-none appearance-none"
-                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 14px center" }}>
-                  <option value="cpf" style={{ background: "#0a0806" }}>CPF</option>
-                  <option value="telefone" style={{ background: "#0a0806" }}>Telefone</option>
-                  <option value="email" style={{ background: "#0a0806" }}>E-mail</option>
-                  <option value="aleatoria" style={{ background: "#0a0806" }}>Chave aleatória</option>
-                </select>
-                <input
-                  type={form.tipoChave === "email" ? "email" : "text"}
-                  inputMode={form.tipoChave === "cpf" || form.tipoChave === "telefone" ? "numeric" : "text"}
-                  placeholder={
-                    form.tipoChave === "cpf" ? "000.000.000-00" :
-                    form.tipoChave === "telefone" ? "+55 11 99999-9999" :
-                    form.tipoChave === "email" ? "seu@email.com" :
-                    "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-                  }
-                  value={form.chave}
-                  onChange={e => {
-                    let v = e.target.value;
-                    if (form.tipoChave === "cpf") v = formatCpfInput(v);
-                    if (form.tipoChave === "telefone" && !v.startsWith("+55")) v = "+55" + v.replace(/^\+?55?/, "");
-                    setForm(f => ({ ...f, chave: v }));
-                  }}
+              <div>
+                <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">CPF</label>
+                <input type="text" inputMode="numeric" placeholder="000.000.000-00"
+                  value={form.cpf}
+                  onChange={e => setForm(f => ({ ...f, cpf: formatCpfInput(e.target.value) }))}
                   className="w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
               </div>
@@ -588,7 +562,7 @@ export default function GorjetaPage() {
                     style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.15)" }}>
                     ❌ Rejeitado{cadastro.motivoRejeicao ? `: ${cadastro.motivoRejeicao}` : "."}
                   </div>
-                  <button onClick={() => { setCadastro(null); setErro(""); setForm({ nomeCompleto: "", chave: "", tipoChave: "cpf", screenshot: "" }); setScreenshotName(""); }}
+                  <button onClick={() => { setCadastro(null); setErro(""); setForm({ nomeCompleto: "", cpf: "", screenshot: "" }); setScreenshotName(""); }}
                     className="w-full py-2.5 rounded-xl font-black text-sm text-black transition-all hover:scale-[1.02]"
                     style={{ background: "linear-gradient(135deg,#ffe55a,#ffba00)" }}>
                     Enviar novo cadastro
