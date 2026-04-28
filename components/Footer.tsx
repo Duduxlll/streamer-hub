@@ -117,7 +117,7 @@ export default function Footer() {
 
           <div className="hidden lg:block flex-1" />
 
-          <div className="grid grid-cols-2 gap-12 shrink-0">
+          <div className="grid grid-cols-2 gap-6 sm:gap-12 shrink-0">
 
             <div>
               <p className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.15em] mb-4">

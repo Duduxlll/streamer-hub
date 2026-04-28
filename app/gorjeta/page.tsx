@@ -278,7 +278,7 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
           <div className={`grid gap-3 ${
             shownWinners.length === 1 ? "grid-cols-1 max-w-[200px] mx-auto" :
             shownWinners.length === 2 ? "grid-cols-2" :
-            "grid-cols-3"
+            "grid-cols-2 sm:grid-cols-3"
           }`}>
             {shownWinners.map((v, i) => (
               <VencedorCard key={v.username} v={v} delay={0}

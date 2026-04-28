@@ -128,7 +128,7 @@ export default function ArenaPage() {
             <span className="text-xs text-purple-300 font-black uppercase tracking-widest">Interações ao Vivo</span>
           </div>
 
-          <h1 className="text-5xl lg:text-7xl font-black tracking-tight mb-5 leading-none">
+          <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black tracking-tight mb-5 leading-none">
             <span className="text-white">Live </span>
             <span style={{
               background: "linear-gradient(135deg, #9146ff 0%, #3b82f6 50%, #22d3ee 100%)",
@@ -137,7 +137,7 @@ export default function ArenaPage() {
             }}>Arena</span>
           </h1>
 
-          <p className="text-gray-500 text-lg max-w-md mx-auto leading-relaxed">
+          <p className="text-gray-500 text-base sm:text-lg max-w-md mx-auto leading-relaxed">
             Participe das interações ao vivo com o stainzincs.
             Batalhas, torneios e palpites em tempo real.
           </p>

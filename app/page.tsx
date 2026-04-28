@@ -77,7 +77,7 @@ export default function HomePage() {
               <span className="text-xs text-[#93c5fd] font-semibold uppercase tracking-widest">Streamer Oficial</span>
             </div>
 
-            <h1 className="text-5xl lg:text-7xl font-black tracking-tight mb-3 animate-in animate-in-delay-2">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight mb-3 animate-in animate-in-delay-2">
               <span className="text-white">stain</span><span className="gradient-text">zincs</span>
             </h1>
 

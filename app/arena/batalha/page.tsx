@@ -235,7 +235,7 @@ export default function ArenaTransferePage() {
 
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-3 mb-2 flex-wrap">
-            <h1 className="text-4xl font-black">
+            <h1 className="text-2xl sm:text-4xl font-black">
               <span className="text-white">⚔️ </span>
               <span style={{
                 background: "linear-gradient(135deg, #fff 0%, #a78bfa 60%)",
@@ -327,8 +327,8 @@ export default function ArenaTransferePage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto max-w-full">
-              <div className="rounded-2xl border border-white/10 p-6 w-fit" style={{ background: "rgba(5,7,16,0.88)" }}>
+            <div className="overflow-x-auto max-w-full pb-2" style={{ WebkitOverflowScrolling: "touch" }}>
+              <div className="rounded-2xl border border-white/10 p-4 sm:p-6 w-fit" style={{ background: "rgba(5,7,16,0.88)" }}>
                 <BracketPublic batalha={batalha} />
               </div>
             </div>

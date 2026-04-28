@@ -65,7 +65,7 @@ export default function TorneioPage() {
         </div>
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
-            <h1 className="text-4xl font-black">
+            <h1 className="text-2xl sm:text-4xl font-black">
               <span className="text-white">🏆 </span>
               <span style={{
                 background: "linear-gradient(135deg, #fff 0%, #a78bfa 60%, #818cf8 100%)",
@@ -159,9 +159,8 @@ export default function TorneioPage() {
                   Times · Fase {torneio.faseAtual}
                 </p>
                 <div className={`grid gap-4 ${
-                  fase.times.length === 2 ? "grid-cols-2"
-                  : fase.times.length === 3 ? "grid-cols-3"
-                  : "grid-cols-2"
+                  fase.times.length === 3 ? "grid-cols-1 sm:grid-cols-3"
+                  : "grid-cols-1 sm:grid-cols-2"
                 }`}>
                   {fase.times.map((time, idx) => {
                     const participantes = fase.escolhas.filter(e => e.time === time);
