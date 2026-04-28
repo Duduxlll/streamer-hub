@@ -230,7 +230,7 @@ export default function AdminJackpotPage() {
         <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24">
           <div className="flex items-center gap-3 mb-6">
             <Link href="/arena" className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-300 transition-colors">← Voltar para Arena</Link>
-            <Link href="/arena/jackpot/historico" className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
+            <Link href="/admin/jackpot/historico" className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
           </div>
           <div className="mb-5">
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
@@ -290,7 +290,7 @@ export default function AdminJackpotPage() {
         <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-4">
           <div className="flex items-center gap-3 mb-2">
             <Link href="/arena" className="text-xs text-gray-600 hover:text-gray-300 transition-colors">← Arena</Link>
-            <Link href="/arena/jackpot/historico" className="text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
+            <Link href="/admin/jackpot/historico" className="text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
           </div>
           <div className="rounded-2xl border border-[#f59e0b]/40 p-8 text-center" style={{ background: "rgba(245,158,11,0.06)" }}>
             <p className="text-5xl mb-3">🏆</p>
@@ -368,7 +368,7 @@ export default function AdminJackpotPage() {
                   style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
                   🎰 PAINEL ADMIN
                 </span>
-                <Link href="/arena/jackpot/historico" className="text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
+                <Link href="/admin/jackpot/historico" className="text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
               </div>
               <h1 className="text-2xl font-black text-white">{jackpot.nome}</h1>
             </div>
