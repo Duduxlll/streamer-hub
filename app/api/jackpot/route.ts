@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   if (!j) return NextResponse.json({ error: "Sem jackpot ativo" }, { status: 400 });
 
   if (action === "add-jogador") {
-    if (j.status !== "aguardando") return NextResponse.json({ error: "Já iniciado" }, { status: 400 });
+    if (j.status === "finalizado") return NextResponse.json({ error: "Jackpot já finalizado" }, { status: 400 });
     const jogador: JackpotJogador = {
       id: newId(),
       nome: String(body.nome || "Jogador").trim(),
@@ -50,14 +50,19 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "remove-jogador") {
-    if (j.status !== "aguardando") return NextResponse.json({ error: "Já iniciado" }, { status: 400 });
+    if (j.status === "finalizado") return NextResponse.json({ error: "Jackpot já finalizado" }, { status: 400 });
+    const alvo = j.jogadores.find(jg => jg.id === String(body.id));
+    if (alvo && alvo.valor !== null) return NextResponse.json({ error: "Jogador já jogou" }, { status: 400 });
     j.jogadores = j.jogadores.filter(jg => jg.id !== String(body.id));
+    if (j.status === "ativo" && j.jogadorAtualIdx >= j.jogadores.length) {
+      j.jogadorAtualIdx = Math.max(0, j.jogadores.length - 1);
+    }
     await setJackpot(j);
     return NextResponse.json(j);
   }
 
   if (action === "edit-jogador") {
-    if (j.status !== "aguardando") return NextResponse.json({ error: "Já iniciado" }, { status: 400 });
+    if (j.status === "finalizado") return NextResponse.json({ error: "Jackpot já finalizado" }, { status: 400 });
     const idx = j.jogadores.findIndex(jg => jg.id === String(body.id));
     if (idx < 0) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
     j.jogadores[idx].nome = String(body.nome || j.jogadores[idx].nome).trim();
