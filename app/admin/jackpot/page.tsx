@@ -288,6 +288,10 @@ export default function AdminJackpotPage() {
         <ToastContainer toasts={toasts} dismiss={dismiss} />
         {ConfirmModal}
         <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-4">
+          <div className="flex items-center gap-3 mb-2">
+            <Link href="/arena" className="text-xs text-gray-600 hover:text-gray-300 transition-colors">← Arena</Link>
+            <Link href="/arena/jackpot/historico" className="text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
+          </div>
           <div className="rounded-2xl border border-[#f59e0b]/40 p-8 text-center" style={{ background: "rgba(245,158,11,0.06)" }}>
             <p className="text-5xl mb-3">🏆</p>
             <p className="text-[11px] font-black text-amber-500 uppercase tracking-widest mb-2">Campeão do Jackpot</p>
@@ -359,10 +363,13 @@ export default function AdminJackpotPage() {
         <div className="page-enter max-w-2xl mx-auto px-4 sm:px-6 pt-12 pb-24 space-y-5">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
-              <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
-                style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
-                🎰 PAINEL ADMIN
-              </span>
+              <div className="flex items-center gap-3 mb-2">
+                <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5"
+                  style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
+                  🎰 PAINEL ADMIN
+                </span>
+                <Link href="/arena/jackpot/historico" className="text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
+              </div>
               <h1 className="text-2xl font-black text-white">{jackpot.nome}</h1>
             </div>
             <div className="flex items-center gap-2">

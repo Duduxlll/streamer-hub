@@ -291,7 +291,7 @@ export default function Navbar() {
           </Link>
 
           <a
-            href="https://www.betdasorte.bet.br/"
+            href="https://www.betdasorte.bet.br/?affiliate=hotaeqgfhbzovkzkuicsvyxop&activateModal=signup&ID=533314"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#1d4ed8]/40 bg-[#1d4ed8]/8 hover:bg-[#1d4ed8]/15 transition-all"

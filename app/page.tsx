@@ -60,7 +60,7 @@ export default function HomePage() {
               </a>
 
               <a
-                href="https://www.betdasorte.bet.br/"
+                href="https://www.betdasorte.bet.br/?affiliate=hotaeqgfhbzovkzkuicsvyxop&activateModal=signup&ID=533314"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center px-4 py-2 rounded-full bg-[#1d4ed8]/10 border border-[#1d4ed8]/30 hover:bg-[#1d4ed8]/20 hover:border-[#1d4ed8]/60 transition-all shadow-lg shadow-blue-950/30"
@@ -127,7 +127,7 @@ export default function HomePage() {
 
             <div className="flex-shrink-0">
               <a
-                href="https://www.betdasorte.bet.br/"
+                href="https://www.betdasorte.bet.br/?affiliate=hotaeqgfhbzovkzkuicsvyxop&activateModal=signup&ID=533314"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-black text-black text-sm transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(255,186,0,0.4)]"
