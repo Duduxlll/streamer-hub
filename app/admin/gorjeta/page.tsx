@@ -486,6 +486,7 @@ export default function AdminGorjetaPage() {
   const [saldoInput, setSaldoInput] = useState("200");
   const [formSort, setFormSort] = useState({ valor: "10", qtd: "3" });
   const [busca, setBusca] = useState("");
+  const [buscaCadastro, setBuscaCadastro] = useState("");
   const [manualSel, setManualSel] = useState<ParticipanteSessao | null>(null);
   const [manualValor, setManualValor] = useState("");
   const [screenshotModalId, setScreenshotModalId] = useState<string | null>(null);
@@ -912,47 +913,91 @@ export default function AdminGorjetaPage() {
         {/* ── ABA CADASTROS ── */}
         {tab === "cadastros" && (
           <div className="space-y-4">
-            <div className="flex gap-2">
-              {([
-                { key: "pendente",  label: "Pendentes",  count: pendentes.length,  color: "#ffba00" },
-                { key: "aprovado",  label: "Aprovados",  count: aprovados.length,  color: "#4ade80" },
-                { key: "rejeitado", label: "Rejeitados", count: rejeitados.length, color: "#f87171" },
-              ] as const).map(f => {
-                const isActive = cadastroFiltro === f.key;
-                return (
-                  <button key={f.key} onClick={() => setCadastroFiltro(f.key)}
-                    className="flex-1 py-2.5 rounded-2xl text-xs font-black transition-all flex flex-col items-center gap-0.5"
-                    style={isActive
-                      ? { background: `${f.color}18`, color: f.color, border: `1px solid ${f.color}40`, boxShadow: `0 0 20px ${f.color}0a` }
-                      : { color: "#374151", border: "1px solid rgba(255,255,255,0.05)" }}>
-                    <span>{f.label}</span>
-                    <span className="text-base font-black" style={isActive ? { color: f.color } : { color: "#374151" }}>{f.count}</span>
-                  </button>
-                );
-              })}
+            {/* Barra de pesquisa global */}
+            <div className="relative">
+              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Pesquisar por nome ou usuário..."
+                value={buscaCadastro}
+                onChange={e => setBuscaCadastro(e.target.value)}
+                className="w-full pl-10 pr-10 py-2.5 rounded-2xl text-sm text-white placeholder-gray-600 outline-none transition-all"
+                style={{ background: "rgba(255,255,255,0.04)", border: `1px solid ${buscaCadastro ? "rgba(255,186,0,0.35)" : "rgba(255,255,255,0.08)"}` }}
+              />
+              {buscaCadastro && (
+                <button onClick={() => setBuscaCadastro("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors text-sm">
+                  ✕
+                </button>
+              )}
             </div>
+
+            {/* Filtros de status — ocultos durante pesquisa global */}
+            {!buscaCadastro && (
+              <div className="flex gap-2">
+                {([
+                  { key: "pendente",  label: "Pendentes",  count: pendentes.length,  color: "#ffba00" },
+                  { key: "aprovado",  label: "Aprovados",  count: aprovados.length,  color: "#4ade80" },
+                  { key: "rejeitado", label: "Rejeitados", count: rejeitados.length, color: "#f87171" },
+                ] as const).map(f => {
+                  const isActive = cadastroFiltro === f.key;
+                  return (
+                    <button key={f.key} onClick={() => setCadastroFiltro(f.key)}
+                      className="flex-1 py-2.5 rounded-2xl text-xs font-black transition-all flex flex-col items-center gap-0.5"
+                      style={isActive
+                        ? { background: `${f.color}18`, color: f.color, border: `1px solid ${f.color}40`, boxShadow: `0 0 20px ${f.color}0a` }
+                        : { color: "#374151", border: "1px solid rgba(255,255,255,0.05)" }}>
+                      <span>{f.label}</span>
+                      <span className="text-base font-black" style={isActive ? { color: f.color } : { color: "#374151" }}>{f.count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             {(() => {
-              const lista = cadastroFiltro === "pendente" ? pendentes : cadastroFiltro === "aprovado" ? aprovados : rejeitados;
-              const labels = { pendente: "pendentes", aprovado: "aprovados", rejeitado: "rejeitados" };
+              const q = buscaCadastro.trim().toLowerCase();
+              const lista = q
+                ? cadastros.filter(c =>
+                    c.displayName.toLowerCase().includes(q) ||
+                    c.username.toLowerCase().includes(q) ||
+                    c.nomeCompleto.toLowerCase().includes(q)
+                  )
+                : cadastroFiltro === "pendente" ? pendentes
+                : cadastroFiltro === "aprovado" ? aprovados
+                : rejeitados;
+
               if (lista.length === 0) return (
                 <div className="text-center py-16">
                   <div className="inline-flex w-16 h-16 rounded-2xl items-center justify-center mb-4" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                    <span className="text-3xl">📋</span>
+                    <span className="text-3xl">{q ? "🔍" : "📋"}</span>
                   </div>
-                  <p className="text-sm font-bold text-gray-600">Nenhum cadastro {labels[cadastroFiltro]}</p>
+                  <p className="text-sm font-bold text-gray-600">
+                    {q ? `Nenhum cadastro encontrado para "${buscaCadastro}"` : `Nenhum cadastro ${cadastroFiltro === "pendente" ? "pendente" : cadastroFiltro === "aprovado" ? "aprovado" : "rejeitado"}`}
+                  </p>
                 </div>
               );
+
               return (
-                <div className="space-y-3">
-                  {lista.map(c => (
-                    <CadastroCard key={c.id} c={c}
-                      onAprovar={() => aprovar(c.id)}
-                      onRejeitar={(motivo) => rejeitar(c.id, motivo)}
-                      onVerFoto={() => setScreenshotModalId(c.id)}
-                      onChaveEditada={onChaveEditada}
-                      onDeletar={() => deletar(c.id)} />
-                  ))}
-                </div>
+                <>
+                  {q && (
+                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest px-1">
+                      {lista.length} resultado{lista.length !== 1 ? "s" : ""} encontrado{lista.length !== 1 ? "s" : ""}
+                    </p>
+                  )}
+                  <div className="space-y-3">
+                    {lista.map(c => (
+                      <CadastroCard key={c.id} c={c}
+                        onAprovar={() => aprovar(c.id)}
+                        onRejeitar={(motivo) => rejeitar(c.id, motivo)}
+                        onVerFoto={() => setScreenshotModalId(c.id)}
+                        onChaveEditada={onChaveEditada}
+                        onDeletar={() => deletar(c.id)} />
+                    ))}
+                  </div>
+                </>
               );
             })()}
           </div>
