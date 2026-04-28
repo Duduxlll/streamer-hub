@@ -655,8 +655,8 @@ export default function AdminJackpotPage() {
                   id="btn-add-run"
                   onClick={async () => {
                     if (!runNome.trim()) return;
-                    await post({ action: "add-jogador", nome: runNome, jogo: runJogo });
-                    setRunNome(""); setRunJogo(""); setAddingInRun(false);
+                    const res = await post({ action: "add-jogador", nome: runNome, jogo: runJogo });
+                    if (res) { toast("Adicionado!", "success"); setRunNome(""); setRunJogo(""); setAddingInRun(false); }
                   }}
                   disabled={!runNome.trim() || loading}
                   className="px-3 py-2 rounded-xl font-black text-black text-sm disabled:opacity-40 flex-shrink-0"
@@ -680,7 +680,7 @@ export default function AdminJackpotPage() {
                           <input value={editJogo} onChange={e => setEditJogo(e.target.value)}
                             placeholder="Jogo"
                             className="w-24 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none" />
-                          <button onClick={async () => { if (!editNome.trim()) return; await post({ action: "edit-jogador", id: j.id, nome: editNome, jogo: editJogo }); setEditingId(null); }}
+                          <button onClick={async () => { if (!editNome.trim()) return; const res = await post({ action: "edit-jogador", id: j.id, nome: editNome, jogo: editJogo }); if (res) { toast("Editado!", "success"); setEditingId(null); } }}
                             className="px-2 py-1.5 rounded-lg text-xs font-black text-black" style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}>✓</button>
                           <button onClick={() => setEditingId(null)} className="text-gray-600 hover:text-white text-xs transition-colors">✕</button>
                         </div>

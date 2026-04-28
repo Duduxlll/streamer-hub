@@ -113,10 +113,9 @@ function useConfigAlert(admin: boolean) {
     if (!admin) return;
     fetch("/api/config")
       .then(r => r.ok ? r.json() : null)
-      .then((d: { efibank?: { credenciaisOk: boolean; webhook: { ok: boolean } }; livepix?: { ok: boolean } } | null) => {
+      .then((d: { ggpix?: { ok: boolean }; livepix?: { ok: boolean } } | null) => {
         if (!d) return;
-        const problema = !d.efibank?.webhook?.ok || !d.livepix?.ok;
-        setAlerta(problema);
+        setAlerta(!d.ggpix?.ok);
       })
       .catch(() => {});
   }, [admin]);
