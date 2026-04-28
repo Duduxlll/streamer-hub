@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import type { Jackpot } from "@/lib/jackpotStore";
 
@@ -85,7 +86,12 @@ export default function ArenaJackpotPage() {
       <div className="page-enter min-h-[calc(100vh-4rem)] flex flex-col items-center justify-center px-4 text-center">
         <p className="text-5xl mb-4">🎰</p>
         <p className="text-xl font-black text-white mb-2">Jackpot</p>
-        <p className="text-sm text-gray-500">Nenhuma batalha ativa no momento.<br />Aguarde o streamer iniciar uma sessão!</p>
+        <p className="text-sm text-gray-500 mb-6">Nenhuma batalha ativa no momento.<br />Aguarde o streamer iniciar uma sessão!</p>
+        <Link href="/arena/jackpot/historico"
+          className="px-5 py-2.5 rounded-full text-xs font-black transition-all hover:scale-[1.04]"
+          style={{ background: "rgba(245,158,11,0.1)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
+          🏆 Ver histórico de batalhas
+        </Link>
       </div>
     );
   }

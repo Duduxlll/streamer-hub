@@ -228,7 +228,10 @@ export default function AdminJackpotPage() {
         <ToastContainer toasts={toasts} dismiss={dismiss} />
         {ConfirmModal}
         <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24">
-          <Link href="/arena" className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-300 transition-colors mb-6">← Voltar para Arena</Link>
+          <div className="flex items-center gap-3 mb-6">
+            <Link href="/arena" className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-300 transition-colors">← Voltar para Arena</Link>
+            <Link href="/arena/jackpot/historico" className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
+          </div>
           <div className="mb-5">
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
               style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>

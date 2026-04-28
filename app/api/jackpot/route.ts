@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
-import { getJackpot, setJackpot, type Jackpot, type JackpotJogador } from "@/lib/jackpotStore";
+import { getJackpot, setJackpot, salvarHistoricoJackpot, type Jackpot, type JackpotJogador } from "@/lib/jackpotStore";
 
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
@@ -106,8 +106,11 @@ export async function POST(req: NextRequest) {
       j.status = "finalizado";
       j.vencedor = j.jogadores.reduce((best, jg) =>
         (jg.valor ?? -1) > (best?.valor ?? -1) ? jg : best, j.jogadores[0]);
+      await setJackpot(j);
+      await salvarHistoricoJackpot(j);
+    } else {
+      await setJackpot(j);
     }
-    await setJackpot(j);
     return NextResponse.json(j);
   }
 
