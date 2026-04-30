@@ -249,6 +249,30 @@ client.on("message", async (_channel, tags, message, self) => {
     return;
   }
 
+  const matchCall = msg.match(/^!call\s+(.+)/i);
+  if (matchCall) {
+    const jogo = matchCall[1].trim();
+    if (!jogo) return;
+    try {
+      const res  = await fetch(`${SITE_URL}/api/call`, {
+        method : "POST",
+        headers: { "Content-Type": "application/json" },
+        body   : JSON.stringify({ action: "submeter", secret: BOT_SECRET, username: login, displayName, jogo }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        console.log(`📋  Call ${displayName}: "${jogo}"`);
+        if (BOT_USER)
+          client.say(_channel, `@${displayName} call registrada: ${jogo} ✅`).catch(() => {});
+      } else if (data.error) {
+        console.log(`📋  Call ${displayName}: rejeitada — ${data.error}`);
+        if (BOT_USER && data.error !== "Call fechada")
+          client.say(_channel, `@${displayName} ${data.error}`).catch(() => {});
+      }
+    } catch (err) { console.error("❌  Erro call:", err.message); }
+    return;
+  }
+
   const matchT = msg.match(/^!time\s+(.+)/i);
   if (matchT) {
     const time = matchT[1].trim();
