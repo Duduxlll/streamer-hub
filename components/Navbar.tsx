@@ -234,6 +234,15 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
                   <span className="text-base">💰</span>
                   Admin · Gorjeta
                 </Link>
+                <Link
+                  href="/admin/call"
+                  onClick={() => setOpen(false)}
+                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
+                  style={{ color: "#ffba00" }}
+                >
+                  <span className="text-base">📋</span>
+                  Admin · Call
+                </Link>
                 <div className="border-t border-white/5 my-1" />
                 <Link
                   href="/admin/config"

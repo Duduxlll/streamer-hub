@@ -9,6 +9,7 @@ interface RodadaInfo  { status: string; }
 interface TorneioInfo { nome: string; faseAtual: number; fases: { numero: number; status: string }[]; }
 interface BatalhaInfo { status: string; nome: string; }
 interface JackpotInfo { status: string; nome: string; }
+interface CallInfo    { status: string; entries: { id: string }[]; }
 
 const FEATURES = [
   {
@@ -51,6 +52,16 @@ const FEATURES = [
     adminHref: "/admin/jackpot",
     available: true,
   },
+  {
+    id: "call",
+    icon: "📋",
+    title: "Call de Slot",
+    description: "Peça o jogo que quer ver! Use !call [jogo] no chat da Twitch quando a call estiver aberta.",
+    color: "#06b6d4",
+    href: "/arena/call",
+    adminHref: "/admin/call",
+    available: true,
+  },
 ] as const;
 
 export default function ArenaPage() {
@@ -60,19 +71,22 @@ export default function ArenaPage() {
   const [torneio, setTorneio] = useState<TorneioInfo | null>(null);
   const [batalha, setBatalha] = useState<BatalhaInfo | null>(null);
   const [jackpot, setJackpot] = useState<JackpotInfo | null>(null);
+  const [callInfo, setCallInfo] = useState<CallInfo | null>(null);
   const [loaded,  setLoaded]  = useState(false);
 
   const fetchStatus = useCallback(async () => {
-    const [r, t, b, j] = await Promise.all([
+    const [r, t, b, j, c] = await Promise.all([
       fetch("/api/palpites/rodada", { cache: "no-store" }).then(x => x.ok ? x.json() : null).catch(() => null),
       fetch("/api/torneio",         { cache: "no-store" }).then(x => x.ok ? x.json() : null).catch(() => null),
       fetch("/api/batalha",         { cache: "no-store" }).then(x => x.ok ? x.json() : null).catch(() => null),
       fetch("/api/jackpot",         { cache: "no-store" }).then(x => x.ok ? x.json() : null).catch(() => null),
+      fetch("/api/call",            { cache: "no-store" }).then(x => x.ok ? x.json() : null).catch(() => null),
     ]);
     setRodada(r);
     setTorneio(t);
     setBatalha(b?.status === "inscricao" || b?.status === "ativa" ? b : null);
     setJackpot(j?.status === "ativo" ? j : null);
+    setCallInfo(c?.status === "aberta" ? c : null);
     setLoaded(true);
   }, []);
 
@@ -87,12 +101,14 @@ export default function ArenaPage() {
   const torneioLive  = !!(torneio && torneioFase?.status === "aberta");
   const batalhaLive  = !!batalha;
   const jackpotLive  = !!jackpot;
+  const callLive     = !!callInfo;
 
   const isLive = (id: string) =>
     (id === "torneio"       && torneioLive) ||
     (id === "palpites"      && palpiteLive) ||
     (id === "batalha-bonus" && batalhaLive) ||
-    (id === "jackpot"       && jackpotLive);
+    (id === "jackpot"       && jackpotLive) ||
+    (id === "call"          && callLive);
 
   const liveItems = [
     ...(torneioLive
@@ -106,6 +122,9 @@ export default function ArenaPage() {
       : []),
     ...(jackpotLive
       ? [{ icon: "🎰", label: jackpot!.nome, sub: "Jackpot em andamento — acompanhe ao vivo!", href: "/arena/jackpot", color: "#f59e0b" }]
+      : []),
+    ...(callLive
+      ? [{ icon: "📋", label: "Call de Slot aberta!", sub: `${callInfo!.entries.length} call${callInfo!.entries.length !== 1 ? "s" : ""} recebida${callInfo!.entries.length !== 1 ? "s" : ""} · use !call [jogo] no chat`, href: "/arena/call", color: "#06b6d4" }]
       : []),
   ];
 
