@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import { getCall, abrirCall, fecharCall, submeterCall, removerEntry } from "@/lib/callStore";
 
