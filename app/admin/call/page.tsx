@@ -53,6 +53,36 @@ function CopyBtn({ text }: { text: string }) {
   );
 }
 
+const BET_SEARCH = "https://www.betdasorte.bet.br/casino/rng/filters?q=";
+
+function FollowBtn({ jogo }: { jogo: string }) {
+  const url = BET_SEARCH + encodeURIComponent(jogo);
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Seguir Call — abrir na Bet da Sorte"
+      className="group flex items-center gap-1.5 px-2.5 h-7 rounded-lg font-black text-[10px] uppercase tracking-wide transition-all duration-200 hover:scale-105 active:scale-95 flex-shrink-0"
+      style={{
+        background: "linear-gradient(135deg, rgba(34,197,94,0.18), rgba(16,185,129,0.12))",
+        border: "1px solid rgba(34,197,94,0.35)",
+        color: "#4ade80",
+        boxShadow: "0 0 0 rgba(34,197,94,0)",
+        transition: "box-shadow 0.2s, transform 0.15s, background 0.2s",
+      }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 0 14px rgba(34,197,94,0.35)")}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 0 0 rgba(34,197,94,0)")}
+    >
+      <svg className="w-3 h-3 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
+        <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
+      </svg>
+      Seguir
+    </a>
+  );
+}
+
 function EntryRow({ entry, num, onRemover, removing }: {
   entry: CallEntry;
   num: number;
@@ -81,6 +111,7 @@ function EntryRow({ entry, num, onRemover, removing }: {
       </div>
 
       <div className="flex items-center gap-1.5 flex-shrink-0">
+        <FollowBtn jogo={entry.jogo} />
         <CopyBtn text={entry.jogo} />
         <button
           onClick={onRemover}
