@@ -59,15 +59,6 @@ export default function HomePage() {
                 <TwitchIcon className="w-5 h-5 text-[#9146ff]" />
               </a>
 
-              <a
-                href="https://www.betdasorte.bet.br/?affiliate=hotaeqgfhbzovkzkuicsvyxop&activateModal=signup&ID=533314"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center px-4 py-2 rounded-full bg-[#1d4ed8]/10 border border-[#1d4ed8]/30 hover:bg-[#1d4ed8]/20 hover:border-[#1d4ed8]/60 transition-all shadow-lg shadow-blue-950/30"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/betdasorte-icon.svg" alt="Bet da Sorte" className="h-6 w-6" />
-              </a>
             </div>
           </div>
 
@@ -81,11 +72,6 @@ export default function HomePage() {
               <span className="text-white">stain</span><span className="gradient-text">zincs</span>
             </h1>
 
-            <p className="text-gray-400 text-lg mb-2 animate-in animate-in-delay-2">
-              Parceiro oficial{" "}
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/betdasorte-logo.svg" alt="Bet da Sorte" className="inline-block h-5 w-auto align-middle ml-1" />
-            </p>
             <p className="text-gray-500 text-sm mb-10 max-w-md animate-in animate-in-delay-2">
               Lives de cassino ao vivo e a melhor comunidade do Brasil. Entre e participe!
             </p>
@@ -95,56 +81,6 @@ export default function HomePage() {
       </section>
 
       <SorteioDestaque />
-
-      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 animate-in" style={{ animationDelay: "0.2s", opacity: 0 }}>
-        <div className="relative rounded-2xl overflow-hidden border border-[#1d4ed8]/20"
-          style={{ background: "linear-gradient(135deg, rgba(2,4,12,0.98) 0%, rgba(7,15,46,0.96) 50%, rgba(2,4,12,0.98) 100%)" }}>
-
-          <div className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(29,78,216,0.1) 0%, transparent 70%)" }} />
-
-          <div className="relative flex flex-col lg:flex-row items-center gap-10 px-8 py-12 lg:px-16">
-
-            <div className="flex-shrink-0" style={{ animation: "float 5s ease-in-out infinite" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/betdasorte-logo.svg" alt="Bet da Sorte" className="h-12 lg:h-16 w-auto" />
-            </div>
-
-            <div className="hidden lg:block w-px h-16 bg-[#1d4ed8]/25" />
-
-              <div className="flex-1 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#ffba00]/40 bg-[#ffba00]/10 mb-3">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#ffba00] animate-pulse" />
-                <span className="text-xs font-bold text-[#ffba00] uppercase tracking-widest">Parceiro Oficial</span>
-              </div>
-              <h2 className="text-2xl lg:text-3xl font-black text-white mb-2">
-                Jogue na melhor plataforma do Brasil
-              </h2>
-              <p className="text-gray-400 text-sm max-w-md">
-                Cassino ao vivo, esportes e muito mais. Use o bônus exclusivo do stainzincs e comece a jogar agora!
-              </p>
-            </div>
-
-            <div className="flex-shrink-0">
-              <a
-                href="https://www.betdasorte.bet.br/?affiliate=hotaeqgfhbzovkzkuicsvyxop&activateModal=signup&ID=533314"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full font-black text-black text-sm transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(255,186,0,0.4)]"
-                style={{ background: "linear-gradient(135deg, #ffba00, #e6a000)" }}
-              >
-                Jogar Agora
-                <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 transition-transform group-hover:translate-x-1">
-                  <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#2563eb]/40 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-[#1d4ed8]/25 to-transparent" />
-        </div>
-      </section>
 
     </div>
   );

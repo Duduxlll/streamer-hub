@@ -52,6 +52,7 @@ export default function Footer() {
                 className="w-11 h-11 rounded-full border-2 border-[#1d4ed8]/40 object-cover flex-shrink-0"
               />
 
+
               <span
                 style={{
                   position: "relative",
@@ -104,15 +105,6 @@ export default function Footer() {
                 </span>
               </span>
             </div>
-
-            <span className="text-2xl font-black text-gray-600 select-none">×</span>
-
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/betdasorte-logo.svg"
-              alt="Bet da Sorte"
-              className="h-9 w-auto flex-shrink-0"
-            />
           </div>
 
           <div className="hidden lg:block flex-1" />

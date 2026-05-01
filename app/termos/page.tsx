@@ -129,11 +129,10 @@ export default function TermosPage() {
             </ul>
           </Section>
 
-          <Section title="7. Parceiros e Links Externos">
+          <Section title="7. Links Externos">
             <p>
-              Esta plataforma mantém parceria com a <strong className="text-white">Bet da Sorte</strong>. Links
-              para plataformas externas de apostas são fornecidos apenas para fins informativos. Ao acessar sites
-              de terceiros, você estará sujeito aos termos e condições desses sites, não sendo a plataforma
+              Esta plataforma pode conter links para sites externos de terceiros. Ao acessar esses sites,
+              você estará sujeito aos termos e condições desses sites, não sendo a plataforma
               stainzincs responsável pelo conteúdo ou práticas dessas plataformas.
             </p>
             <p className="mt-3 text-yellow-400/70">

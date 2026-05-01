@@ -299,17 +299,6 @@ export default function Navbar() {
             </span>
           </Link>
 
-          <a
-            href="https://www.betdasorte.bet.br/?affiliate=hotaeqgfhbzovkzkuicsvyxop&activateModal=signup&ID=533314"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-[#1d4ed8]/40 bg-[#1d4ed8]/8 hover:bg-[#1d4ed8]/15 transition-all"
-          >
-            <span className="text-xs text-gray-500 uppercase tracking-widest">parceiro</span>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/betdasorte-logo.svg" alt="Bet da Sorte" className="h-4 w-auto" />
-          </a>
-
           <div className="hidden md:flex items-center gap-2">
             <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />
             <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" alsoActiveOn={["/admin/palpites", "/admin/torneio", "/admin/batalha", "/admin/jackpot"]} />
