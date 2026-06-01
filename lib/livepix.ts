@@ -1,3 +1,5 @@
+import { getCredentials } from "./credentials";
+
 interface TokenCache {
   access_token: string;
   expires_at: number;
@@ -7,8 +9,20 @@ declare global {
   var __livepix_token: TokenCache | undefined;
 }
 
-export function isConfigured(): boolean {
-  return !!(process.env.LIVEPIX_CLIENT_ID && process.env.LIVEPIX_CLIENT_SECRET);
+async function getClientIdAndSecret(): Promise<{ clientId: string; clientSecret: string }> {
+  // env tem prioridade para compatibilidade com deployments antigos
+  const envId     = process.env.LIVEPIX_CLIENT_ID     ?? "";
+  const envSecret = process.env.LIVEPIX_CLIENT_SECRET ?? "";
+  if (envId && envSecret) return { clientId: envId, clientSecret: envSecret };
+
+  const creds = await getCredentials();
+  return { clientId: creds.livepix.clientId, clientSecret: creds.livepix.clientSecret };
+}
+
+export async function isConfigured(): Promise<boolean> {
+  if (process.env.LIVEPIX_CLIENT_ID && process.env.LIVEPIX_CLIENT_SECRET) return true;
+  const creds = await getCredentials();
+  return !!(creds.livepix.clientId && creds.livepix.clientSecret);
 }
 
 async function getClientToken(): Promise<string> {
@@ -17,8 +31,7 @@ async function getClientToken(): Promise<string> {
     return cached.access_token;
   }
 
-  const clientId = process.env.LIVEPIX_CLIENT_ID ?? "";
-  const clientSecret = process.env.LIVEPIX_CLIENT_SECRET ?? "";
+  const { clientId, clientSecret } = await getClientIdAndSecret();
 
   if (!clientId || !clientSecret) {
     throw new Error("LIVEPIX_CLIENT_ID ou LIVEPIX_CLIENT_SECRET não configurados");
@@ -75,4 +88,10 @@ export async function getMessage(messageId: string): Promise<LivePixMessage> {
   const json = await res.json();
   const msg: LivePixMessage = json.data ?? json;
   return msg;
+}
+
+export async function getWebhookSecret(): Promise<string> {
+  if (process.env.LIVEPIX_WEBHOOK_SECRET) return process.env.LIVEPIX_WEBHOOK_SECRET;
+  const creds = await getCredentials();
+  return creds.livepix.webhookSecret;
 }

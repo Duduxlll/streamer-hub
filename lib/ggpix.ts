@@ -1,11 +1,14 @@
 import type { TipoChavePix } from "./gorjeta-store";
+import { getCredentials } from "./credentials";
 
 const BASE_URL = "https://ggpixapi.com/api/v1";
 
-function getApiKey(): string {
-  const key = process.env.GGPIX_API_KEY;
-  if (!key) throw new Error("GGPIX_API_KEY não configurada");
-  return key;
+async function getApiKey(): Promise<string> {
+  // env tem prioridade para compatibilidade com deployments antigos
+  if (process.env.GGPIX_API_KEY) return process.env.GGPIX_API_KEY;
+  const creds = await getCredentials();
+  if (creds.ggpix.apiKey) return creds.ggpix.apiKey;
+  throw new Error("GGPIX_API_KEY não configurada");
 }
 
 const TIPO_MAP: Record<TipoChavePix, string> = {
@@ -21,6 +24,7 @@ export async function enviarPix(
   valorReais: number,
   externalId: string,
 ): Promise<{ id: string; status: string }> {
+  const apiKey = await getApiKey();
   const amountCents = Math.round(valorReais * 100);
 
   console.log(`[ggpix/enviar] pixKey="${pixKey}" tipo="${pixKeyType}" valor=R$${valorReais.toFixed(2)} externalId=${externalId}`);
@@ -29,7 +33,7 @@ export async function enviarPix(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-API-Key": getApiKey(),
+      "X-API-Key": apiKey,
     },
     body: JSON.stringify({
       amountCents,

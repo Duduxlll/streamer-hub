@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import { setLivePixUserToken } from "@/lib/store";
 import { getSiteUrl } from "@/lib/site-url";
+import { getCredentials } from "@/lib/credentials";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
@@ -22,9 +23,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "State inválido — possível ataque CSRF" }, { status: 403 });
   }
 
-  const clientId     = process.env.LIVEPIX_CLIENT_ID     ?? "";
-  const clientSecret = process.env.LIVEPIX_CLIENT_SECRET ?? "";
-  const callbackUrl  = `${getSiteUrl()}/api/livepix/callback`;
+  // env tem prioridade, depois o store
+  let clientId     = process.env.LIVEPIX_CLIENT_ID     ?? "";
+  let clientSecret = process.env.LIVEPIX_CLIENT_SECRET ?? "";
+  if (!clientId || !clientSecret) {
+    const creds = await getCredentials();
+    clientId     = clientId     || creds.livepix.clientId;
+    clientSecret = clientSecret || creds.livepix.clientSecret;
+  }
+
+  const callbackUrl = `${getSiteUrl()}/api/livepix/callback`;
 
   const res = await fetch("https://oauth.livepix.gg/oauth2/token", {
     method: "POST",

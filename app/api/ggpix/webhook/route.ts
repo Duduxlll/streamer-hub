@@ -1,14 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHmac, timingSafeEqual } from "crypto";
 import { atualizarTransacaoPorTxid } from "@/lib/gorjeta-store";
+import { getCredentials } from "@/lib/credentials";
 
 export const dynamic = "force-dynamic";
 
-export async function POST(req: NextRequest) {
+function verifyBearer(authHeader: string | null, token: string): boolean {
+  if (!token || !authHeader) return false;
+  const candidate = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  if (!candidate) return false;
   try {
-    const body = await req.json().catch(() => ({}));
+    if (candidate.length !== token.length) return false;
+    return timingSafeEqual(Buffer.from(candidate), Buffer.from(token));
+  } catch { return false; }
+}
+
+function verifyHmac(payload: string, signatureHeader: string | null, secret: string): boolean {
+  if (!secret || !signatureHeader) return false;
+  try {
+    const expected = createHmac("sha256", secret).update(payload).digest("hex");
+    const sig = signatureHeader.toLowerCase().replace(/^sha256=/, "");
+    if (sig.length !== expected.length) return false;
+    return timingSafeEqual(Buffer.from(sig), Buffer.from(expected));
+  } catch { return false; }
+}
+
+export async function POST(req: NextRequest) {
+  const rawBody = await req.text();
+
+  const creds = await getCredentials();
+  const mode         = creds.ggpix.webhookAuthMode;
+  const bearerToken  = creds.ggpix.bearerToken;
+  const hmacSecret   = creds.ggpix.hmacSecret;
+
+  if (mode !== "none") {
+    const authHeader  = req.headers.get("authorization");
+    const sigHeader   = req.headers.get("x-webhook-signature");
+
+    let authorized = false;
+
+    if (mode === "bearer") {
+      authorized = verifyBearer(authHeader, bearerToken);
+    } else if (mode === "hmac") {
+      authorized = verifyHmac(rawBody, sigHeader, hmacSecret);
+    } else if (mode === "ambos") {
+      authorized = verifyBearer(authHeader, bearerToken) && verifyHmac(rawBody, sigHeader, hmacSecret);
+    }
+
+    if (!authorized) {
+      console.error(`[ggpix/webhook] ❌ Autenticação falhou (modo: ${mode})`);
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+  }
+
+  try {
+    const body = JSON.parse(rawBody || "{}");
     console.log("[ggpix/webhook] Notificação:", JSON.stringify(body));
 
-    // O GGPix pode enviar o externalId em diferentes campos dependendo da versão da API
     const externalId: string | undefined =
       body.externalId ?? body.external_id ?? body.data?.externalId ?? body.data?.external_id;
 

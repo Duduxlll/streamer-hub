@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMessage } from "@/lib/livepix";
+import { timingSafeEqual } from "crypto";
+import { getMessage, getWebhookSecret } from "@/lib/livepix";
 import { getJackpot, setJackpot, type JackpotJogador } from "@/lib/jackpotStore";
 import { dbGet, dbSet } from "@/lib/store";
 
@@ -11,14 +12,14 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const secret = process.env.LIVEPIX_WEBHOOK_SECRET;
+  const secret = await getWebhookSecret();
 
   if (secret) {
     const candidate = req.nextUrl.searchParams.get("secret") ?? "";
     let ok = false;
     try {
       if (candidate.length > 0 && candidate.length === secret.length) {
-        ok = require("crypto").timingSafeEqual(Buffer.from(candidate), Buffer.from(secret));
+        ok = timingSafeEqual(Buffer.from(candidate), Buffer.from(secret));
       }
     } catch { ok = false; }
 
