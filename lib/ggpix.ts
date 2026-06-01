@@ -4,10 +4,10 @@ import { getCredentials } from "./credentials";
 const BASE_URL = "https://ggpixapi.com/api/v1";
 
 async function getApiKey(): Promise<string> {
-  // env tem prioridade para compatibilidade com deployments antigos
-  if (process.env.GGPIX_API_KEY) return process.env.GGPIX_API_KEY;
+  // banco tem prioridade — configurado via UI sobrepõe o env do Render
   const creds = await getCredentials();
   if (creds.ggpix.apiKey) return creds.ggpix.apiKey;
+  if (process.env.GGPIX_API_KEY) return process.env.GGPIX_API_KEY;
   throw new Error("GGPIX_API_KEY não configurada");
 }
 

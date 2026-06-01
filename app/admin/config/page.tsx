@@ -243,8 +243,9 @@ export default function AdminConfigPage() {
   const [config, setConfig]       = useState<ConfigStatus | null>(null);
   const [loadingPage, setLoading] = useState(true);
 
-  const [openLive, setOpenLive] = useState(true);
-  const [openGg,   setOpenGg]   = useState(true);
+  // abre automaticamente apenas as seções que ainda não estão configuradas
+  const [openLive, setOpenLive] = useState(false);
+  const [openGg,   setOpenGg]   = useState(false);
 
   // LivePix form
   const [liveClientId,     setLiveClientId]     = useState("");
@@ -276,6 +277,9 @@ export default function AdminConfigPage() {
         const data = await res.json() as ConfigStatus;
         setConfig(data);
         setGgAuthMode(data.ggpix.webhookAuthMode);
+        // abre automaticamente apenas o que ainda precisa ser configurado
+        if (!data.livepix.ok) setOpenLive(true);
+        if (!data.ggpix.ok)   setOpenGg(true);
       }
     } finally {
       setLoading(false);

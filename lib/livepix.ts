@@ -10,19 +10,22 @@ declare global {
 }
 
 async function getClientIdAndSecret(): Promise<{ clientId: string; clientSecret: string }> {
-  // env tem prioridade para compatibilidade com deployments antigos
-  const envId     = process.env.LIVEPIX_CLIENT_ID     ?? "";
-  const envSecret = process.env.LIVEPIX_CLIENT_SECRET ?? "";
-  if (envId && envSecret) return { clientId: envId, clientSecret: envSecret };
-
+  // banco tem prioridade — configurado via UI sobrepõe o env do Render
   const creds = await getCredentials();
-  return { clientId: creds.livepix.clientId, clientSecret: creds.livepix.clientSecret };
+  if (creds.livepix.clientId && creds.livepix.clientSecret) {
+    return { clientId: creds.livepix.clientId, clientSecret: creds.livepix.clientSecret };
+  }
+  // fallback para env (deployments antigos / antes de configurar pela UI)
+  return {
+    clientId:     process.env.LIVEPIX_CLIENT_ID     ?? "",
+    clientSecret: process.env.LIVEPIX_CLIENT_SECRET ?? "",
+  };
 }
 
 export async function isConfigured(): Promise<boolean> {
-  if (process.env.LIVEPIX_CLIENT_ID && process.env.LIVEPIX_CLIENT_SECRET) return true;
   const creds = await getCredentials();
-  return !!(creds.livepix.clientId && creds.livepix.clientSecret);
+  if (creds.livepix.clientId && creds.livepix.clientSecret) return true;
+  return !!(process.env.LIVEPIX_CLIENT_ID && process.env.LIVEPIX_CLIENT_SECRET);
 }
 
 async function getClientToken(): Promise<string> {
@@ -91,7 +94,8 @@ export async function getMessage(messageId: string): Promise<LivePixMessage> {
 }
 
 export async function getWebhookSecret(): Promise<string> {
-  if (process.env.LIVEPIX_WEBHOOK_SECRET) return process.env.LIVEPIX_WEBHOOK_SECRET;
+  // banco tem prioridade — configurado via UI sobrepõe o env do Render
   const creds = await getCredentials();
-  return creds.livepix.webhookSecret;
+  if (creds.livepix.webhookSecret) return creds.livepix.webhookSecret;
+  return process.env.LIVEPIX_WEBHOOK_SECRET ?? "";
 }

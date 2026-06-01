@@ -19,11 +19,11 @@ export async function GET() {
 
   const siteUrl = getSiteUrl();
 
-  const ggpixOk = !!(process.env.GGPIX_API_KEY || creds.ggpix.apiKey);
+  // banco tem prioridade sobre env (UI sobrepõe Render)
+  const ggpixOk = !!(creds.ggpix.apiKey || process.env.GGPIX_API_KEY);
 
-  // webhook secret do livepix (env ou store)
-  const hasWebhookSecret = !!(process.env.LIVEPIX_WEBHOOK_SECRET || creds.livepix.webhookSecret);
-  const webhookSecret    = process.env.LIVEPIX_WEBHOOK_SECRET || creds.livepix.webhookSecret || "";
+  const hasWebhookSecret = !!(creds.livepix.webhookSecret || process.env.LIVEPIX_WEBHOOK_SECRET);
+  const webhookSecret    = creds.livepix.webhookSecret || process.env.LIVEPIX_WEBHOOK_SECRET || "";
 
   // URL do webhook do livepix — inclui o secret se configurado
   const livepixWebhookBase = `${siteUrl}/api/livepix/webhook`;
@@ -42,8 +42,8 @@ export async function GET() {
     },
     livepix: {
       ok: livepixOk,
-      hasClientId:      !!(process.env.LIVEPIX_CLIENT_ID    || creds.livepix.clientId),
-      hasClientSecret:  !!(process.env.LIVEPIX_CLIENT_SECRET || creds.livepix.clientSecret),
+      hasClientId:      !!(creds.livepix.clientId    || process.env.LIVEPIX_CLIENT_ID),
+      hasClientSecret:  !!(creds.livepix.clientSecret || process.env.LIVEPIX_CLIENT_SECRET),
       hasWebhookSecret,
       webhookUrl:       livepixWebhookUrl,
       callbackUrl:      `${siteUrl}/api/livepix/callback`,
