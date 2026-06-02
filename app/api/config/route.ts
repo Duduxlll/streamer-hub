@@ -4,6 +4,7 @@ import { isAdmin } from "@/lib/admins";
 import { isConfigured as livepixConfigured } from "@/lib/livepix";
 import { getCredentials, patchLivePix, patchGGPix, type WebhookAuthMode } from "@/lib/credentials";
 import { getSiteUrl } from "@/lib/site-url";
+import { addLog } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -72,8 +73,8 @@ export async function POST(req: NextRequest) {
     if (typeof body.clientSecret  === "string" && body.clientSecret.trim())  patch.clientSecret  = body.clientSecret.trim();
     if (typeof body.webhookSecret === "string")                               patch.webhookSecret = body.webhookSecret.trim();
     await patchLivePix(patch);
-    // Limpa o cache do token para forçar nova autenticação com as novas credenciais
     globalThis.__livepix_token = undefined;
+    await addLog({ admin: session!.user!.twitchLogin!, action: "config_livepix", detail: "Credenciais LivePix atualizadas" });
     return NextResponse.json({ ok: true }, { headers: NO_CACHE });
   }
 
@@ -84,6 +85,7 @@ export async function POST(req: NextRequest) {
     if (typeof body.bearerToken     === "string")                                 patch.bearerToken     = body.bearerToken.trim();
     if (typeof body.hmacSecret      === "string")                                 patch.hmacSecret      = body.hmacSecret.trim();
     await patchGGPix(patch);
+    await addLog({ admin: session!.user!.twitchLogin!, action: "config_ggpix", detail: "Credenciais GGPix atualizadas" });
     return NextResponse.json({ ok: true }, { headers: NO_CACHE });
   }
 

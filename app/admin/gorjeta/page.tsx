@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import type { CadastroGorjeta, SessaoGorjeta, ParticipanteSessao, TransacaoGorjeta, TipoChavePix } from "@/lib/gorjeta-store";
@@ -476,7 +476,9 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onD
 export default function AdminGorjetaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [tab, setTab] = useState<"sessao" | "cadastros" | "historico">("sessao");
+  const searchParams = useSearchParams();
+  const initialTab = (searchParams.get("tab") as "sessao" | "cadastros" | "historico") ?? "sessao";
+  const [tab, setTab] = useState<"sessao" | "cadastros" | "historico">(initialTab);
   const [cadastroFiltro, setCadastroFiltro] = useState<"pendente" | "aprovado" | "rejeitado">("pendente");
   const [sessaoTab, setSessaoTab] = useState<"sortear" | "manual">("sortear");
   const [cadastros, setCadastros] = useState<CadastroGorjeta[]>([]);

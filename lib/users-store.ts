@@ -1,0 +1,164 @@
+import { dbGet, dbSet } from "./store";
+
+export type UserStatus = "ativo" | "banido" | "suspenso";
+
+export interface SiteUser {
+  twitchId: string;
+  twitchLogin: string;
+  displayName: string;
+  image: string | null;
+  status: UserStatus;
+  banMotivo?: string;
+  banEm?: number;
+  banPor?: string;
+  suspAte?: number;
+  suspMotivo?: string;
+  suspPor?: string;
+  ips: string[];
+  bannedIps?: string[];
+  primeiroLogin: number;
+  ultimoLogin: number;
+  totalLogins: number;
+}
+
+const KEY_USERS      = "admin:users:v1";
+const KEY_BANNED_IPS = "admin:banned-ips:v1";
+
+async function loadUsers(): Promise<SiteUser[]> {
+  try {
+    const raw = await dbGet(KEY_USERS);
+    if (!raw) return [];
+    return JSON.parse(raw) as SiteUser[];
+  } catch { return []; }
+}
+
+async function saveUsers(list: SiteUser[]): Promise<void> {
+  await dbSet(KEY_USERS, JSON.stringify(list));
+}
+
+async function rebuildBannedIps(list: SiteUser[]): Promise<void> {
+  const ips = new Set<string>();
+  for (const u of list) {
+    if (u.status === "banido") {
+      for (const ip of u.bannedIps ?? []) ips.add(ip);
+    }
+  }
+  await dbSet(KEY_BANNED_IPS, JSON.stringify([...ips]));
+}
+
+export async function getUsers(): Promise<SiteUser[]> {
+  return loadUsers();
+}
+
+export async function upsertUser(params: {
+  twitchId: string;
+  twitchLogin: string;
+  displayName: string;
+  image: string | null;
+  ip?: string;
+}): Promise<SiteUser> {
+  const list = await loadUsers();
+  const idx  = list.findIndex(u => u.twitchId === params.twitchId);
+
+  if (idx >= 0) {
+    const u = list[idx];
+    u.twitchLogin  = params.twitchLogin.toLowerCase();
+    u.displayName  = params.displayName;
+    u.image        = params.image;
+    u.ultimoLogin  = Date.now();
+    u.totalLogins  = (u.totalLogins ?? 0) + 1;
+    if (params.ip && !u.ips.includes(params.ip)) {
+      u.ips = [params.ip, ...u.ips].slice(0, 10);
+    }
+    await saveUsers(list);
+    return u;
+  }
+
+  const newUser: SiteUser = {
+    twitchId:      params.twitchId,
+    twitchLogin:   params.twitchLogin.toLowerCase(),
+    displayName:   params.displayName,
+    image:         params.image,
+    status:        "ativo",
+    ips:           params.ip ? [params.ip] : [],
+    primeiroLogin: Date.now(),
+    ultimoLogin:   Date.now(),
+    totalLogins:   1,
+  };
+  await saveUsers([newUser, ...list]);
+  return newUser;
+}
+
+export async function isBanned(twitchLogin: string): Promise<boolean> {
+  const list = await loadUsers();
+  const u = list.find(u => u.twitchLogin === twitchLogin.toLowerCase());
+  if (!u) return false;
+  if (u.status === "banido") return true;
+  if (u.status === "suspenso" && u.suspAte && u.suspAte > Date.now()) return true;
+  // Levanta suspensão automaticamente quando expirada
+  if (u.status === "suspenso" && u.suspAte && u.suspAte <= Date.now()) {
+    u.status = "ativo";
+    delete u.suspAte; delete u.suspMotivo; delete u.suspPor;
+    await saveUsers(list);
+  }
+  return false;
+}
+
+export async function banUser(
+  twitchLogin: string, motivo: string, adminLogin: string,
+): Promise<boolean> {
+  const list = await loadUsers();
+  const u = list.find(u => u.twitchLogin === twitchLogin.toLowerCase());
+  if (!u) return false;
+  u.status    = "banido";
+  u.banMotivo = motivo;
+  u.banEm     = Date.now();
+  u.banPor    = adminLogin;
+  u.bannedIps = [...new Set([...(u.bannedIps ?? []), ...u.ips])];
+  await saveUsers(list);
+  await rebuildBannedIps(list);
+  return true;
+}
+
+export async function desbanirUser(twitchLogin: string): Promise<boolean> {
+  const list = await loadUsers();
+  const u = list.find(u => u.twitchLogin === twitchLogin.toLowerCase());
+  if (!u) return false;
+  u.status = "ativo";
+  u.bannedIps = [];
+  delete u.banMotivo; delete u.banEm; delete u.banPor;
+  await saveUsers(list);
+  await rebuildBannedIps(list);
+  return true;
+}
+
+export async function suspenderUser(
+  twitchLogin: string, ate: number, motivo: string, adminLogin: string,
+): Promise<boolean> {
+  const list = await loadUsers();
+  const u = list.find(u => u.twitchLogin === twitchLogin.toLowerCase());
+  if (!u) return false;
+  u.status     = "suspenso";
+  u.suspAte    = ate;
+  u.suspMotivo = motivo;
+  u.suspPor    = adminLogin;
+  await saveUsers(list);
+  return true;
+}
+
+export async function dessuspenderUser(twitchLogin: string): Promise<boolean> {
+  const list = await loadUsers();
+  const u = list.find(u => u.twitchLogin === twitchLogin.toLowerCase());
+  if (!u) return false;
+  u.status = "ativo";
+  delete u.suspAte; delete u.suspMotivo; delete u.suspPor;
+  await saveUsers(list);
+  return true;
+}
+
+export async function getBannedIps(): Promise<string[]> {
+  try {
+    const raw = await dbGet(KEY_BANNED_IPS);
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch { return []; }
+}

@@ -181,78 +181,14 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
             {admin && (
               <>
                 <Link
-                  href="/admin/palpites"
+                  href="/admin"
                   onClick={() => setOpen(false)}
                   className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
                   style={{ color: "#ffba00" }}
                 >
-                  <span className="text-base">🎯</span>
-                  Admin · Palpites
-                </Link>
-                <Link
-                  href="/admin/torneio"
-                  onClick={() => setOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
-                  style={{ color: "#ffba00" }}
-                >
-                  <span className="text-base">🏆</span>
-                  Admin · Torneio
-                </Link>
-                <Link
-                  href="/admin/sorteio"
-                  onClick={() => setOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
-                  style={{ color: "#ffba00" }}
-                >
-                  <span className="text-base">🎟️</span>
-                  Admin · Sorteio
-                </Link>
-                <Link
-                  href="/admin/batalha"
-                  onClick={() => setOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
-                  style={{ color: "#ffba00" }}
-                >
-                  <span className="text-base">⚔️</span>
-                  Admin · Batalha
-                </Link>
-                <Link
-                  href="/admin/jackpot"
-                  onClick={() => setOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
-                  style={{ color: "#ffba00" }}
-                >
-                  <span className="text-base">🎰</span>
-                  Admin · Jackpot
-                </Link>
-                <Link
-                  href="/admin/gorjeta"
-                  onClick={() => setOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
-                  style={{ color: "#ffba00" }}
-                >
-                  <span className="text-base">💰</span>
-                  Admin · Gorjeta
-                </Link>
-                <Link
-                  href="/admin/call"
-                  onClick={() => setOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
-                  style={{ color: "#ffba00" }}
-                >
-                  <span className="text-base">📋</span>
-                  Admin · Call
-                </Link>
-                <div className="border-t border-white/5 my-1" />
-                <Link
-                  href="/admin/config"
-                  onClick={() => setOpen(false)}
-                  className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
-                  style={{ color: configAlerta ? "#ef4444" : "#6b7280" }}
-                >
-                  <span className="text-base">{configAlerta ? "⚠️" : "⚙️"}</span>
-                  <span className="flex-1">Configurações</span>
-                  {configAlerta && <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />}
+                  <span className="text-base">◈</span>
+                  <span className="flex-1">Painel Admin</span>
+                  {configAlerta && <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0 animate-pulse" />}
                 </Link>
               </>
             )}
@@ -301,9 +237,9 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-2">
             <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />
-            <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" alsoActiveOn={["/admin/palpites", "/admin/torneio", "/admin/batalha", "/admin/jackpot"]} />
-            <NavLink href={admin ? "/admin/sorteio" : "/sorteio"} label="Sorteio" from="#ffba00" to="#e6a000" alsoActiveOn={["/admin/sorteio", "/sorteio"]} />
-            <NavLink href={admin ? "/admin/gorjeta" : "/gorjeta"} label="Gorjeta" from="#4ade80" to="#22c55e" alsoActiveOn={["/admin/gorjeta", "/gorjeta"]} />
+            <NavLink href="/arena"   label="Arena"   from="#c084fc" to="#9146ff" />
+            <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" />
+            <NavLink href="/gorjeta" label="Gorjeta" from="#4ade80" to="#22c55e" />
           </div>
 
           <div className="hidden md:flex items-center">
@@ -346,14 +282,19 @@ export default function Navbar() {
               <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
-              <NavLink href="/arena" label="Arena" from="#c084fc" to="#9146ff" alsoActiveOn={["/admin/palpites", "/admin/torneio", "/admin/batalha", "/admin/jackpot"]} />
+              <NavLink href="/arena"   label="Arena"   from="#c084fc" to="#9146ff" />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
-              <NavLink href={admin ? "/admin/sorteio" : "/sorteio"} label="Sorteio" from="#ffba00" to="#e6a000" alsoActiveOn={["/admin/sorteio", "/sorteio"]} />
+              <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
-              <NavLink href={admin ? "/admin/gorjeta" : "/gorjeta"} label="Gorjeta" from="#4ade80" to="#22c55e" alsoActiveOn={["/admin/gorjeta", "/gorjeta"]} />
+              <NavLink href="/gorjeta" label="Gorjeta" from="#4ade80" to="#22c55e" />
             </div>
+            {admin && (
+              <div onClick={() => setOpen(false)} className="block px-0">
+                <NavLink href="/admin" label="Painel Admin" from="#ffba00" to="#ff8c00" alsoActiveOn={["/admin"]} />
+              </div>
+            )}
             <a
               href="https://twitch.tv/stainzincs"
               target="_blank"
