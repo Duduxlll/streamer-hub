@@ -31,7 +31,7 @@ export default function PrivacidadePage() {
               Política de Privacidade
             </span>
           </h1>
-          <p className="text-gray-500 text-sm">Última atualização: 19 de abril de 2026</p>
+          <p className="text-gray-500 text-sm">Última atualização: 2 de junho de 2026</p>
         </div>
 
         <div className="rounded-2xl p-6 mb-8"
@@ -52,10 +52,23 @@ export default function PrivacidadePage() {
               <DataCard icon="✏️" label="Nome de exibição" description="O nome que aparece publicamente no seu perfil Twitch." />
               <DataCard icon="🖼️" label="Foto de perfil" description="A imagem de avatar da sua conta Twitch, exibida em placares e listas de participantes." />
               <DataCard icon="🔑" label="ID de autenticação (OAuth)" description="Token temporário fornecido pela Twitch para verificar sua identidade. Não armazenamos sua senha." />
+              <DataCard icon="🌐" label="Endereço IP" description="Registrado por motivos de segurança — para aplicar banimentos e prevenir abusos na plataforma." />
             </div>
+
+            <p className="mt-5">
+              <strong className="text-white">Se você optar por participar da Gorjeta</strong> (recebimento de PIX),
+              coletamos adicionalmente os dados que você nos fornece voluntariamente no cadastro:
+            </p>
+            <div className="mt-4 space-y-3">
+              <DataCard icon="🔑" label="Chave PIX" description="A chave (CPF, telefone, e-mail ou aleatória) usada para receber as gorjetas. Armazenada de forma protegida." />
+              <DataCard icon="🪪" label="CPF e nome completo" description="Necessários para validar o titular da chave PIX e evitar fraudes/duplicidade." />
+              <DataCard icon="📄" label="Comprovante (imagem)" description="Captura enviada por você para verificação do cadastro pelo administrador." />
+            </div>
+
             <p className="mt-4 text-gray-400">
-              <strong className="text-white">Não coletamos</strong> e-mail, número de telefone, dados financeiros,
-              localização, endereço IP ou qualquer outro dado sensível além do descrito acima.
+              Não coletamos sua senha, dados de cartão ou qualquer dado além dos descritos acima. Os dados de
+              pagamento (chave PIX, CPF) são coletados <strong className="text-white">somente</strong> se você
+              escolher se cadastrar na funcionalidade de Gorjeta.
             </p>
           </Section>
 
@@ -78,19 +91,31 @@ export default function PrivacidadePage() {
                 <span className="text-purple-400 flex-shrink-0 mt-0.5">▸</span>
                 <span>Verificar permissões de administrador (somente para contas autorizadas)</span>
               </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-400 flex-shrink-0 mt-0.5">▸</span>
+                <span>Processar e enviar gorjetas via PIX, quando você se cadastra nessa funcionalidade</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-purple-400 flex-shrink-0 mt-0.5">▸</span>
+                <span>Garantir a segurança da plataforma — registrar logs de ações administrativas e aplicar banimentos (inclusive por IP) contra abusos</span>
+              </li>
             </ul>
           </Section>
 
-          <Section title="3. Armazenamento dos Dados" color="#9146ff">
+          <Section title="3. Armazenamento e Retenção dos Dados" color="#9146ff">
             <p>
-              Os dados de sessão são armazenados de forma temporária durante sua navegação na plataforma.
-              Informações de participação em funcionalidades como Torneio e Batalha são mantidas
-              <strong className="text-white"> em memória</strong> — ou seja, são apagadas automaticamente quando
-              o servidor é reiniciado ou quando a rodada encerra.
+              Utilizamos um <strong className="text-white">banco de dados</strong> para armazenar as informações
+              necessárias ao funcionamento da plataforma, como cadastros de gorjeta, participações, histórico de
+              atividades e registros de segurança.
             </p>
             <p className="mt-3">
-              Não utilizamos banco de dados permanente para armazenar seus dados pessoais. Suas informações
-              da Twitch são obtidas a cada login e mantidas apenas na sua sessão ativa.
+              Dados sensíveis — como <strong className="text-white">chave PIX, credenciais de integração e tokens</strong> —
+              são armazenados de forma <strong className="text-white">criptografada</strong>. O login é feito via
+              Twitch (OAuth) e <strong className="text-white">não armazenamos sua senha</strong>.
+            </p>
+            <p className="mt-3 text-gray-400">
+              Os dados são mantidos enquanto forem necessários para as finalidades descritas. Você pode solicitar
+              a exclusão dos seus dados a qualquer momento pelos canais oficiais (ver seção &quot;Seus Direitos&quot;).
             </p>
           </Section>
 
@@ -102,7 +127,13 @@ export default function PrivacidadePage() {
             <p className="mt-3">
               Seus dados podem ser visíveis para outros usuários da plataforma apenas no contexto das
               funcionalidades (ex.: seu nome em um ranking público ou chave de torneio). Isso é inerente
-              ao funcionamento das mecânicas de jogo.
+              ao funcionamento das mecânicas de jogo. Sua <strong className="text-white">chave PIX e CPF nunca são exibidos
+              publicamente</strong> — ficam visíveis apenas para o administrador.
+            </p>
+            <p className="mt-3">
+              Para <strong className="text-white">processar as gorjetas via PIX</strong>, sua chave PIX é compartilhada
+              com o provedor de pagamento responsável pela transferência, exclusivamente para executar o pagamento que
+              você solicitou ao se cadastrar. Esse compartilhamento é limitado ao estritamente necessário.
             </p>
             <div className="mt-4 rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
               <p className="text-xs text-gray-400">

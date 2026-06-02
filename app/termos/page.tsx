@@ -29,7 +29,7 @@ export default function TermosPage() {
               Termos de Uso
             </span>
           </h1>
-          <p className="text-gray-500 text-sm">Última atualização: 19 de abril de 2026</p>
+          <p className="text-gray-500 text-sm">Última atualização: 2 de junho de 2026</p>
         </div>
         <div className="space-y-8 text-gray-300 text-sm leading-relaxed">
 
@@ -72,9 +72,24 @@ export default function TermosPage() {
               <Feature icon="⚔️" title="Batalha de Bônus">
                 Confrontos eliminatórios ao vivo entre participantes inscritos pelo chat da Twitch.
               </Feature>
+              <Feature icon="🎰" title="Jackpot">
+                Disputa de bônus ao vivo entre os participantes; o maior resultado vence.
+              </Feature>
+              <Feature icon="📋" title="Call de Slot">
+                Espectadores sugerem jogos para o streamer. Use <code className="text-blue-300">!call [jogo]</code> no chat da Twitch.
+              </Feature>
+              <Feature icon="🎁" title="Sorteio">
+                Sorteios em que cada espectador acumula tickets enquanto assiste à live. Mais tickets = mais chances.
+              </Feature>
+              <Feature icon="💰" title="Gorjeta">
+                Distribuição de gorjetas via <strong className="text-white">PIX real</strong>. Para participar, é necessário
+                cadastrar sua chave PIX e dados conforme descrito na Política de Privacidade.
+              </Feature>
             </ul>
             <p className="mt-3 text-gray-400">
-              Todas as funcionalidades são de caráter recreativo e não envolvem dinheiro real diretamente na plataforma.
+              A maior parte das funcionalidades é de caráter recreativo e usa saldo/tickets virtuais sem valor monetário.
+              <strong className="text-white"> A funcionalidade de Gorjeta, no entanto, envolve transferências de dinheiro real (PIX)</strong>
+              {" "}realizadas pelo streamer aos participantes, conforme regras anunciadas ao vivo.
             </p>
           </Section>
 
@@ -102,15 +117,21 @@ export default function TermosPage() {
             </ul>
           </Section>
 
-          <Section title="5. Prêmios e Recompensas">
+          <Section title="5. Prêmios, Gorjetas e Recompensas">
             <p>
               Eventuais prêmios ou recompensas anunciados durante as lives são de responsabilidade exclusiva do
               streamer stainzincs e estão sujeitos às condições anunciadas ao vivo. A plataforma não garante
               nem é responsável pela entrega de qualquer prêmio prometido durante transmissões.
             </p>
             <p className="mt-3">
-              O saldo virtual utilizado nos Palpites não tem valor monetário real e não pode ser convertido em
-              dinheiro, bens ou serviços.
+              O saldo virtual utilizado nos Palpites e os tickets do Sorteio não têm valor monetário real e não
+              podem ser convertidos em dinheiro, bens ou serviços.
+            </p>
+            <p className="mt-3">
+              As <strong className="text-white">Gorjetas</strong> consistem em transferências PIX feitas pelo streamer,
+              de forma voluntária, aos participantes selecionados. Você é responsável por fornecer uma chave PIX
+              correta e válida; a plataforma e o streamer não se responsabilizam por valores enviados a chaves
+              informadas incorretamente pelo próprio participante.
             </p>
           </Section>
 
