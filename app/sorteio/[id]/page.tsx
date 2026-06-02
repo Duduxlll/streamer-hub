@@ -144,7 +144,7 @@ function Roleta({ participantes, vencedor }: { participantes: Participante[]; ve
                     style={{ filter: isWinner ? "blur(0px) brightness(1)" : "blur(2px) brightness(0.55)" }} />
                 ) : (
                   <div className="w-16 h-16 rounded-full flex items-center justify-center font-black text-white text-2xl"
-                    style={{ background: "linear-gradient(135deg, #9146ff, #16a34a)" }}>
+                    style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
                     {p.displayName[0]?.toUpperCase()}
                   </div>
                 )}
@@ -176,7 +176,7 @@ function EntradaCard({ p }: { p: Participante }) {
             style={{ borderColor: "rgba(255,186,0,0.5)", filter: "blur(3px)" }} />
         ) : (
           <div className="w-16 h-16 rounded-full flex items-center justify-center font-black text-white text-2xl border-2"
-            style={{ background: "linear-gradient(135deg, #9146ff, #16a34a)", borderColor: "rgba(255,186,0,0.4)", filter: "blur(3px)" }}>
+            style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", borderColor: "rgba(255,186,0,0.4)", filter: "blur(3px)" }}>
             {p.displayName[0]?.toUpperCase()}
           </div>
         )}
@@ -379,7 +379,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
             {status === "unauthenticated" ? (
               <button onClick={() => signIn("twitch")}
                 className="flex items-center gap-3 px-8 py-4 rounded-full font-black text-white text-sm transition-all hover:scale-105 active:scale-95"
-                style={{ background: "linear-gradient(135deg, #9146ff, #6d28d9)" }}>
+                style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
                 <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
                 </svg>
@@ -466,7 +466,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
                     className="w-24 h-24 rounded-full object-cover border-2 border-[#ffba00]" />
                 ) : (
                   <div className="w-24 h-24 rounded-full flex items-center justify-center font-black text-white text-3xl border-2 border-[#ffba00]"
-                    style={{ background: "linear-gradient(135deg, #9146ff, #16a34a)" }}>
+                    style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
                     {sorteio.vencedor.displayName[0]?.toUpperCase()}
                   </div>
                 )}

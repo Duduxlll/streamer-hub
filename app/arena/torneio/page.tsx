@@ -10,7 +10,7 @@ import type { Torneio } from "@/lib/torneioStore";
 
 const TEAM_COLORS = [
   { bg: "rgba(34,197,94,0.12)",  border: "rgba(34,197,94,0.4)",  glow: "rgba(34,197,94,0.18)",  text: "#4ade80", avatar: "rgba(34,197,94,0.25)",  avatarText: "#86efac" },
-  { bg: "rgba(168,85,247,0.12)",  border: "rgba(168,85,247,0.4)",  glow: "rgba(168,85,247,0.18)",  text: "#c084fc", avatar: "rgba(168,85,247,0.25)",  avatarText: "#d8b4fe" },
+  { bg: "rgba(34,197,94,0.12)",  border: "rgba(34,197,94,0.4)",  glow: "rgba(34,197,94,0.18)",  text: "#4ade80", avatar: "rgba(34,197,94,0.25)",  avatarText: "#86efac" },
   { bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.4)",  glow: "rgba(245,158,11,0.18)",  text: "#fbbf24", avatar: "rgba(245,158,11,0.25)",  avatarText: "#fcd34d" },
   { bg: "rgba(16,185,129,0.12)",  border: "rgba(16,185,129,0.4)",  glow: "rgba(16,185,129,0.18)",  text: "#34d399", avatar: "rgba(16,185,129,0.25)",  avatarText: "#6ee7b7" },
 ];
@@ -41,7 +41,7 @@ export default function TorneioPage() {
   if (carregando || status === "loading") {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -127,9 +127,9 @@ export default function TorneioPage() {
               </div>
             )}
             {fase?.status === "aberta" && (
-              <div className="rounded-2xl border border-purple-500/25 p-5 mb-6"
-                style={{ background: "rgba(6,16,10,0.92)", boxShadow: "0 0 30px rgba(145,70,255,0.10)" }}>
-                <p className="text-[11px] font-black text-purple-400 uppercase tracking-widest mb-1.5">
+              <div className="rounded-2xl border border-green-500/25 p-5 mb-6"
+                style={{ background: "rgba(6,16,10,0.92)", boxShadow: "0 0 30px rgba(34,197,94,0.10)" }}>
+                <p className="text-[11px] font-black text-green-400 uppercase tracking-widest mb-1.5">
                   ⚡ Como participar
                 </p>
                 <p className="text-sm text-gray-400 mb-3">
@@ -140,8 +140,8 @@ export default function TorneioPage() {
                 <div className="flex flex-wrap gap-2">
                   {fase.times.map(t => (
                     <span key={t}
-                      className="font-mono font-black text-sm px-4 py-2 rounded-xl border border-purple-500/35 text-purple-200 tracking-wide"
-                      style={{ background: "rgba(145,70,255,0.18)" }}>
+                      className="font-mono font-black text-sm px-4 py-2 rounded-xl border border-green-500/35 text-green-200 tracking-wide"
+                      style={{ background: "rgba(34,197,94,0.18)" }}>
                       !time {t}
                     </span>
                   ))}

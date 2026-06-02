@@ -81,7 +81,7 @@ function HistoricoModal({ twitchLogin, onClose }: { twitchLogin: string; onClose
               <div>
                 <p className="text-xs text-gray-500">{fmtDate(g.abertaEm)}</p>
                 <span className="text-[10px] font-black px-1.5 py-0.5 rounded"
-                  style={{ background: g.tipo === "sorteio" ? "rgba(255,186,0,0.1)" : "rgba(139,92,246,0.15)", color: g.tipo === "sorteio" ? "#ffba00" : "#a78bfa" }}>
+                  style={{ background: g.tipo === "sorteio" ? "rgba(255,186,0,0.1)" : "rgba(139,92,246,0.15)", color: g.tipo === "sorteio" ? "#ffba00" : "#4ade80" }}>
                   {g.tipo}
                 </span>
               </div>

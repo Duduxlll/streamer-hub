@@ -208,7 +208,7 @@ function PagamentoCard({ p, onEnviar, onRemover, busy }: {
             <span className="text-sm font-black text-white">{p.displayName}</span>
             <StatusBadge status={p.status} />
             <span className="text-[10px] px-1.5 py-0.5 rounded font-black"
-              style={{ background: p.tipo === "sorteio" ? "rgba(255,186,0,0.1)" : "rgba(139,92,246,0.15)", color: p.tipo === "sorteio" ? "#ffba00" : "#a78bfa" }}>
+              style={{ background: p.tipo === "sorteio" ? "rgba(255,186,0,0.1)" : "rgba(139,92,246,0.15)", color: p.tipo === "sorteio" ? "#ffba00" : "#4ade80" }}>
               {p.tipo}
             </span>
           </div>

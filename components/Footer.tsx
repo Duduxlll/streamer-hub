@@ -70,7 +70,7 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/arena" className="text-sm text-gray-400 hover:text-purple-300 transition-colors">
+                  <Link href="/arena" className="text-sm text-gray-400 hover:text-green-300 transition-colors">
                     Arena
                   </Link>
                 </li>
@@ -87,7 +87,7 @@ export default function Footer() {
                     href="https://twitch.tv/stainzincs"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-purple-300 transition-colors"
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-green-300 transition-colors"
                   >
                     <TwitchIcon className="w-3.5 h-3.5" />
                     Twitch

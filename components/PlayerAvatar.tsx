@@ -6,7 +6,7 @@ interface PlayerAvatarProps {
 }
 
 /** Avatar da Twitch com fallback para a inicial do nome. */
-export default function PlayerAvatar({ image, name, size = 32, color = "#9146ff" }: PlayerAvatarProps) {
+export default function PlayerAvatar({ image, name, size = 32, color = "#22c55e" }: PlayerAvatarProps) {
   if (image) {
     return (
       // eslint-disable-next-line @next/next/no-img-element

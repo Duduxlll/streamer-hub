@@ -19,12 +19,12 @@ export default function PrivacidadePage() {
 
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4"
-            style={{ background: "rgba(145,70,255,0.15)", color: "#c084fc", border: "1px solid rgba(145,70,255,0.3)" }}>
+            style={{ background: "rgba(34,197,94,0.15)", color: "#4ade80", border: "1px solid rgba(34,197,94,0.3)" }}>
             🔒 Proteção de Dados
           </div>
           <h1 className="text-4xl font-black mb-3">
             <span style={{
-              background: "linear-gradient(135deg, #c084fc, #9146ff)",
+              background: "linear-gradient(135deg, #4ade80, #22c55e)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}>
@@ -35,7 +35,7 @@ export default function PrivacidadePage() {
         </div>
 
         <div className="rounded-2xl p-6 mb-8"
-          style={{ background: "rgba(145,70,255,0.06)", border: "1px solid rgba(145,70,255,0.2)" }}>
+          style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
           <p className="text-gray-300 text-sm leading-relaxed">
             A sua privacidade é importante para nós. Esta Política descreve de forma clara e transparente quais
             dados coletamos, como os utilizamos e como os protegemos quando você utiliza a plataforma{" "}
@@ -45,7 +45,7 @@ export default function PrivacidadePage() {
 
         <div className="space-y-8 text-gray-300 text-sm leading-relaxed">
 
-          <Section title="1. Dados que Coletamos" color="#9146ff">
+          <Section title="1. Dados que Coletamos" color="#22c55e">
             <p>Ao fazer login com sua conta Twitch, coletamos automaticamente as seguintes informações:</p>
             <div className="mt-4 space-y-3">
               <DataCard icon="👤" label="Nome de usuário (login)" description="Seu nome de usuário único na Twitch, usado para identificá-lo nas funcionalidades da plataforma." />
@@ -72,37 +72,37 @@ export default function PrivacidadePage() {
             </p>
           </Section>
 
-          <Section title="2. Como Usamos os Dados" color="#9146ff">
+          <Section title="2. Como Usamos os Dados" color="#22c55e">
             <p>Os dados coletados são utilizados exclusivamente para:</p>
             <ul className="mt-3 space-y-2 ml-4">
               <li className="flex items-start gap-2">
-                <span className="text-purple-400 flex-shrink-0 mt-0.5">▸</span>
+                <span className="text-green-400 flex-shrink-0 mt-0.5">▸</span>
                 <span>Identificar você dentro da plataforma e nas funcionalidades interativas (Palpites, Torneio, Batalha)</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-purple-400 flex-shrink-0 mt-0.5">▸</span>
+                <span className="text-green-400 flex-shrink-0 mt-0.5">▸</span>
                 <span>Exibir seu nome e foto nos rankings, chaves de torneio e listas de participantes</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-purple-400 flex-shrink-0 mt-0.5">▸</span>
+                <span className="text-green-400 flex-shrink-0 mt-0.5">▸</span>
                 <span>Manter sua sessão ativa durante o uso da plataforma</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-purple-400 flex-shrink-0 mt-0.5">▸</span>
+                <span className="text-green-400 flex-shrink-0 mt-0.5">▸</span>
                 <span>Verificar permissões de administrador (somente para contas autorizadas)</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-purple-400 flex-shrink-0 mt-0.5">▸</span>
+                <span className="text-green-400 flex-shrink-0 mt-0.5">▸</span>
                 <span>Processar e enviar gorjetas via PIX, quando você se cadastra nessa funcionalidade</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-purple-400 flex-shrink-0 mt-0.5">▸</span>
+                <span className="text-green-400 flex-shrink-0 mt-0.5">▸</span>
                 <span>Garantir a segurança da plataforma — registrar logs de ações administrativas e aplicar banimentos (inclusive por IP) contra abusos</span>
               </li>
             </ul>
           </Section>
 
-          <Section title="3. Armazenamento e Retenção dos Dados" color="#9146ff">
+          <Section title="3. Armazenamento e Retenção dos Dados" color="#22c55e">
             <p>
               Utilizamos um <strong className="text-white">banco de dados</strong> para armazenar as informações
               necessárias ao funcionamento da plataforma, como cadastros de gorjeta, participações, histórico de
@@ -119,7 +119,7 @@ export default function PrivacidadePage() {
             </p>
           </Section>
 
-          <Section title="4. Compartilhamento de Dados" color="#9146ff">
+          <Section title="4. Compartilhamento de Dados" color="#22c55e">
             <p>
               <strong className="text-white">Não vendemos, alugamos ou compartilhamos</strong> seus dados pessoais
               com terceiros para fins comerciais ou de marketing.
@@ -140,14 +140,14 @@ export default function PrivacidadePage() {
                 <strong className="text-gray-300">Sobre a Twitch:</strong> O login é processado diretamente pela
                 Twitch via OAuth 2.0. Ao fazer login, você também está sujeito à{" "}
                 <a href="https://www.twitch.tv/p/pt-br/legal/privacy-notice/" target="_blank" rel="noopener noreferrer"
-                  className="text-purple-400 hover:text-purple-300 underline underline-offset-2">
+                  className="text-green-400 hover:text-green-300 underline underline-offset-2">
                   Política de Privacidade da Twitch
                 </a>.
               </p>
             </div>
           </Section>
 
-          <Section title="5. Cookies e Sessão" color="#9146ff">
+          <Section title="5. Cookies e Sessão" color="#22c55e">
             <p>
               Utilizamos cookies de sessão estritamente necessários para manter você autenticado enquanto
               navega na plataforma. Esses cookies são temporários e são apagados quando você encerra o
@@ -158,7 +158,7 @@ export default function PrivacidadePage() {
             </p>
           </Section>
 
-          <Section title="6. Segurança" color="#9146ff">
+          <Section title="6. Segurança" color="#22c55e">
             <p>
               Adotamos medidas técnicas para proteger seus dados, incluindo comunicação via HTTPS/TLS,
               tokens de sessão seguros e autenticação delegada à Twitch (não armazenamos senhas).
@@ -169,7 +169,7 @@ export default function PrivacidadePage() {
             </p>
           </Section>
 
-          <Section title="7. Seus Direitos" color="#9146ff">
+          <Section title="7. Seus Direitos" color="#22c55e">
             <p>Você tem os seguintes direitos em relação aos seus dados:</p>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <RightCard icon="👁️" title="Acesso" description="Saber quais dados temos sobre você" />
@@ -183,7 +183,7 @@ export default function PrivacidadePage() {
             </p>
           </Section>
 
-          <Section title="8. Menores de Idade" color="#9146ff">
+          <Section title="8. Menores de Idade" color="#22c55e">
             <p>
               Esta plataforma é destinada exclusivamente a maiores de <strong className="text-white">18 anos</strong>.
               Não coletamos intencionalmente dados de menores. Se tomarmos conhecimento de que coletamos
@@ -191,7 +191,7 @@ export default function PrivacidadePage() {
             </p>
           </Section>
 
-          <Section title="9. Alterações nesta Política" color="#9146ff">
+          <Section title="9. Alterações nesta Política" color="#22c55e">
             <p>
               Esta Política pode ser atualizada periodicamente. Alterações significativas serão
               comunicadas na plataforma ou nos canais sociais do stainzincs. O uso continuado da
@@ -199,12 +199,12 @@ export default function PrivacidadePage() {
             </p>
           </Section>
 
-          <Section title="10. Contato" color="#9146ff">
+          <Section title="10. Contato" color="#22c55e">
             <p>
               Dúvidas ou solicitações relacionadas à privacidade? Entre em contato pelo chat ao vivo na
               Twitch em{" "}
               <a href="https://twitch.tv/stainzincs" target="_blank" rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-300 underline underline-offset-2">
+                className="text-green-400 hover:text-green-300 underline underline-offset-2">
                 twitch.tv/stainzincs
               </a>{" "}
               ou pelas redes sociais oficiais do canal.
@@ -217,7 +217,7 @@ export default function PrivacidadePage() {
           <Link href="/" className="text-sm text-gray-500 hover:text-white transition-colors">
             ← Voltar para Home
           </Link>
-          <Link href="/termos" className="text-sm text-purple-400 hover:text-purple-300 transition-colors">
+          <Link href="/termos" className="text-sm text-green-400 hover:text-green-300 transition-colors">
             Ver Termos de Uso →
           </Link>
         </div>
@@ -244,7 +244,7 @@ function Section({ title, color, children }: { title: string; color: string; chi
 
 function DataCard({ icon, label, description }: { icon: string; label: string; description: string }) {
   return (
-    <div className="flex gap-3 rounded-xl p-3" style={{ background: "rgba(145,70,255,0.05)", border: "1px solid rgba(145,70,255,0.15)" }}>
+    <div className="flex gap-3 rounded-xl p-3" style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.15)" }}>
       <span className="text-lg flex-shrink-0">{icon}</span>
       <div>
         <p className="font-bold text-white text-sm mb-0.5">{label}</p>

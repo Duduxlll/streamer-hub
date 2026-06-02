@@ -102,7 +102,7 @@ function HistoricoCard({ h, num }: { h: HistoricoItem; num: number }) {
           {h.transacoes.map((t, i) => (
             <div key={`${t.id}-${i}`} className="flex items-center gap-2.5 py-1 border-b border-white/[0.03] last:border-0">
               <span className="text-[10px] px-1.5 py-0.5 rounded font-black flex-shrink-0"
-                style={{ background: t.tipo === "manual" ? "rgba(139,92,246,0.15)" : "rgba(255,186,0,0.1)", color: t.tipo === "manual" ? "#a78bfa" : "#ffba00" }}>
+                style={{ background: t.tipo === "manual" ? "rgba(139,92,246,0.15)" : "rgba(255,186,0,0.1)", color: t.tipo === "manual" ? "#4ade80" : "#ffba00" }}>
                 {t.tipo}
               </span>
               <span className="text-xs font-black text-white flex-1 truncate">{t.displayName}</span>
@@ -870,7 +870,7 @@ export default function AdminGorjetaPage() {
                     <div className="px-5 py-3 space-y-2 max-h-48 overflow-y-auto">
                       {[...sessao.transacoes].reverse().map(t => (
                         <div key={t.id} className="flex items-center gap-2.5 py-1">
-                          <span className="text-[10px] px-1.5 py-0.5 rounded font-black" style={{ background: t.tipo === "manual" ? "rgba(139,92,246,0.15)" : "rgba(255,186,0,0.1)", color: t.tipo === "manual" ? "#a78bfa" : "#ffba00" }}>{t.tipo}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-black" style={{ background: t.tipo === "manual" ? "rgba(139,92,246,0.15)" : "rgba(255,186,0,0.1)", color: t.tipo === "manual" ? "#4ade80" : "#ffba00" }}>{t.tipo}</span>
                           <span className="text-xs font-bold text-white flex-1 truncate">{t.displayName}</span>
                           <span className="text-xs font-black text-white">R$ {fmtBRL(t.valor)}</span>
                           <PayBadge status={t.status} erro={t.erro} />

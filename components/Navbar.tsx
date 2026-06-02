@@ -142,7 +142,7 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
           // eslint-disable-next-line @next/next/no-img-element
           <img src={image} alt={name} className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
         ) : (
-          <div className="w-6 h-6 rounded-full bg-[#9146ff]/50 flex items-center justify-center flex-shrink-0">
+          <div className="w-6 h-6 rounded-full bg-[#22c55e]/50 flex items-center justify-center flex-shrink-0">
             <span className="text-[10px] font-bold text-white uppercase">{name[0]}</span>
           </div>
         )}
@@ -250,14 +250,14 @@ export default function Navbar() {
 
           <div className="hidden md:flex items-center gap-2">
             <NavLink href="/" label="Home" from="#86efac" to="#22c55e" />
-            <NavLink href="/arena"   label="Arena"   from="#c084fc" to="#9146ff" />
+            <NavLink href="/arena"   label="Arena"   from="#4ade80" to="#22c55e" />
             <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" />
             <NavLink href="/gorjeta" label="Gorjeta" from="#4ade80" to="#22c55e" />
           </div>
 
           <div className="hidden md:flex items-center">
             {isLoading && (
-              <div className="w-8 h-8 rounded-full border-2 border-[#9146ff]/40 border-t-[#9146ff] animate-spin" />
+              <div className="w-8 h-8 rounded-full border-2 border-[#22c55e]/40 border-t-[#22c55e] animate-spin" />
             )}
             {!isLoading && isLoggedIn && session.user && (
               <UserMenu
@@ -295,7 +295,7 @@ export default function Navbar() {
               <NavLink href="/" label="Home" from="#86efac" to="#22c55e" />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
-              <NavLink href="/arena"   label="Arena"   from="#c084fc" to="#9146ff" />
+              <NavLink href="/arena"   label="Arena"   from="#4ade80" to="#22c55e" />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
               <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" />
@@ -312,10 +312,10 @@ export default function Navbar() {
               href="https://twitch.tv/stainzincs"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-purple-300 hover:bg-[rgba(145,70,255,0.08)]"
+              className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-green-300 hover:bg-[rgba(34,197,94,0.08)]"
               onClick={() => setOpen(false)}
             >
-              <TwitchIcon className="w-4 h-4 text-purple-400" />
+              <TwitchIcon className="w-4 h-4 text-green-400" />
               Twitch
             </a>
             <div className="pt-2 px-4">

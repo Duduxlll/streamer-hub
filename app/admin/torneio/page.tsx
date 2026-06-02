@@ -12,7 +12,7 @@ import { useConfirm } from "@/components/confirm-modal";
 
 const TEAM_COLORS = [
   { bg: "rgba(34,197,94,0.1)",  border: "rgba(34,197,94,0.35)", glow: "rgba(34,197,94,0.15)", text: "#4ade80", avatar: "rgba(34,197,94,0.22)", avatarText: "#86efac" },
-  { bg: "rgba(168,85,247,0.1)",  border: "rgba(168,85,247,0.35)", glow: "rgba(168,85,247,0.15)", text: "#c084fc", avatar: "rgba(168,85,247,0.22)", avatarText: "#d8b4fe" },
+  { bg: "rgba(34,197,94,0.1)",  border: "rgba(34,197,94,0.35)", glow: "rgba(34,197,94,0.15)", text: "#4ade80", avatar: "rgba(34,197,94,0.22)", avatarText: "#86efac" },
   { bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.35)", glow: "rgba(245,158,11,0.15)", text: "#fbbf24", avatar: "rgba(245,158,11,0.22)", avatarText: "#fcd34d" },
   { bg: "rgba(16,185,129,0.1)",  border: "rgba(16,185,129,0.35)", glow: "rgba(16,185,129,0.15)", text: "#34d399", avatar: "rgba(16,185,129,0.22)", avatarText: "#6ee7b7" },
 ];
@@ -93,7 +93,7 @@ export default function AdminTorneioPage() {
   if (status === "loading" || carregando || !isAdmin(session?.user?.twitchLogin)) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#9146ff] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -310,8 +310,8 @@ export default function AdminTorneioPage() {
                 <div className="flex flex-wrap gap-2">
                   {fase.times.map(t => (
                     <span key={t}
-                      className="font-mono font-black text-sm px-4 py-2 rounded-xl border border-purple-500/30 text-purple-200 tracking-wide"
-                      style={{ background: "rgba(145,70,255,0.15)" }}>
+                      className="font-mono font-black text-sm px-4 py-2 rounded-xl border border-green-500/30 text-green-200 tracking-wide"
+                      style={{ background: "rgba(34,197,94,0.15)" }}>
                       !time {t}
                     </span>
                   ))}

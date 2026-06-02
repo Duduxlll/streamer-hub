@@ -73,11 +73,11 @@ function SlotPublic({ slot }: { slot: BatalhaSlot }) {
     <div className={`flex-1 min-h-0 px-3 flex flex-col justify-center gap-1.5 transition-all ${isLose ? "opacity-35" : ""}`}>
       <div className="flex items-center gap-1.5">
         {hasPlayer && slot.jogador!.image ? (
-          <PlayerAvatar image={slot.jogador!.image} name={slot.jogador!.displayName} size={20} color={isWin ? "#22c55e" : "#9146ff"} />
+          <PlayerAvatar image={slot.jogador!.image} name={slot.jogador!.displayName} size={20} color={isWin ? "#22c55e" : "#22c55e"} />
         ) : (
           <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-black ${
             isWin ? "bg-green-500/30 text-green-300"
-            : hasPlayer ? "bg-[#9146ff]/30 text-purple-300"
+            : hasPlayer ? "bg-[#22c55e]/30 text-green-300"
             : "bg-white/8 text-gray-700"
           }`}>
             {hasPlayer ? slot.jogador!.displayName[0].toUpperCase() : "—"}
@@ -184,7 +184,7 @@ export default function ArenaTransferePage() {
   if (carregando || status === "loading") {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-green-500 border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -237,7 +237,7 @@ export default function ArenaTransferePage() {
             <h1 className="text-2xl sm:text-4xl font-black">
               <span className="text-white">⚔️ </span>
               <span style={{
-                background: "linear-gradient(135deg, #fff 0%, #a78bfa 60%)",
+                background: "linear-gradient(135deg, #fff 0%, #4ade80 60%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}>
@@ -274,11 +274,11 @@ export default function ArenaTransferePage() {
           </div>
         ) : batalha.status === "inscricao" ? (
           <div className="max-w-lg mx-auto space-y-4">
-            <div className="rounded-2xl border border-purple-500/25 p-5" style={{ background: "rgba(6,16,10,0.92)", boxShadow: "0 0 30px rgba(145,70,255,0.08)" }}>
-              <p className="text-[11px] font-black text-purple-400 uppercase tracking-widest mb-2">⚡ Como participar</p>
+            <div className="rounded-2xl border border-green-500/25 p-5" style={{ background: "rgba(6,16,10,0.92)", boxShadow: "0 0 30px rgba(34,197,94,0.08)" }}>
+              <p className="text-[11px] font-black text-green-400 uppercase tracking-widest mb-2">⚡ Como participar</p>
               <p className="text-sm text-gray-400 mb-3">Digite no chat da Twitch:</p>
-              <span className="font-mono font-black text-lg px-5 py-2.5 rounded-xl border border-purple-500/35 text-purple-200 inline-block"
-                style={{ background: "rgba(145,70,255,0.18)" }}>
+              <span className="font-mono font-black text-lg px-5 py-2.5 rounded-xl border border-green-500/35 text-green-200 inline-block"
+                style={{ background: "rgba(34,197,94,0.18)" }}>
                 {batalha.comando}
               </span>
             </div>

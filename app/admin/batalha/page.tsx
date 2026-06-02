@@ -102,11 +102,11 @@ function SlotRow({
     <div className={`flex-1 min-h-0 px-3 flex flex-col justify-center gap-1.5 transition-all ${isLose ? "opacity-35" : ""}`}>
       <div className="flex items-center gap-1.5">
         {hasPlayer && slot.jogador!.image ? (
-          <PlayerAvatar image={slot.jogador!.image} name={slot.jogador!.displayName} size={20} color={isWin ? "#22c55e" : "#9146ff"} />
+          <PlayerAvatar image={slot.jogador!.image} name={slot.jogador!.displayName} size={20} color={isWin ? "#22c55e" : "#22c55e"} />
         ) : (
           <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-black ${
             isWin ? "bg-green-500/30 text-green-300"
-            : hasPlayer ? "bg-[#9146ff]/30 text-purple-300"
+            : hasPlayer ? "bg-[#22c55e]/30 text-green-300"
             : "bg-white/8 text-gray-700"
           }`}>
             {hasPlayer ? slot.jogador!.displayName[0].toUpperCase() : "—"}
@@ -299,7 +299,7 @@ export default function AdminBatalhaPage() {
   if (status === "loading" || carregando || !isAdmin(session?.user?.twitchLogin)) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#9146ff] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -507,14 +507,14 @@ export default function AdminBatalhaPage() {
               <div className="flex flex-wrap gap-3 text-xs text-gray-500">
                 <span>{batalha.vagas} vagas</span>
                 {batalha.premiacao > 0 && <span>R$ {batalha.premiacao.toLocaleString("pt-BR")}</span>}
-                <span>Comando: <span className="text-purple-300 font-mono font-bold">{batalha.comando}</span></span>
+                <span>Comando: <span className="text-green-300 font-mono font-bold">{batalha.comando}</span></span>
               </div>
             </div>
 
-            <div className="rounded-2xl border border-purple-500/25 p-5" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
-              <p className="text-[11px] font-black text-purple-400 uppercase tracking-widest mb-2">⚡ Divulgue no Chat</p>
+            <div className="rounded-2xl border border-green-500/25 p-5" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
+              <p className="text-[11px] font-black text-green-400 uppercase tracking-widest mb-2">⚡ Divulgue no Chat</p>
               <div className="flex items-center gap-3">
-                <span className="font-mono font-black text-lg text-white px-4 py-2 rounded-xl border border-purple-500/35" style={{ background: "rgba(145,70,255,0.15)" }}>
+                <span className="font-mono font-black text-lg text-white px-4 py-2 rounded-xl border border-green-500/35" style={{ background: "rgba(34,197,94,0.15)" }}>
                   {batalha.comando}
                 </span>
                 <button

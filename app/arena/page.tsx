@@ -37,7 +37,7 @@ const FEATURES = [
     icon: "⚔️",
     title: "Batalha de Bônus",
     description: "Bracket com 8, 16 ou 32 jogadores. Quando aberto, use o comando divulgado no chat da Twitch para entrar.",
-    color: "#9146ff",
+    color: "#22c55e",
     href: "/arena/batalha",
     adminHref: "/admin/batalha",
     available: true,
@@ -118,7 +118,7 @@ export default function ArenaPage() {
       ? [{ icon: "🎯", label: "Palpites ao Vivo", sub: rodada!.status === "aberta" ? "Fase aberta — aposte agora!" : "Fase fechada para novos votos", href: "/arena/palpites", color: "#10b981" }]
       : []),
     ...(batalhaLive
-      ? [{ icon: "⚔️", label: batalha!.nome, sub: batalha!.status === "inscricao" ? "Inscrições abertas — entre pelo chat!" : "Batalha em andamento — acompanhe ao vivo!", href: "/arena/batalha", color: "#9146ff" }]
+      ? [{ icon: "⚔️", label: batalha!.nome, sub: batalha!.status === "inscricao" ? "Inscrições abertas — entre pelo chat!" : "Batalha em andamento — acompanhe ao vivo!", href: "/arena/batalha", color: "#22c55e" }]
       : []),
     ...(jackpotLive
       ? [{ icon: "🎰", label: jackpot!.nome, sub: "Jackpot em andamento — acompanhe ao vivo!", href: "/arena/jackpot", color: "#f59e0b" }]
@@ -131,7 +131,7 @@ export default function ArenaPage() {
   if (!loaded) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#9146ff]/40 border-t-[#9146ff] animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[#22c55e]/40 border-t-[#22c55e] animate-spin" />
       </div>
     );
   }
@@ -142,15 +142,15 @@ export default function ArenaPage() {
 <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-28">
 
         <div className="text-center mb-12 animate-in">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#9146ff]/35 bg-[#9146ff]/10 mb-5">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#9146ff] animate-pulse" />
-            <span className="text-xs text-purple-300 font-black uppercase tracking-widest">Interações ao Vivo</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#22c55e]/35 bg-[#22c55e]/10 mb-5">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />
+            <span className="text-xs text-green-300 font-black uppercase tracking-widest">Interações ao Vivo</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black tracking-tight mb-5 leading-none">
             <span className="text-white">Live </span>
             <span style={{
-              background: "linear-gradient(135deg, #9146ff 0%, #22c55e 50%, #22d3ee 100%)",
+              background: "linear-gradient(135deg, #22c55e 0%, #22c55e 50%, #4ade80 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}>Arena</span>

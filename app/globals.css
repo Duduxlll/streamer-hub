@@ -9,7 +9,7 @@
   --bg-dark: #040e09;
   --bg-card: #091a11;
   --bg-card2: #0a1f14;
-  --twitch-purple: #9146ff;
+  --twitch-purple: #22c55e;
 }
 
 @theme inline {
@@ -182,8 +182,8 @@ body {
 }
 
 @keyframes twitch-glow {
-  0%, 100% { box-shadow: 0 0 15px rgba(145,70,255,0.3); }
-  50% { box-shadow: 0 0 40px rgba(145,70,255,0.65), 0 0 80px rgba(145,70,255,0.2); }
+  0%, 100% { box-shadow: 0 0 15px rgba(34,197,94,0.3); }
+  50% { box-shadow: 0 0 40px rgba(34,197,94,0.65), 0 0 80px rgba(34,197,94,0.2); }
 }
 
 /* ── GLITCH TEXT ─────────────────────────────────────────── */
@@ -285,8 +285,8 @@ body {
 
 /* Botão Twitch roxo */
 .btn-twitch {
-  background: linear-gradient(135deg, #9146ff, #6d28d9);
-  border: 1px solid rgba(145,70,255,0.5);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border: 1px solid rgba(34,197,94,0.5);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -306,8 +306,8 @@ body {
 }
 
 .btn-twitch:hover {
-  background: linear-gradient(135deg, #a855f7, #9146ff);
-  box-shadow: 0 6px 40px rgba(145,70,255,0.6), 0 0 100px rgba(145,70,255,0.2);
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  box-shadow: 0 6px 40px rgba(34,197,94,0.6), 0 0 100px rgba(34,197,94,0.2);
   transform: translateY(-3px);
 }
 
@@ -406,10 +406,10 @@ body {
 }
 
 .icon-social-twitch:hover {
-  color: #c4b5fd;
-  background: rgba(145,70,255,0.15);
-  border-color: rgba(145,70,255,0.45);
-  box-shadow: 0 4px 18px rgba(145,70,255,0.3);
+  color: #86efac;
+  background: rgba(34,197,94,0.15);
+  border-color: rgba(34,197,94,0.45);
+  box-shadow: 0 4px 18px rgba(34,197,94,0.3);
   transform: translateY(-2px);
 }
 

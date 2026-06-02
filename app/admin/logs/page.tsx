@@ -9,7 +9,7 @@ const ACTION_META: Record<string, { icon: string; label: string; color: string }
   unban:          { icon: "✅", label: "Usuário desbanido",     color: "#4ade80" },
   suspend:        { icon: "⏸",  label: "Usuário suspenso",      color: "#fbbf24" },
   unsuspend:      { icon: "▶️",  label: "Suspensão levantada",  color: "#4ade80" },
-  config_livepix: { icon: "🎰", label: "Config LivePix salva",  color: "#c084fc" },
+  config_livepix: { icon: "🎰", label: "Config LivePix salva",  color: "#4ade80" },
   config_ggpix:   { icon: "💰", label: "Config GGPix salva",    color: "#ffba00" },
   gorjeta_abrir:  { icon: "💸", label: "Gorjeta aberta",        color: "#ffba00" },
   gorjeta_fechar: { icon: "🔒", label: "Gorjeta fechada",       color: "#9ca3af" },

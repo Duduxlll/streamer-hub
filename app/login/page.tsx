@@ -32,7 +32,7 @@ export default function LoginPage() {
   if (status === "loading" || status === "authenticated") {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#9146ff] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -42,11 +42,11 @@ export default function LoginPage() {
 
       <div className="w-full max-w-sm relative scale-in">
         <div className="card-dark rounded-2xl overflow-hidden border-[#16a34a]/20">
-          <div className="h-1 w-full bg-gradient-to-r from-[#9146ff] via-[#a855f7] to-[#9146ff]" />
+          <div className="h-1 w-full bg-gradient-to-r from-[#22c55e] via-[#4ade80] to-[#22c55e]" />
 
           <div className="p-8">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#9146ff] to-[#6d28d9] flex items-center justify-center mx-auto mb-4 shadow-xl shadow-purple-950/50">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center mx-auto mb-4 shadow-xl shadow-purple-950/50">
                 <TwitchIcon className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-2xl font-black text-white">Entrar na plataforma</h1>

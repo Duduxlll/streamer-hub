@@ -26,7 +26,7 @@ export default function HomePage() {
             animationDelay: `${i * 0.9}s`,
             width: i % 3 === 0 ? "3px" : "2px",
             height: i % 3 === 0 ? "3px" : "2px",
-            background: i % 2 === 0 ? "rgba(34,197,94,0.6)" : "rgba(145,70,255,0.35)",
+            background: i % 2 === 0 ? "rgba(34,197,94,0.6)" : "rgba(34,197,94,0.35)",
           }}
         />
       ))}
@@ -55,9 +55,9 @@ export default function HomePage() {
                 href="https://twitch.tv/stainzincs"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#9146ff]/15 border border-[#9146ff]/40 hover:bg-[#9146ff]/25 hover:border-[#9146ff]/70 transition-all shadow-lg shadow-purple-950/30"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#22c55e]/15 border border-[#22c55e]/40 hover:bg-[#22c55e]/25 hover:border-[#22c55e]/70 transition-all shadow-lg shadow-purple-950/30"
               >
-                <TwitchIcon className="w-5 h-5 text-[#9146ff]" />
+                <TwitchIcon className="w-5 h-5 text-[#22c55e]" />
               </a>
 
               {/* Logo JonBet — parceiro oficial, clicável */}
