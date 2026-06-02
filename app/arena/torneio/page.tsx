@@ -63,7 +63,7 @@ export default function TorneioPage() {
             <h1 className="text-2xl sm:text-4xl font-black">
               <span className="text-white">🏆 </span>
               <span style={{
-                background: "linear-gradient(135deg, #fff 0%, #a78bfa 60%, #818cf8 100%)",
+                background: "linear-gradient(135deg, #fff 0%, #4ade80 60%, #16a34a 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}>

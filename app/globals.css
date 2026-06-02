@@ -237,7 +237,7 @@ body {
 .gt-cyan {
   position: absolute; inset: 0;
   font-weight: 900;
-  color: rgba(0,200,255,0.9);
+  color: rgba(74,222,128,0.9);
   overflow: hidden;
   user-select: none;
   pointer-events: none;

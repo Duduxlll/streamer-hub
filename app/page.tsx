@@ -150,7 +150,7 @@ export default function HomePage() {
               {/* Headline */}
               <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-3">
                 A casa oficial do{" "}
-                <span style={{ background: "linear-gradient(135deg,#4ade80,#22c55e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>stainzincs</span>
+                <span className="text-white">stain</span><span className="gradient-text">zincs</span>
               </h2>
 
               {/* Texto */}

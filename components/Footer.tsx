@@ -19,20 +19,6 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 
-const overlayBase: React.CSSProperties = {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  fontWeight: 900,
-  overflow: "hidden",
-  userSelect: "none",
-  pointerEvents: "none",
-  whiteSpace: "nowrap",
-  animationFillMode: "both",
-};
-
 export default function Footer() {
   return (
     <footer
@@ -54,56 +40,9 @@ export default function Footer() {
               />
 
 
-              <span
-                style={{
-                  position: "relative",
-                  display: "inline-block",
-                  lineHeight: 1,
-                  fontWeight: 900,
-                  fontSize: "clamp(1.7rem, 3.5vw, 2.5rem)",
-                  animation: "glitch-body 3s 0s infinite linear",
-                }}
-              >
-                <span style={{ fontWeight: 900 }}>
-                  <span style={{ color: "#ffffff" }}>stain</span>
-                  <span
-                    style={{
-                      background: "linear-gradient(135deg, #16a34a 0%, #86efac 50%, #16a34a 100%)",
-                      backgroundSize: "200% auto",
-                      WebkitBackgroundClip: "text",
-                      WebkitTextFillColor: "transparent",
-                      backgroundClip: "text",
-                      animation: "shimmer 3.5s linear infinite",
-                      fontWeight: 900,
-                    }}
-                  >
-                    zincs
-                  </span>
-                </span>
-
-                <span
-                  aria-hidden
-                  style={{
-                    ...overlayBase,
-                    color: "rgba(0,200,255,0.9)",
-                    transform: "translateX(-4px)",
-                    animation: "glitch-overlay-a 3s 0s infinite linear",
-                  }}
-                >
-                  stainzincs
-                </span>
-
-                <span
-                  aria-hidden
-                  style={{
-                    ...overlayBase,
-                    color: "rgba(255,0,64,0.9)",
-                    transform: "translateX(4px)",
-                    animation: "glitch-overlay-b 3s 0s infinite linear",
-                  }}
-                >
-                  stainzincs
-                </span>
+              <span className="font-black leading-none" style={{ fontSize: "clamp(1.7rem, 3.5vw, 2.5rem)" }}>
+                <span style={{ color: "#ffffff" }}>stain</span>
+                <span className="gradient-text">zincs</span>
               </span>
 
               {/* x JonBet — parceiro oficial (alinhado com a base do wordmark) */}
