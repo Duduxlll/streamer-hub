@@ -257,6 +257,7 @@ export default function AdminBatalhaPage() {
   const { confirm, ConfirmModal } = useConfirm();
   const [batalha,      setBatalha]      = useState<Batalha | null>(null);
   const [loading,      setLoading]      = useState(false);
+  const [carregando,   setCarregando]   = useState(true);
   const [verChave,     setVerChave]     = useState(false);
   const [nome,         setNome]         = useState("");
 
@@ -281,6 +282,7 @@ export default function AdminBatalhaPage() {
       const res = await fetch("/api/batalha", { cache: "no-store" });
       setBatalha(await res.json());
     } catch { /* ignora */ }
+    finally { setCarregando(false); }
   }, []);
 
   useEffect(() => {
@@ -289,7 +291,7 @@ export default function AdminBatalhaPage() {
     return () => clearInterval(id);
   }, [fetch_]);
 
-  if (status === "loading" || !isAdmin(session?.user?.twitchLogin)) {
+  if (status === "loading" || carregando || !isAdmin(session?.user?.twitchLogin)) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-[#9146ff] border-t-transparent animate-spin" />

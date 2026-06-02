@@ -153,6 +153,7 @@ export default function AdminJackpotPage() {
 
   const [jackpot, setJackpot] = useState<Jackpot | null>(null);
   const [loading, setLoading] = useState(false);
+  const [carregando, setCarregando] = useState(true);
   const [waitingToSpin, setWaitingToSpin] = useState(true);
   const [spinning,      setSpinning]      = useState(false);
   const [livepixOk,     setLivepixOk]     = useState<boolean | null>(null);
@@ -193,6 +194,7 @@ export default function AdminJackpotPage() {
       const res = await fetch("/api/jackpot", { cache: "no-store" });
       setJackpot(await res.json());
     } catch { /* ignora */ }
+    finally { setCarregando(false); }
   }, []);
 
   useEffect(() => {
@@ -201,7 +203,7 @@ export default function AdminJackpotPage() {
     return () => clearInterval(iv);
   }, [fetchJackpot]);
 
-  if (status === "loading" || !isAdmin(session?.user?.twitchLogin)) {
+  if (status === "loading" || carregando || !isAdmin(session?.user?.twitchLogin)) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-[#f59e0b] border-t-transparent animate-spin" />

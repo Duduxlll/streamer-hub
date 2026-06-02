@@ -63,6 +63,7 @@ export default function AdminTorneioPage() {
   const { confirm, ConfirmModal } = useConfirm();
   const [torneio, setTorneio] = useState<Torneio | null>(null);
   const [loading, setLoading] = useState(false);
+  const [carregando, setCarregando] = useState(true);
   const [novoNome, setNovoNome] = useState("");
   const [novosTimes, setNovosTimes] = useState(["", ""]);
   const [proximosTimes, setProximosTimes] = useState(["", ""]);
@@ -78,6 +79,7 @@ export default function AdminTorneioPage() {
       const res = await fetch("/api/torneio", { cache: "no-store" });
       setTorneio(await res.json());
     } catch { /* ignora */ }
+    finally { setCarregando(false); }
   }, []);
 
   useEffect(() => {
@@ -86,7 +88,7 @@ export default function AdminTorneioPage() {
     return () => clearInterval(id);
   }, [fetchTorneio]);
 
-  if (status === "loading" || !isAdmin(session?.user?.twitchLogin)) {
+  if (status === "loading" || carregando || !isAdmin(session?.user?.twitchLogin)) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-[#9146ff] border-t-transparent animate-spin" />

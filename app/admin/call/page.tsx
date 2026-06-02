@@ -134,6 +134,7 @@ export default function AdminCallPage() {
   const router = useRouter();
   const [call, setCall] = useState<CallState | null>(null);
   const [busy, setBusy] = useState(false);
+  const [carregando, setCarregando] = useState(true);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [msg, setMsg] = useState<{ text: string; type: "ok" | "err" } | null>(null);
   const prevCount = useRef(0);
@@ -152,6 +153,7 @@ export default function AdminCallPage() {
         prevCount.current = data.entries.length;
       }
     } catch { /* ignora */ }
+    finally { setCarregando(false); }
   }, []);
 
   useEffect(() => { fetchCall(); }, [fetchCall]);
@@ -196,7 +198,7 @@ export default function AdminCallPage() {
     finally { setRemovingId(null); }
   }
 
-  if (status === "loading" || !isAdmin(session?.user?.twitchLogin)) {
+  if (status === "loading" || carregando || !isAdmin(session?.user?.twitchLogin)) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: `${C}40`, borderTopColor: C }} />
