@@ -458,6 +458,74 @@ export async function limparHistorico(): Promise<void> {
   await saveHistorico([]);
 }
 
+// ─── Fila de Pagamentos ───────────────────────────────────────────────────────
+
+export interface PagamentoPendente {
+  id: string;
+  username: string;
+  displayName: string;
+  pixKey: string;
+  tipoChave: TipoChavePix;
+  valor: number;
+  status: "pendente" | "enviado" | "falhou";
+  tipo: "sorteio" | "manual";
+  criadoEm: number;
+  atualizadoEm?: number;
+  erro?: string;
+}
+
+const KEY_PAGAMENTOS = "gorjeta:pagamentos:v1";
+
+export async function getPagamentos(): Promise<PagamentoPendente[]> {
+  try {
+    const raw = await dbGet(KEY_PAGAMENTOS);
+    return raw ? (JSON.parse(raw) as PagamentoPendente[]) : [];
+  } catch { return []; }
+}
+
+export async function adicionarPagamentos(
+  itens: Omit<PagamentoPendente, "id" | "criadoEm" | "status">[],
+): Promise<PagamentoPendente[]> {
+  const existing = await getPagamentos();
+  const now = Date.now();
+  const novos: PagamentoPendente[] = itens.map((p, i) => ({
+    ...p,
+    id: `${now}${i}-${Math.random().toString(36).slice(2, 6)}`,
+    criadoEm: now,
+    status: "pendente" as const,
+  }));
+  await dbSet(KEY_PAGAMENTOS, JSON.stringify([...novos, ...existing]));
+  return novos;
+}
+
+export async function atualizarStatusPagamento(
+  id: string,
+  status: "enviado" | "falhou",
+  erro?: string,
+): Promise<boolean> {
+  const list = await getPagamentos();
+  const idx = list.findIndex(p => p.id === id);
+  if (idx < 0) return false;
+  list[idx].status = status;
+  list[idx].atualizadoEm = Date.now();
+  if (erro) list[idx].erro = erro;
+  await dbSet(KEY_PAGAMENTOS, JSON.stringify(list));
+  return true;
+}
+
+export async function removerPagamento(id: string): Promise<boolean> {
+  const list = await getPagamentos();
+  const filtered = list.filter(p => p.id !== id);
+  if (filtered.length === list.length) return false;
+  await dbSet(KEY_PAGAMENTOS, JSON.stringify(filtered));
+  return true;
+}
+
+export async function limparPagamentosFinalizados(): Promise<void> {
+  const list = await getPagamentos();
+  await dbSet(KEY_PAGAMENTOS, JSON.stringify(list.filter(p => p.status === "pendente")));
+}
+
 // ─── Validação & Normalização ──────────────────────────────────────────────
 
 function validarCpf(cpf: string): boolean {

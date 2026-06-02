@@ -272,9 +272,6 @@ export default function AdminPalpitesPage() {
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-5">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <Link href="/arena" className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-400 transition-colors mb-3">
-              ← Voltar para Arena
-            </Link>
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl"
                 style={{ background: "rgba(255,186,0,0.12)", border: "1px solid rgba(255,186,0,0.25)" }}>

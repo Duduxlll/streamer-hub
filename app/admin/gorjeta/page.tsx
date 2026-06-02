@@ -166,10 +166,12 @@ function ScreenshotModal({ id, onClose }: { id: string; onClose: () => void }) {
 
 // ─── Modal de sorteio animado ─────────────────────────────────────────────
 
-function SortearModal({ participantes, vencedores, onPagar, onClose }: {
+function SortearModal({ participantes, vencedores, onPagar, onPagarFila, ggpixOk, onClose }: {
   participantes: ParticipanteSessao[];
   vencedores: ParticipanteSessao[];
   onPagar: () => Promise<void>;
+  onPagarFila: () => Promise<void>;
+  ggpixOk: boolean;
   onClose: () => void;
 }) {
   const [spinDisplay, setSpinDisplay] = useState<ParticipanteSessao>(participantes[0] ?? vencedores[0]);
@@ -291,13 +293,26 @@ function SortearModal({ participantes, vencedores, onPagar, onClose }: {
         {/* Ações */}
         <div className="px-5 pb-6 space-y-2 border-t border-white/5 pt-4">
           {done && (
-            <button
-              disabled={paying}
-              onClick={async () => { setPaying(true); await onPagar(); setPaying(false); }}
-              className="w-full py-3.5 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:scale-100"
-              style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", boxShadow: "0 4px 20px rgba(255,186,0,0.3)" }}>
-              {paying ? "⏳ Enviando PIX..." : "💸 Enviar PIX para os vencedores"}
-            </button>
+            <>
+              {/* PIX Automático via GGPix — desabilitado se não configurado */}
+              <button
+                disabled={paying || !ggpixOk}
+                onClick={async () => { setPaying(true); await onPagar(); setPaying(false); }}
+                title={!ggpixOk ? "Configure o GGPix para usar este recurso" : ""}
+                className="w-full py-3.5 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:scale-100"
+                style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", boxShadow: ggpixOk ? "0 4px 20px rgba(255,186,0,0.3)" : "none" }}>
+                {paying ? "⏳ Enviando PIX..." : "⚡ Enviar PIX Automático"}
+              </button>
+
+              {/* Enviar para a fila de pagamentos */}
+              <button
+                disabled={paying}
+                onClick={async () => { setPaying(true); await onPagarFila(); setPaying(false); }}
+                className="w-full py-3 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100"
+                style={{ background: "rgba(255,186,0,0.08)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.3)" }}>
+                {paying ? "..." : "💳 Enviar para Pagamentos"}
+              </button>
+            </>
           )}
           <button onClick={onClose}
             className="w-full py-2.5 rounded-2xl font-black text-xs transition-all hover:bg-white/5"
@@ -494,6 +509,7 @@ export default function AdminGorjetaPage() {
   const [screenshotModalId, setScreenshotModalId] = useState<string | null>(null);
   const [showSortearModal, setShowSortearModal] = useState(false);
   const [sortearVencedores, setSortearVencedores] = useState<ParticipanteSessao[]>([]);
+  const [ggpixOk, setGgpixOk] = useState(false);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ text: string; type: "ok" | "err" } | null>(null);
   const [confirmModal, setConfirmModal] = useState<{ title: string; desc: string; icon: string; confirmLabel?: string; onConfirm: () => void } | null>(null);
@@ -504,11 +520,16 @@ export default function AdminGorjetaPage() {
   }, [status, session, router]);
 
   const fetchAll = useCallback(async () => {
-    const [gRes, cRes] = await Promise.all([fetch("/api/gorjeta"), fetch("/api/gorjeta?tipo=cadastros")]);
+    const [gRes, cRes, cfgRes] = await Promise.all([
+      fetch("/api/gorjeta"),
+      fetch("/api/gorjeta?tipo=cadastros"),
+      fetch("/api/config"),
+    ]);
     const gData = await gRes.json(); const cData = await cRes.json();
     setSessao(gData.sessao ?? null);
     setHistorico(gData.historico ?? []);
     setCadastros(cData.cadastros ?? []);
+    if (cfgRes.ok) { const cfg = await cfgRes.json(); setGgpixOk(cfg.ggpix?.ok ?? false); }
     setLoading(false);
   }, []);
 
@@ -581,6 +602,14 @@ export default function AdminGorjetaPage() {
     }
   }
 
+  async function pagarFila(): Promise<void> {
+    const r = await apiCall({ action: "pagar-fila" });
+    if (r) {
+      setShowSortearModal(false);
+      flash("Vencedores adicionados à fila de pagamentos! 💳", "ok");
+    }
+  }
+
   async function enviarManual() {
     if (!manualSel) return;
     const valor = parseFloat(manualValor.replace(",", "."));
@@ -588,6 +617,17 @@ export default function AdminGorjetaPage() {
     const r = await apiCall({ action: "enviar-manual", username: manualSel.username, valor });
     if (r) {
       flash(r.result?.status === "enviado" ? `PIX enviado para ${manualSel.displayName}! ✓` : `Falha ao enviar para ${manualSel.displayName}`, r.result?.status === "enviado" ? "ok" : "err");
+      setManualSel(null); setManualValor("");
+    }
+  }
+
+  async function enviarManualFila() {
+    if (!manualSel) return;
+    const valor = parseFloat(manualValor.replace(",", "."));
+    if (isNaN(valor) || valor <= 0) { flash("Valor inválido", "err"); return; }
+    const r = await apiCall({ action: "enviar-manual-fila", username: manualSel.username, valor });
+    if (r) {
+      flash(`${manualSel.displayName} adicionado à fila de pagamentos! 💳`, "ok");
       setManualSel(null); setManualValor("");
     }
   }
@@ -625,6 +665,8 @@ export default function AdminGorjetaPage() {
           participantes={sessao.participantes}
           vencedores={sortearVencedores}
           onPagar={pagar}
+          onPagarFila={pagarFila}
+          ggpixOk={ggpixOk}
           onClose={() => setShowSortearModal(false)} />
       )}
 
@@ -840,17 +882,29 @@ export default function AdminGorjetaPage() {
                             <p className="text-xs font-black text-white flex-1">{manualSel.displayName}</p>
                             <button onClick={() => setManualSel(null)} className="text-gray-600 hover:text-gray-400 text-sm">✕</button>
                           </div>
-                          <div className="px-4 py-3 flex gap-2 items-center">
-                            <span className="text-sm font-black text-[#ffba00]">R$</span>
-                            <input type="text" inputMode="decimal" placeholder="0,00" value={manualValor}
-                              onChange={e => setManualValor(e.target.value)}
-                              className="flex-1 px-3 py-2 rounded-xl text-sm font-bold text-white placeholder-gray-600 outline-none"
-                              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,186,0,0.25)" }} />
-                            <button onClick={enviarManual} disabled={busy || !manualValor}
-                              className="px-4 py-2 rounded-xl text-xs font-black text-black disabled:opacity-50 transition-all hover:scale-[1.02]"
-                              style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
-                              {busy ? "..." : "Enviar PIX"}
-                            </button>
+                          <div className="px-4 py-3 space-y-2">
+                            <div className="flex gap-2 items-center">
+                              <span className="text-sm font-black text-[#ffba00]">R$</span>
+                              <input type="text" inputMode="decimal" placeholder="0,00" value={manualValor}
+                                onChange={e => setManualValor(e.target.value)}
+                                className="flex-1 px-3 py-2 rounded-xl text-sm font-bold text-white placeholder-gray-600 outline-none"
+                                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,186,0,0.25)" }} />
+                            </div>
+                            <div className="flex gap-2">
+                              {/* Automático via GGPix */}
+                              <button onClick={enviarManual} disabled={busy || !manualValor || !ggpixOk}
+                                title={!ggpixOk ? "Configure o GGPix para usar este recurso" : ""}
+                                className="flex-1 py-2 rounded-xl text-xs font-black text-black disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-[1.02]"
+                                style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
+                                {busy ? "..." : "⚡ Auto"}
+                              </button>
+                              {/* Para fila de pagamentos */}
+                              <button onClick={enviarManualFila} disabled={busy || !manualValor}
+                                className="flex-1 py-2 rounded-xl text-xs font-black disabled:opacity-50 transition-all hover:scale-[1.02]"
+                                style={{ background: "rgba(255,186,0,0.08)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.3)" }}>
+                                {busy ? "..." : "💳 Pagamentos"}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       )}

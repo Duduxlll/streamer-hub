@@ -369,9 +369,6 @@ export default function AdminBatalhaPage() {
           batalha.status === "inscricao" ? "max-w-xl mx-auto" : ""
         }`}>
           <div>
-            <Link href="/arena" className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-300 transition-colors mb-2">
-              ← Voltar para Arena
-            </Link>
             <div>
               <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
                 style={{ background: "rgba(255,186,0,0.15)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.3)" }}>

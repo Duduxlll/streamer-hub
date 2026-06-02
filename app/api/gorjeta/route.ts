@@ -6,6 +6,7 @@ import {
   getScreenshot, getSessao, abrirSessao, entrarSessao, sortearGorjeta,
   salvarPagamentos, registrarManual, adicionarParticipanteTeste, fecharSessaoSemPagar, limparSessao,
   getHistoricoGorjeta, limparHistorico, mascarCpf, normalizarChave,
+  getPagamentos, adicionarPagamentos, atualizarStatusPagamento, removerPagamento, limparPagamentosFinalizados,
   type ResultadoPagamento,
 } from "@/lib/gorjeta-store";
 import { enviarPix } from "@/lib/ggpix";
@@ -35,6 +36,11 @@ export async function GET(req: NextRequest) {
   if (tipo === "cadastros" && adminUser) {
     const cadastros = await getCadastros();
     return NextResponse.json({ cadastros }, { headers: NO_CACHE });
+  }
+
+  if (tipo === "pagamentos" && adminUser) {
+    const pagamentos = await getPagamentos();
+    return NextResponse.json({ pagamentos }, { headers: NO_CACHE });
   }
 
   const [sessaoRaw, historico] = await Promise.all([getSessao(), getHistoricoGorjeta()]);
@@ -238,6 +244,107 @@ export async function POST(req: NextRequest) {
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     await limparHistorico();
+    return NextResponse.json({ ok: true }, { headers: NO_CACHE });
+  }
+
+  // ── Fila de pagamentos ────────────────────────────────────────────────────
+
+  if (action === "pagar-fila") {
+    // Adiciona vencedores à fila sem enviar via API, e reseta a sessão
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const sessao = await getSessao();
+    if (!sessao || sessao.status !== "sorteada") return NextResponse.json({ error: "Sorteie primeiro" }, { status: 400 });
+    if (sessao.vencedores.length === 0) return NextResponse.json({ error: "Sem vencedores" }, { status: 400 });
+
+    await adicionarPagamentos(sessao.vencedores.map(v => ({
+      username:    v.username,
+      displayName: v.displayName,
+      pixKey:      v.cpf,
+      tipoChave:   v.tipoChave ?? "cpf",
+      valor:       sessao.valorUnitario,
+      tipo:        "sorteio" as const,
+    })));
+
+    // Reseta a sessão para "aberta" sem registrar nas transacoes
+    const zerados: ResultadoPagamento[] = [];
+    const sessaoFinal = await salvarPagamentos(zerados, sessao.valorUnitario);
+    return NextResponse.json({ ok: true, sessao: sessaoFinal }, { headers: NO_CACHE });
+  }
+
+  if (action === "enviar-manual-fila") {
+    // Adiciona um pagamento manual à fila sem chamar a API
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const { username, valor } = body;
+    if (!username || !valor) return NextResponse.json({ error: "username e valor obrigatórios" }, { status: 400 });
+    const valorNum = Number(valor);
+    if (isNaN(valorNum) || valorNum <= 0) return NextResponse.json({ error: "Valor inválido" }, { status: 400 });
+
+    const sessao = await getSessao();
+    if (!sessao || sessao.status === "fechada") return NextResponse.json({ error: "Sem sessão ativa" }, { status: 400 });
+
+    const participante = sessao.participantes.find(p => p.username === String(username).toLowerCase());
+    if (!participante) return NextResponse.json({ error: "Participante não encontrado" }, { status: 404 });
+
+    if (valorNum > sessao.saldoRestante) {
+      return NextResponse.json({ error: `Saldo insuficiente (disponível: R$ ${sessao.saldoRestante.toFixed(2)})` }, { status: 400 });
+    }
+
+    await adicionarPagamentos([{
+      username:    participante.username,
+      displayName: participante.displayName,
+      pixKey:      participante.cpf,
+      tipoChave:   participante.tipoChave ?? "cpf",
+      valor:       valorNum,
+      tipo:        "manual" as const,
+    }]);
+
+    return NextResponse.json({ ok: true }, { headers: NO_CACHE });
+  }
+
+  if (action === "fila-enviar") {
+    // Envia um pagamento pendente via GGPix e atualiza o status
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const { id } = body;
+    if (!id) return NextResponse.json({ error: "id obrigatório" }, { status: 400 });
+
+    const lista = await getPagamentos();
+    const pag = lista.find(p => p.id === id);
+    if (!pag) return NextResponse.json({ error: "Pagamento não encontrado" }, { status: 404 });
+    if (pag.status === "enviado") return NextResponse.json({ error: "Já enviado" }, { status: 400 });
+
+    const externalId = gerarExternalId();
+    try {
+      await enviarPix(pag.pixKey, pag.tipoChave, pag.valor, externalId);
+      await atualizarStatusPagamento(id, "enviado");
+      return NextResponse.json({ ok: true, status: "enviado" }, { headers: NO_CACHE });
+    } catch (err) {
+      const erroMsg = err instanceof Error ? err.message : "Erro desconhecido";
+      await atualizarStatusPagamento(id, "falhou", erroMsg);
+      return NextResponse.json({ ok: false, status: "falhou", erro: erroMsg }, { headers: NO_CACHE });
+    }
+  }
+
+  if (action === "fila-marcar-pago") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const ok = await atualizarStatusPagamento(String(body.id ?? ""), "enviado");
+    return NextResponse.json({ ok }, { headers: NO_CACHE });
+  }
+
+  if (action === "fila-remover") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const ok = await removerPagamento(String(body.id ?? ""));
+    return NextResponse.json({ ok }, { headers: NO_CACHE });
+  }
+
+  if (action === "fila-limpar") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    await limparPagamentosFinalizados();
     return NextResponse.json({ ok: true }, { headers: NO_CACHE });
   }
 

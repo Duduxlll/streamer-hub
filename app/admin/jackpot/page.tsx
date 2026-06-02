@@ -229,7 +229,6 @@ export default function AdminJackpotPage() {
         {ConfirmModal}
         <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24">
           <div className="flex items-center gap-3 mb-6">
-            <Link href="/arena" className="inline-flex items-center gap-1 text-xs text-gray-600 hover:text-gray-300 transition-colors">← Voltar para Arena</Link>
             <Link href="/admin/jackpot/historico" className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
           </div>
           <div className="mb-5">
@@ -289,7 +288,6 @@ export default function AdminJackpotPage() {
         {ConfirmModal}
         <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-4">
           <div className="flex items-center gap-3 mb-2">
-            <Link href="/arena" className="text-xs text-gray-600 hover:text-gray-300 transition-colors">← Arena</Link>
             <Link href="/admin/jackpot/historico" className="text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
           </div>
           <div className="rounded-2xl border border-[#f59e0b]/40 p-8 text-center" style={{ background: "rgba(245,158,11,0.06)" }}>

@@ -220,8 +220,6 @@ export default function AdminCallPage() {
 
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-gray-700">
-          <Link href="/arena" className="hover:text-gray-400 transition-colors">← Arena</Link>
-          <span>/</span>
           <span className="text-gray-500">Admin · Call de Slot</span>
         </div>
 
