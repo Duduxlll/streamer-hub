@@ -149,12 +149,6 @@ export default function PalpitesPage() {
   const [historico, setHistorico] = useState<ResultadoRodada[]>([]);
   const [carregando, setCarregando] = useState(true);
 
-  useEffect(() => {
-    if (status === "authenticated" && admin) {
-      router.replace("/admin/palpites");
-    }
-  }, [status, admin, router]);
-
   const fetchDados = useCallback(async () => {
     try {
       const [rRes, hRes] = await Promise.all([
@@ -174,7 +168,7 @@ export default function PalpitesPage() {
     return () => clearInterval(id);
   }, [fetchDados]);
 
-  if (carregando || status === "loading" || (status === "authenticated" && admin)) {
+  if (carregando || status === "loading") {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-[#10b981] border-t-transparent animate-spin" />

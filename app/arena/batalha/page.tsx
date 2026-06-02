@@ -163,12 +163,6 @@ export default function ArenaTransferePage() {
   const [batalha, setBatalha] = useState<Batalha | null>(null);
   const [carregando, setCarregando] = useState(true);
 
-  useEffect(() => {
-    if (status === "authenticated" && isAdmin(session?.user?.twitchLogin)) {
-      router.replace("/admin/batalha");
-    }
-  }, [status, session, router]);
-
   const fetch_ = useCallback(async () => {
     try {
       const res = await fetch("/api/batalha", { cache: "no-store" });
@@ -182,7 +176,7 @@ export default function ArenaTransferePage() {
     return () => clearInterval(id);
   }, [fetch_]);
 
-  if (carregando || status === "loading" || (status === "authenticated" && isAdmin(session?.user?.twitchLogin))) {
+  if (carregando || status === "loading") {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />

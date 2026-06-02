@@ -56,12 +56,6 @@ export default function ArenaJackpotPage() {
   const [jackpot, setJackpot] = useState<Jackpot | null>(null);
   const [carregando, setCarregando] = useState(true);
 
-  useEffect(() => {
-    if (status === "authenticated" && isAdmin(session?.user?.twitchLogin)) {
-      router.replace("/admin/jackpot");
-    }
-  }, [status, session, router]);
-
   const fetch_ = useCallback(async () => {
     try {
       const res = await fetch("/api/jackpot", { cache: "no-store" });
@@ -75,7 +69,7 @@ export default function ArenaJackpotPage() {
     return () => clearInterval(iv);
   }, [fetch_]);
 
-  if (carregando || status === "loading" || (status === "authenticated" && isAdmin(session?.user?.twitchLogin))) {
+  if (carregando || status === "loading") {
     return <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
       <div className="w-8 h-8 rounded-full border-2 border-[#f59e0b] border-t-transparent animate-spin" />
     </div>;

@@ -24,12 +24,6 @@ export default function TorneioPage() {
   const [torneio, setTorneio] = useState<Torneio | null>(null);
   const [carregando, setCarregando] = useState(true);
 
-  useEffect(() => {
-    if (status === "authenticated" && isAdmin(session?.user?.twitchLogin)) {
-      router.replace("/admin/torneio");
-    }
-  }, [status, session, router]);
-
   const fetchTorneio = useCallback(async () => {
     try {
       const res = await fetch("/api/torneio", { cache: "no-store" });
@@ -43,7 +37,7 @@ export default function TorneioPage() {
     return () => clearInterval(id);
   }, [fetchTorneio]);
 
-  if (carregando || status === "loading" || (status === "authenticated" && isAdmin(session?.user?.twitchLogin))) {
+  if (carregando || status === "loading") {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />

@@ -167,12 +167,6 @@ export default function SorteioListPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === "authenticated" && admin) {
-      router.replace("/admin/sorteio");
-    }
-  }, [status, admin, router]);
-
-  useEffect(() => {
     const fetchData = async () => {
       const res = await fetch("/api/sorteio");
       const data = await res.json();
