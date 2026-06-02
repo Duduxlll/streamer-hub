@@ -516,7 +516,7 @@ export default function AdminJackpotPage() {
     <div className="relative min-h-[calc(100vh-4rem)]">
       <ToastContainer toasts={toasts} dismiss={dismiss} />
       {ConfirmModal}
-      <div className="page-enter max-w-5xl mx-auto px-4 sm:px-6 pt-8 pb-24 space-y-4">
+      <div className="page-enter max-w-[1700px] mx-auto px-4 sm:px-6 pt-8 pb-24 space-y-4">
 
         {/* ── Header ── */}
         <div className="flex items-start gap-3 flex-wrap">
@@ -553,6 +553,12 @@ export default function AdminJackpotPage() {
           <div className="h-full rounded-full transition-all duration-700"
             style={{ width: `${progPct}%`, background: "linear-gradient(90deg,#f59e0b,#fbbf24)" }} />
         </div>
+
+        {/* ── Layout: Aguardando (esq) · Roleta (centro) · Placar (dir) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[290px_minmax(0,1fr)_290px] gap-4 items-start">
+
+        {/* ════ COLUNA CENTRAL — Roleta + Jogando Agora ════ */}
+        <div className="order-1 lg:order-2 min-w-0 space-y-4">
 
         {/* ── Roleta central ── */}
         <div
@@ -692,10 +698,10 @@ export default function AdminJackpotPage() {
             </div>
           </div>
         )}
+        </div>{/* ════ fim COLUNA CENTRAL ════ */}
 
-        {/* ── Aguardando (esquerda) + Placar (direita) ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
+        {/* ════ COLUNA ESQUERDA — Aguardando ════ */}
+        <div className="order-2 lg:order-1 rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">
                 ⏳ Aguardando ({restantes})
@@ -786,8 +792,10 @@ export default function AdminJackpotPage() {
                 })}
               {restantes === 0 && <p className="text-xs text-gray-700 text-center py-3">Todos jogaram!</p>}
             </div>
-          </div>
-          <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
+        </div>{/* ════ fim COLUNA ESQUERDA ════ */}
+
+        {/* ════ COLUNA DIREITA — Placar ao Vivo ════ */}
+        <div className="order-3 rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">🏆 Placar ao Vivo</p>
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-500/10 text-green-400">{sorted.length}</span>
