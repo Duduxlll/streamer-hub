@@ -53,19 +53,24 @@ function CopyBtn({ text }: { text: string }) {
   );
 }
 
-const BET_SEARCH = "https://www.betdasorte.bet.br/casino/rng/filters?q=";
-
 function FollowBtn({ jogo }: { jogo: string }) {
-  const url = BET_SEARCH + encodeURIComponent(jogo);
+  const [copied, setCopied] = useState(false);
+
+  async function copiar() {
+    try { await navigator.clipboard.writeText(jogo); } catch { /* clipboard pode falhar em contextos sem permissão */ }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      title="Seguir Call — abrir na Bet da Sorte"
+    <button
+      onClick={copiar}
+      title="Copiar o nome do jogo"
       className="group flex items-center gap-1.5 px-2.5 h-7 rounded-lg font-black text-[10px] uppercase tracking-wide transition-all duration-200 hover:scale-105 active:scale-95 flex-shrink-0"
       style={{
-        background: "linear-gradient(135deg, rgba(34,197,94,0.18), rgba(16,185,129,0.12))",
+        background: copied
+          ? "linear-gradient(135deg, rgba(34,197,94,0.3), rgba(16,185,129,0.2))"
+          : "linear-gradient(135deg, rgba(34,197,94,0.18), rgba(16,185,129,0.12))",
         border: "1px solid rgba(34,197,94,0.35)",
         color: "#4ade80",
         boxShadow: "0 0 0 rgba(34,197,94,0)",
@@ -74,12 +79,18 @@ function FollowBtn({ jogo }: { jogo: string }) {
       onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 0 14px rgba(34,197,94,0.35)")}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 0 0 rgba(34,197,94,0)")}
     >
-      <svg className="w-3 h-3 flex-shrink-0 transition-transform duration-200 group-hover:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M11 3a1 1 0 100 2h2.586l-6.293 6.293a1 1 0 101.414 1.414L15 6.414V9a1 1 0 102 0V4a1 1 0 00-1-1h-5z" />
-        <path d="M5 5a2 2 0 00-2 2v8a2 2 0 002 2h8a2 2 0 002-2v-3a1 1 0 10-2 0v3H5V7h3a1 1 0 000-2H5z" />
-      </svg>
-      Seguir
-    </a>
+      {copied ? (
+        <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+        </svg>
+      ) : (
+        <svg className="w-3 h-3 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M7 3.5A1.5 1.5 0 018.5 2h3.879a1.5 1.5 0 011.06.44l3.122 3.12A1.5 1.5 0 0117 6.622V12.5a1.5 1.5 0 01-1.5 1.5h-1v-3.379a3 3 0 00-.879-2.121L10.5 5.379A3 3 0 008.379 4.5H7v-1z" />
+          <path d="M4.5 6A1.5 1.5 0 003 7.5v9A1.5 1.5 0 004.5 18h7a1.5 1.5 0 001.5-1.5v-5.879a1.5 1.5 0 00-.44-1.06L9.44 6.439A1.5 1.5 0 008.378 6H4.5z" />
+        </svg>
+      )}
+      {copied ? "Copiado!" : "Copiar"}
+    </button>
   );
 }
 
