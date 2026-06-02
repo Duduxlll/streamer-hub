@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import type { LogEntry } from "@/lib/security-log";
 
 const ACTION_META: Record<string, { icon: string; label: string; color: string }> = {
-  admin_login:    { icon: "🔑", label: "Login admin",          color: "#60a5fa" },
+  admin_login:    { icon: "🔑", label: "Login admin",          color: "#4ade80" },
   ban:            { icon: "🚫", label: "Usuário banido",        color: "#f87171" },
   unban:          { icon: "✅", label: "Usuário desbanido",     color: "#4ade80" },
   suspend:        { icon: "⏸",  label: "Usuário suspenso",      color: "#fbbf24" },

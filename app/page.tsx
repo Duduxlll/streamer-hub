@@ -14,7 +14,7 @@ export default function HomePage() {
   return (
     <div className="relative overflow-hidden">
 
-      <div className="orb w-[520px] h-[520px] bg-blue-900/25 -top-40 -left-32" style={{ animationDelay: "0s" }} />
+      <div className="orb w-[520px] h-[520px] bg-green-900/25 -top-40 -left-32" style={{ animationDelay: "0s" }} />
 
       {[...Array(10)].map((_, i) => (
         <div
@@ -26,7 +26,7 @@ export default function HomePage() {
             animationDelay: `${i * 0.9}s`,
             width: i % 3 === 0 ? "3px" : "2px",
             height: i % 3 === 0 ? "3px" : "2px",
-            background: i % 2 === 0 ? "rgba(37,99,235,0.6)" : "rgba(145,70,255,0.35)",
+            background: i % 2 === 0 ? "rgba(34,197,94,0.6)" : "rgba(145,70,255,0.35)",
           }}
         />
       ))}
@@ -36,8 +36,8 @@ export default function HomePage() {
 
           <div className="flex-shrink-0 flex flex-col items-center gap-0 animate-in animate-in-delay-1">
             <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#1d4ed8]/20 to-transparent blur-3xl scale-125 pointer-events-none" />
-              <div className="glow-card w-52 h-52 lg:w-64 lg:h-64 rounded-full border-2 border-[#1d4ed8]/40 overflow-hidden relative">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#16a34a]/20 to-transparent blur-3xl scale-125 pointer-events-none" />
+              <div className="glow-card w-52 h-52 lg:w-64 lg:h-64 rounded-full border-2 border-[#16a34a]/40 overflow-hidden relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="https://static-cdn.jtvnw.net/jtv_user_pictures/8c7083c8-3b8e-4f5e-abe2-d681f5b6df8b-profile_image-300x300.png"
@@ -76,9 +76,9 @@ export default function HomePage() {
           </div>
 
           <div className="text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#1d4ed8]/25 bg-[#1d4ed8]/8 mb-5 animate-in animate-in-delay-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#3b82f6] animate-pulse" />
-              <span className="text-xs text-[#93c5fd] font-semibold uppercase tracking-widest">Streamer Oficial</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#16a34a]/25 bg-[#16a34a]/8 mb-5 animate-in animate-in-delay-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />
+              <span className="text-xs text-[#86efac] font-semibold uppercase tracking-widest">Streamer Oficial</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-7xl font-black tracking-tight mb-3 animate-in animate-in-delay-2">

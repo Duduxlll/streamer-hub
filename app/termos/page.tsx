@@ -17,12 +17,12 @@ export default function TermosPage() {
         </div>
         <div className="mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4"
-            style={{ background: "rgba(29,78,216,0.15)", color: "#93c5fd", border: "1px solid rgba(29,78,216,0.3)" }}>
+            style={{ background: "rgba(22,163,74,0.15)", color: "#86efac", border: "1px solid rgba(22,163,74,0.3)" }}>
             📄 Documento Legal
           </div>
           <h1 className="text-4xl font-black mb-3">
             <span style={{
-              background: "linear-gradient(135deg, #93c5fd, #3b82f6)",
+              background: "linear-gradient(135deg, #86efac, #22c55e)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}>
@@ -64,10 +64,10 @@ export default function TermosPage() {
             </p>
             <ul className="space-y-2 mt-3 ml-4">
               <Feature icon="🎯" title="Palpites">
-                Sistema de previsões usando saldo virtual do chat. Use <code className="text-blue-300">!p [valor]</code> no chat da Twitch para participar.
+                Sistema de previsões usando saldo virtual do chat. Use <code className="text-green-300">!p [valor]</code> no chat da Twitch para participar.
               </Feature>
               <Feature icon="🏆" title="Torneio">
-                Campeonatos entre times criados pelos espectadores. Use <code className="text-blue-300">!time [nome]</code> no chat para inscrever seu time.
+                Campeonatos entre times criados pelos espectadores. Use <code className="text-green-300">!time [nome]</code> no chat para inscrever seu time.
               </Feature>
               <Feature icon="⚔️" title="Batalha de Bônus">
                 Confrontos eliminatórios ao vivo entre participantes inscritos pelo chat da Twitch.
@@ -76,7 +76,7 @@ export default function TermosPage() {
                 Disputa de bônus ao vivo entre os participantes; o maior resultado vence.
               </Feature>
               <Feature icon="📋" title="Call de Slot">
-                Espectadores sugerem jogos para o streamer. Use <code className="text-blue-300">!call [jogo]</code> no chat da Twitch.
+                Espectadores sugerem jogos para o streamer. Use <code className="text-green-300">!call [jogo]</code> no chat da Twitch.
               </Feature>
               <Feature icon="🎁" title="Sorteio">
                 Sorteios em que cada espectador acumula tickets enquanto assiste à live. Mais tickets = mais chances.
@@ -201,7 +201,7 @@ export default function TermosPage() {
           <Link href="/" className="text-sm text-gray-500 hover:text-white transition-colors flex items-center gap-1.5">
             ← Voltar para Home
           </Link>
-          <Link href="/privacidade" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+          <Link href="/privacidade" className="text-sm text-green-400 hover:text-green-300 transition-colors">
             Ver Política de Privacidade →
           </Link>
         </div>
@@ -216,7 +216,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <section>
       <h2 className="text-base font-black text-white mb-3 flex items-center gap-2">
         <span className="w-1 h-4 rounded-full inline-block flex-shrink-0"
-          style={{ background: "linear-gradient(180deg, #3b82f6, #1d4ed8)" }} />
+          style={{ background: "linear-gradient(180deg, #22c55e, #16a34a)" }} />
         {title}
       </h2>
       <div className="pl-3 border-l border-white/5 space-y-2">

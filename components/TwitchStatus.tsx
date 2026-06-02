@@ -34,7 +34,7 @@ export default function TwitchStatus() {
 
   if (!data) {
     return (
-      <div className="flex items-center gap-1.5 bg-[#070f1f] border border-[#1d4ed8]/30 rounded-full px-4 py-1.5 whitespace-nowrap">
+      <div className="flex items-center gap-1.5 bg-[#070f1f] border border-[#16a34a]/30 rounded-full px-4 py-1.5 whitespace-nowrap">
         <span className="w-2 h-2 rounded-full bg-gray-600 animate-pulse" />
         <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">carregando</span>
       </div>

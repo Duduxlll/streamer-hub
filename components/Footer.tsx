@@ -36,7 +36,7 @@ const overlayBase: React.CSSProperties = {
 export default function Footer() {
   return (
     <footer
-      className="relative border-t border-[rgba(29,78,216,0.1)]"
+      className="relative border-t border-[rgba(22,163,74,0.1)]"
       style={{ zIndex: 10, background: "rgb(2,4,12)" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6">
@@ -50,7 +50,7 @@ export default function Footer() {
               <img
                 src="https://static-cdn.jtvnw.net/jtv_user_pictures/8c7083c8-3b8e-4f5e-abe2-d681f5b6df8b-profile_image-300x300.png"
                 alt="stainzincs"
-                className="w-11 h-11 rounded-full border-2 border-[#1d4ed8]/40 object-cover flex-shrink-0"
+                className="w-11 h-11 rounded-full border-2 border-[#16a34a]/40 object-cover flex-shrink-0"
               />
 
 
@@ -68,7 +68,7 @@ export default function Footer() {
                   <span style={{ color: "#ffffff" }}>stain</span>
                   <span
                     style={{
-                      background: "linear-gradient(135deg, #1d4ed8 0%, #93c5fd 50%, #1d4ed8 100%)",
+                      background: "linear-gradient(135deg, #16a34a 0%, #86efac 50%, #16a34a 100%)",
                       backgroundSize: "200% auto",
                       WebkitBackgroundClip: "text",
                       WebkitTextFillColor: "transparent",

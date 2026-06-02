@@ -11,7 +11,7 @@ import { useToast, ToastContainer } from "@/components/toast";
 import { useConfirm } from "@/components/confirm-modal";
 
 const TEAM_COLORS = [
-  { bg: "rgba(59,130,246,0.1)",  border: "rgba(59,130,246,0.35)", glow: "rgba(59,130,246,0.15)", text: "#60a5fa", avatar: "rgba(59,130,246,0.22)", avatarText: "#93c5fd" },
+  { bg: "rgba(34,197,94,0.1)",  border: "rgba(34,197,94,0.35)", glow: "rgba(34,197,94,0.15)", text: "#4ade80", avatar: "rgba(34,197,94,0.22)", avatarText: "#86efac" },
   { bg: "rgba(168,85,247,0.1)",  border: "rgba(168,85,247,0.35)", glow: "rgba(168,85,247,0.15)", text: "#c084fc", avatar: "rgba(168,85,247,0.22)", avatarText: "#d8b4fe" },
   { bg: "rgba(245,158,11,0.1)",  border: "rgba(245,158,11,0.35)", glow: "rgba(245,158,11,0.15)", text: "#fbbf24", avatar: "rgba(245,158,11,0.22)", avatarText: "#fcd34d" },
   { bg: "rgba(16,185,129,0.1)",  border: "rgba(16,185,129,0.35)", glow: "rgba(16,185,129,0.15)", text: "#34d399", avatar: "rgba(16,185,129,0.22)", avatarText: "#6ee7b7" },
@@ -471,7 +471,7 @@ export default function AdminTorneioPage() {
                           ) : votos.map(v => (
                             <div key={v.username} className="flex items-center gap-1.5">
                               {v.image ? (
-                                <PlayerAvatar image={v.image} name={v.displayName} size={20} color="#3b82f6" />
+                                <PlayerAvatar image={v.image} name={v.displayName} size={20} color="#22c55e" />
                               ) : (
                                 <div
                                   className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-black"

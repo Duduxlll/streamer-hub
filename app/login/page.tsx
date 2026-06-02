@@ -41,7 +41,7 @@ export default function LoginPage() {
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 relative overflow-hidden">
 
       <div className="w-full max-w-sm relative scale-in">
-        <div className="card-dark rounded-2xl overflow-hidden border-[#1d4ed8]/20">
+        <div className="card-dark rounded-2xl overflow-hidden border-[#16a34a]/20">
           <div className="h-1 w-full bg-gradient-to-r from-[#9146ff] via-[#a855f7] to-[#9146ff]" />
 
           <div className="p-8">
@@ -70,12 +70,12 @@ export default function LoginPage() {
               </svg>
               <span className="text-[11px] text-gray-600">Login seguro via OAuth 2.0 da Twitch</span>
             </div>
-            <div className="mt-5 p-4 rounded-xl bg-[#0f2354]/40 border border-[#1d4ed8]/15">
+            <div className="mt-5 p-4 rounded-xl bg-[#0a2e1a]/40 border border-[#16a34a]/15">
               <p className="text-xs text-gray-500 text-center leading-relaxed">
                 Ao entrar, você concorda com os{" "}
-                <Link href="/termos" className="text-[#60a5fa] hover:underline">Termos de Uso</Link>
+                <Link href="/termos" className="text-[#4ade80] hover:underline">Termos de Uso</Link>
                 {" "}e{" "}
-                <Link href="/privacidade" className="text-[#60a5fa] hover:underline">Política de Privacidade</Link>
+                <Link href="/privacidade" className="text-[#4ade80] hover:underline">Política de Privacidade</Link>
               </p>
             </div>
           </div>

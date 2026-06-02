@@ -17,7 +17,7 @@ const FEATURES = [
     icon: "🏆",
     title: "Torneio",
     description: "Competição ao vivo no chat. Para entrar, use !time [nome do time] no chat da Twitch durante a live.",
-    color: "#3b82f6",
+    color: "#22c55e",
     href: "/arena/torneio",
     adminHref: "/admin/torneio",
     available: true,
@@ -112,7 +112,7 @@ export default function ArenaPage() {
 
   const liveItems = [
     ...(torneioLive
-      ? [{ icon: "🏆", label: torneio!.nome, sub: `Fase ${torneio!.faseAtual} · escolha seu time!`, href: "/arena/torneio", color: "#3b82f6" }]
+      ? [{ icon: "🏆", label: torneio!.nome, sub: `Fase ${torneio!.faseAtual} · escolha seu time!`, href: "/arena/torneio", color: "#22c55e" }]
       : []),
     ...(palpiteLive
       ? [{ icon: "🎯", label: "Palpites ao Vivo", sub: rodada!.status === "aberta" ? "Fase aberta — aposte agora!" : "Fase fechada para novos votos", href: "/arena/palpites", color: "#10b981" }]
@@ -150,7 +150,7 @@ export default function ArenaPage() {
           <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black tracking-tight mb-5 leading-none">
             <span className="text-white">Live </span>
             <span style={{
-              background: "linear-gradient(135deg, #9146ff 0%, #3b82f6 50%, #22d3ee 100%)",
+              background: "linear-gradient(135deg, #9146ff 0%, #22c55e 50%, #22d3ee 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}>Arena</span>

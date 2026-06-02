@@ -20,7 +20,7 @@ const CFG: Record<ToastType, { icon: string; color: string; border: string; glow
   success: { icon: "✅", color: "#22c55e", border: "rgba(34,197,94,0.35)",  glow: "rgba(34,197,94,0.15)"  },
   error:   { icon: "❌", color: "#ef4444", border: "rgba(239,68,68,0.35)",  glow: "rgba(239,68,68,0.15)"  },
   warning: { icon: "⚠️", color: "#ffba00", border: "rgba(255,186,0,0.35)",  glow: "rgba(255,186,0,0.15)"  },
-  info:    { icon: "💬", color: "#60a5fa", border: "rgba(96,165,250,0.35)", glow: "rgba(96,165,250,0.15)" },
+  info:    { icon: "💬", color: "#4ade80", border: "rgba(74,222,128,0.35)", glow: "rgba(74,222,128,0.15)" },
 };
 
 export function useToast() {

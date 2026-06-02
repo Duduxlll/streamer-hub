@@ -7,11 +7,11 @@ const VALUES = ["A", "K", "Q", "J", "10", "9", "7", "2"] as const;
 const IS_RED: Record<string, boolean> = { "♥": true, "♦": true, "♠": false, "♣": false };
 
 const CHIP_PAL = [
-  { ring: "59,130,246",  edge: "130,195,255", body: "4,18,58"   },
-  { ring: "99,102,241",  edge: "160,165,255", body: "12,12,68"  },
-  { ring: "14,165,233",  edge: "70,210,255",  body: "2,32,68"   },
-  { ring: "240,178,28",  edge: "255,218,80",  body: "48,33,3"   },
-  { ring: "190,190,210", edge: "240,240,255", body: "22,22,38"  },
+  { ring: "34,197,94",   edge: "134,239,172", body: "4,40,18"   },  // verde
+  { ring: "16,185,129",  edge: "110,231,183", body: "3,38,28"   },  // esmeralda
+  { ring: "168,85,247",  edge: "216,180,254", body: "30,12,52"  },  // roxo (combina com Twitch)
+  { ring: "240,178,28",  edge: "255,218,80",  body: "48,33,3"   },  // dourado
+  { ring: "190,190,210", edge: "240,240,255", body: "22,22,38"  },  // prata
 ];
 
 const DOT_POS: Record<number, [number,number][]> = {
@@ -173,15 +173,15 @@ function DiceFace({ n, size }: { n:number; size:number }) {
   return (
     <div style={{
       position:"absolute", inset:0,
-      background:"rgba(6,16,55,0.96)",
-      border:`${size*0.025}px solid rgba(80,140,255,0.55)`,
+      background:"rgba(5,32,17,0.96)",
+      border:`${size*0.025}px solid rgba(34,197,94,0.55)`,
       borderRadius:size*0.16,
-      boxShadow:`inset 0 0 ${size*0.12}px rgba(0,0,40,0.7)`,
+      boxShadow:`inset 0 0 ${size*0.12}px rgba(0,30,12,0.7)`,
     }}>
       <div style={{
         position:"absolute", top:"8%", left:"10%", right:"10%", height:"10%",
         borderRadius:size*0.08,
-        background:"rgba(120,170,255,0.10)",
+        background:"rgba(110,231,160,0.12)",
       }}/>
       {dots.map(([x,y],i)=>(
         <div key={i} style={{
@@ -190,7 +190,7 @@ function DiceFace({ n, size }: { n:number; size:number }) {
           width:r*2, height:r*2,
           marginLeft:-r, marginTop:-r,
           borderRadius:"50%",
-          background:"rgba(220,235,255,0.95)",
+          background:"rgba(228,255,238,0.95)",
           boxShadow:"0 1px 3px rgba(0,0,0,0.6)",
         }}/>
       ))}

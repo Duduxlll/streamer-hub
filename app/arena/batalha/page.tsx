@@ -102,7 +102,7 @@ function SlotPublic({ slot }: { slot: BatalhaSlot }) {
             <span className="text-[10px] text-gray-500 truncate">{slot.jogoNome}</span>
           )}
           {slot.jogoValor != null && slot.jogoValor > 0 && (
-            <span className="text-[10px] font-black text-blue-400 tabular-nums flex-shrink-0">
+            <span className="text-[10px] font-black text-green-400 tabular-nums flex-shrink-0">
               R$ {slot.jogoValor.toLocaleString("pt-BR")}
             </span>
           )}
@@ -287,7 +287,7 @@ export default function ArenaTransferePage() {
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Inscritos</p>
                 <span className="text-sm font-black">
-                  <span className="text-[#93c5fd]">{batalha.inscricoes.length}</span>
+                  <span className="text-[#86efac]">{batalha.inscricoes.length}</span>
                   <span className="text-gray-600">/{batalha.vagas}</span>
                 </span>
               </div>
@@ -296,8 +296,8 @@ export default function ArenaTransferePage() {
               ) : (
                 <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto">
                   {batalha.inscricoes.map(j => (
-                    <span key={j.username} className="flex items-center gap-1.5 text-xs font-bold pl-1 pr-2.5 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300">
-                      <PlayerAvatar image={j.image} name={j.displayName} size={20} color="#3b82f6" />
+                    <span key={j.username} className="flex items-center gap-1.5 text-xs font-bold pl-1 pr-2.5 py-1 rounded-full border border-green-500/30 bg-green-500/10 text-green-300">
+                      <PlayerAvatar image={j.image} name={j.displayName} size={20} color="#22c55e" />
                       {j.displayName}
                     </span>
                   ))}

@@ -144,7 +144,7 @@ function Roleta({ participantes, vencedor }: { participantes: Participante[]; ve
                     style={{ filter: isWinner ? "blur(0px) brightness(1)" : "blur(2px) brightness(0.55)" }} />
                 ) : (
                   <div className="w-16 h-16 rounded-full flex items-center justify-center font-black text-white text-2xl"
-                    style={{ background: "linear-gradient(135deg, #9146ff, #1d4ed8)" }}>
+                    style={{ background: "linear-gradient(135deg, #9146ff, #16a34a)" }}>
                     {p.displayName[0]?.toUpperCase()}
                   </div>
                 )}
@@ -176,7 +176,7 @@ function EntradaCard({ p }: { p: Participante }) {
             style={{ borderColor: "rgba(255,186,0,0.5)", filter: "blur(3px)" }} />
         ) : (
           <div className="w-16 h-16 rounded-full flex items-center justify-center font-black text-white text-2xl border-2"
-            style={{ background: "linear-gradient(135deg, #9146ff, #1d4ed8)", borderColor: "rgba(255,186,0,0.4)", filter: "blur(3px)" }}>
+            style={{ background: "linear-gradient(135deg, #9146ff, #16a34a)", borderColor: "rgba(255,186,0,0.4)", filter: "blur(3px)" }}>
             {p.displayName[0]?.toUpperCase()}
           </div>
         )}
@@ -356,8 +356,8 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
 
         {!finalizado && !admin && (
           <div className="rounded-2xl p-5 space-y-3"
-            style={{ background: "rgba(8,6,20,0.65)", border: "1px solid rgba(29,78,216,0.2)", backdropFilter: "blur(10px)" }}>
-            <p className="text-xs font-black text-blue-400 uppercase tracking-widest">Como participar</p>
+            style={{ background: "rgba(8,6,20,0.65)", border: "1px solid rgba(22,163,74,0.2)", backdropFilter: "blur(10px)" }}>
+            <p className="text-xs font-black text-green-400 uppercase tracking-widest">Como participar</p>
             <ul className="space-y-2.5 text-sm text-gray-300">
               {[
                 "Faça login com sua conta Twitch",
@@ -366,7 +366,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
               ].map((txt, i) => (
                 <li key={i} className="flex items-center gap-3">
                   <span className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black flex-shrink-0"
-                    style={{ background: "rgba(59,130,246,0.2)", color: "#93c5fd", border: "1px solid rgba(59,130,246,0.3)" }}>{i + 1}</span>
+                    style={{ background: "rgba(34,197,94,0.2)", color: "#86efac", border: "1px solid rgba(34,197,94,0.3)" }}>{i + 1}</span>
                   <span dangerouslySetInnerHTML={{ __html: txt.replace(`${sorteio.minutosTicket}`, `<strong class="text-white">${sorteio.minutosTicket}</strong>`) }} />
                 </li>
               ))}
@@ -466,7 +466,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
                     className="w-24 h-24 rounded-full object-cover border-2 border-[#ffba00]" />
                 ) : (
                   <div className="w-24 h-24 rounded-full flex items-center justify-center font-black text-white text-3xl border-2 border-[#ffba00]"
-                    style={{ background: "linear-gradient(135deg, #9146ff, #1d4ed8)" }}>
+                    style={{ background: "linear-gradient(135deg, #9146ff, #16a34a)" }}>
                     {sorteio.vencedor.displayName[0]?.toUpperCase()}
                   </div>
                 )}

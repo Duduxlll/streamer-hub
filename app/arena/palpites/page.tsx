@@ -21,11 +21,11 @@ function PalpiteRow({ palpite, index }: { palpite: Palpite; index: number }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:border-white/18 transition-all" style={{ background: "rgba(5,7,16,0.88)" }}>
       <span className="w-6 text-center text-xs font-bold text-gray-600">{index + 1}º</span>
-      <div className="w-8 h-8 rounded-full bg-[#1d4ed8]/30 border border-[#1d4ed8]/30 flex items-center justify-center flex-shrink-0">
-        <span className="text-[11px] font-bold text-blue-300 uppercase">{palpite.username[0]}</span>
+      <div className="w-8 h-8 rounded-full bg-[#16a34a]/30 border border-[#16a34a]/30 flex items-center justify-center flex-shrink-0">
+        <span className="text-[11px] font-bold text-green-300 uppercase">{palpite.username[0]}</span>
       </div>
       <span className="flex-1 text-sm font-semibold text-white truncate">{palpite.username}</span>
-      <span className="text-sm font-black tabular-nums text-[#93c5fd]">
+      <span className="text-sm font-black tabular-nums text-[#86efac]">
         R$ {palpite.valor.toLocaleString("pt-BR")}
       </span>
     </div>
@@ -53,7 +53,7 @@ function UltimoVencedor({ r }: { r: ResultadoRodada }) {
         <div className="flex-1 min-w-0">
           <p className="text-base font-black text-white truncate">@{destaque.username}</p>
           <p className="text-xs text-gray-500">
-            Palpitou <span className="text-[#93c5fd] font-bold">R$ {destaque.valor.toLocaleString("pt-BR")}</span>
+            Palpitou <span className="text-[#86efac] font-bold">R$ {destaque.valor.toLocaleString("pt-BR")}</span>
             {temVencedor && "diferenca" in destaque && (
               <span> · diferença de <span className="text-yellow-400 font-bold">R$ {(destaque as {diferenca:number}).diferenca.toLocaleString("pt-BR")}</span></span>
             )}
@@ -126,7 +126,7 @@ function Historico({ lista }: { lista: ResultadoRodada[] }) {
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px]">
                       <span className="text-gray-600">Bônus: <span className="text-white font-bold">R$ {r.buyIn.toLocaleString("pt-BR")}</span></span>
                       {r.resultado > 0 && <span className="text-gray-600">Resultado real: <span className="text-green-400 font-bold">R$ {r.resultado.toLocaleString("pt-BR")}</span></span>}
-                      {destaque && <span className="text-gray-600">Palpite: <span className="text-[#93c5fd] font-bold">R$ {destaque.valor.toLocaleString("pt-BR")}</span></span>}
+                      {destaque && <span className="text-gray-600">Palpite: <span className="text-[#86efac] font-bold">R$ {destaque.valor.toLocaleString("pt-BR")}</span></span>}
                       {top && <span className="text-gray-600">Diferença: <span className="text-yellow-400 font-bold">R$ {top.diferenca.toLocaleString("pt-BR")}</span></span>}
                       <span className="text-gray-600">{r.totalParticipantes} participante{r.totalParticipantes !== 1 ? "s" : ""}</span>
                     </div>
@@ -190,7 +190,7 @@ export default function PalpitesPage() {
           {rodada?.status === "aberta" ? (
             <p className="text-sm text-gray-500">
               Digite{" "}
-              <span className="text-[#93c5fd] font-mono font-bold">!p &lt;valor&gt;</span>
+              <span className="text-[#86efac] font-mono font-bold">!p &lt;valor&gt;</span>
               {" "}no chat da Twitch para participar.
             </p>
           ) : (

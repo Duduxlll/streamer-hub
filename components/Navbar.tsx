@@ -223,7 +223,7 @@ export default function Navbar() {
 
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#1d4ed8]/40 shadow-lg shadow-blue-950/50 group-hover:shadow-blue-700/40 transition-all flex-shrink-0">
+              <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#16a34a]/40 shadow-lg shadow-green-950/50 group-hover:shadow-green-700/40 transition-all flex-shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="https://static-cdn.jtvnw.net/jtv_user_pictures/8c7083c8-3b8e-4f5e-abe2-d681f5b6df8b-profile_image-300x300.png"
@@ -249,7 +249,7 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-            <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />
+            <NavLink href="/" label="Home" from="#86efac" to="#22c55e" />
             <NavLink href="/arena"   label="Arena"   from="#c084fc" to="#9146ff" />
             <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" />
             <NavLink href="/gorjeta" label="Gorjeta" from="#4ade80" to="#22c55e" />
@@ -279,7 +279,7 @@ export default function Navbar() {
 
           <button
             onClick={() => setOpen(!open)}
-            className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-[rgba(29,78,216,0.12)] transition-colors"
+            className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-[rgba(22,163,74,0.12)] transition-colors"
           >
             <div className="space-y-1.5">
               <span className={`block h-0.5 w-6 bg-current transition-all duration-300 ${open ? "rotate-45 translate-y-2" : ""}`} />
@@ -292,7 +292,7 @@ export default function Navbar() {
         {open && (
           <div className="md:hidden pb-4 space-y-1 border-t border-white/5 pt-2 mt-1">
             <div onClick={() => setOpen(false)} className="block px-0">
-              <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />
+              <NavLink href="/" label="Home" from="#86efac" to="#22c55e" />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
               <NavLink href="/arena"   label="Arena"   from="#c084fc" to="#9146ff" />

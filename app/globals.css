@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --blue-primary: #1d4ed8;
-  --blue-accent: #2563eb;
-  --blue-text: #60a5fa;
-  --blue-dark: #0f2354;
-  --blue-deeper: #07112e;
+  --blue-primary: #16a34a;
+  --blue-accent: #16a34a;
+  --blue-text: #4ade80;
+  --blue-dark: #0a2e1a;
+  --blue-deeper: #04140c;
   --bg-dark: #030610;
   --bg-card: #070f1f;
-  --bg-card2: #0c1730;
+  --bg-card2: #0a1f14;
   --twitch-purple: #9146ff;
 }
 
@@ -117,16 +117,16 @@ body {
 /* ── KEYFRAMES ───────────────────────────────────────────── */
 
 @keyframes pulse-dot {
-  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(29,78,216,0.7); }
-  50% { opacity: 0.6; transform: scale(0.85); box-shadow: 0 0 0 5px rgba(29,78,216,0); }
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(22,163,74,0.7); }
+  50% { opacity: 0.6; transform: scale(0.85); box-shadow: 0 0 0 5px rgba(22,163,74,0); }
 }
 
 @keyframes glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(29,78,216,0.4), 0 0 50px rgba(29,78,216,0.12), inset 0 0 20px rgba(29,78,216,0.05);
+    box-shadow: 0 0 20px rgba(22,163,74,0.4), 0 0 50px rgba(22,163,74,0.12), inset 0 0 20px rgba(22,163,74,0.05);
   }
   50% {
-    box-shadow: 0 0 55px rgba(37,99,235,0.7), 0 0 110px rgba(29,78,216,0.25), inset 0 0 30px rgba(29,78,216,0.1);
+    box-shadow: 0 0 55px rgba(34,197,94,0.7), 0 0 110px rgba(22,163,74,0.25), inset 0 0 30px rgba(22,163,74,0.1);
   }
 }
 
@@ -165,8 +165,8 @@ body {
 }
 
 @keyframes border-glow {
-  0%, 100% { border-color: rgba(29,78,216,0.2); }
-  50% { border-color: rgba(37,99,235,0.6); }
+  0%, 100% { border-color: rgba(22,163,74,0.2); }
+  50% { border-color: rgba(34,197,94,0.6); }
 }
 
 @keyframes particle-float {
@@ -275,7 +275,7 @@ body {
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #1d4ed8 0%, #93c5fd 50%, #1d4ed8 100%);
+  background: linear-gradient(135deg, #16a34a 0%, #86efac 50%, #16a34a 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -313,9 +313,9 @@ body {
 
 /* Botão azul principal */
 .btn-glow {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #16a34a, #16a34a);
   transition: all 0.3s ease;
-  border: 1px solid rgba(37,99,235,0.5);
+  border: 1px solid rgba(34,197,94,0.5);
   position: relative;
   overflow: hidden;
 }
@@ -333,39 +333,39 @@ body {
 }
 
 .btn-glow:hover {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  box-shadow: 0 6px 35px rgba(37,99,235,0.6), 0 0 90px rgba(29,78,216,0.18);
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 6px 35px rgba(34,197,94,0.6), 0 0 90px rgba(22,163,74,0.18);
   transform: translateY(-3px);
 }
 
 /* Botão secundário */
 .btn-secondary {
-  border: 1px solid rgba(37,99,235,0.25);
-  background: rgba(37,99,235,0.06);
-  color: #93c5fd;
+  border: 1px solid rgba(34,197,94,0.25);
+  background: rgba(34,197,94,0.06);
+  color: #86efac;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
 }
 
 .btn-secondary:hover {
-  background: rgba(37,99,235,0.14);
-  border-color: rgba(37,99,235,0.5);
-  box-shadow: 0 4px 22px rgba(37,99,235,0.2);
+  background: rgba(34,197,94,0.14);
+  border-color: rgba(34,197,94,0.5);
+  box-shadow: 0 4px 22px rgba(34,197,94,0.2);
   transform: translateY(-2px);
-  color: #bfdbfe;
+  color: #bbf7d0;
 }
 
 /* Cards */
 .card-dark {
   background: var(--bg-card);
-  border: 1px solid rgba(29,78,216,0.12);
+  border: 1px solid rgba(22,163,74,0.12);
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-dark:hover {
-  border-color: rgba(37,99,235,0.45);
-  box-shadow: 0 10px 50px rgba(29,78,216,0.18), inset 0 1px 0 rgba(255,255,255,0.04);
+  border-color: rgba(34,197,94,0.45);
+  box-shadow: 0 10px 50px rgba(22,163,74,0.18), inset 0 1px 0 rgba(255,255,255,0.04);
   transform: translateY(-5px);
 }
 
@@ -374,21 +374,21 @@ body {
   backdrop-filter: blur(28px) saturate(200%);
   -webkit-backdrop-filter: blur(28px) saturate(200%);
   background: rgba(3,6,16,0.92);
-  border-bottom: 1px solid rgba(29,78,216,0.12);
+  border-bottom: 1px solid rgba(22,163,74,0.12);
 }
 
 /* Hero background */
 .hero-radial {
   background:
-    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(15,35,84,0.5) 0%, transparent 65%),
-    radial-gradient(ellipse 50% 70% at 88% 40%, rgba(29,78,216,0.1) 0%, transparent 55%),
-    radial-gradient(ellipse 35% 50% at 10% 90%, rgba(15,35,84,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 60% at 50% -15%, rgba(8,40,22,0.5) 0%, transparent 65%),
+    radial-gradient(ellipse 50% 70% at 88% 40%, rgba(22,163,74,0.1) 0%, transparent 55%),
+    radial-gradient(ellipse 35% 50% at 10% 90%, rgba(8,40,22,0.12) 0%, transparent 50%),
     var(--bg-dark);
 }
 
 /* Divisor de seção */
 .section-divider {
-  border-top: 1px solid rgba(29,78,216,0.08);
+  border-top: 1px solid rgba(22,163,74,0.08);
 }
 
 /* Ícone social (apenas Twitch agora) */
@@ -428,7 +428,7 @@ body {
   width: 2px;
   height: 2px;
   border-radius: 50%;
-  background: rgba(37,99,235,0.6);
+  background: rgba(34,197,94,0.6);
   animation: particle-float linear infinite;
   pointer-events: none;
 }
@@ -454,7 +454,7 @@ body {
 
 
 .stripe-glow {
-  background: linear-gradient(90deg, transparent, rgba(29,78,216,0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(22,163,74,0.15), transparent);
   height: 1px;
   width: 100%;
 }

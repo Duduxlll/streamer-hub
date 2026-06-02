@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 const TRAIL = ["♠", "♥", "♦", "♣", "✦", "◆"];
 const BURST = ["♠", "♥", "♦", "♣", "✦", "★", "◆", "✧", "⬟"];
 const COLORS = [
-  "96,165,250",   
+  "74,222,128",   
   "167,139,250",  
   "250,202,21",   
   "248,113,113",  
@@ -83,8 +83,8 @@ export default function CursorTrail() {
 
       const { x: gx, y: gy } = mx.current;
       const g = ctx.createRadialGradient(gx, gy, 0, gx, gy, 100);
-      g.addColorStop(0,   "rgba(59,130,246,0.13)");
-      g.addColorStop(0.5, "rgba(59,130,246,0.04)");
+      g.addColorStop(0,   "rgba(34,197,94,0.13)");
+      g.addColorStop(0.5, "rgba(34,197,94,0.04)");
       g.addColorStop(1,   "rgba(0,0,0,0)");
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(gx, gy, 100, 0, Math.PI * 2); ctx.fill();

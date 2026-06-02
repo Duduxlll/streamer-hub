@@ -9,7 +9,7 @@ import PlayerAvatar from "@/components/PlayerAvatar";
 import type { Torneio } from "@/lib/torneioStore";
 
 const TEAM_COLORS = [
-  { bg: "rgba(59,130,246,0.12)",  border: "rgba(59,130,246,0.4)",  glow: "rgba(59,130,246,0.18)",  text: "#60a5fa", avatar: "rgba(59,130,246,0.25)",  avatarText: "#93c5fd" },
+  { bg: "rgba(34,197,94,0.12)",  border: "rgba(34,197,94,0.4)",  glow: "rgba(34,197,94,0.18)",  text: "#4ade80", avatar: "rgba(34,197,94,0.25)",  avatarText: "#86efac" },
   { bg: "rgba(168,85,247,0.12)",  border: "rgba(168,85,247,0.4)",  glow: "rgba(168,85,247,0.18)",  text: "#c084fc", avatar: "rgba(168,85,247,0.25)",  avatarText: "#d8b4fe" },
   { bg: "rgba(245,158,11,0.12)",  border: "rgba(245,158,11,0.4)",  glow: "rgba(245,158,11,0.18)",  text: "#fbbf24", avatar: "rgba(245,158,11,0.25)",  avatarText: "#fcd34d" },
   { bg: "rgba(16,185,129,0.12)",  border: "rgba(16,185,129,0.4)",  glow: "rgba(16,185,129,0.18)",  text: "#34d399", avatar: "rgba(16,185,129,0.25)",  avatarText: "#6ee7b7" },

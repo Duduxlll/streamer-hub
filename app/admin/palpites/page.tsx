@@ -21,13 +21,13 @@ function timeAgo(ms: number): string {
 function Card({ children, className, accent }: { children: React.ReactNode; className?: string; accent?: "yellow" | "blue" | "green" | "default" }) {
   const borders: Record<string, string> = {
     yellow:  "border-[#ffba00]/25",
-    blue:    "border-[#3b82f6]/25",
+    blue:    "border-[#22c55e]/25",
     green:   "border-[#22c55e]/25",
     default: "border-white/10",
   };
   const glows: Record<string, string> = {
     yellow:  "shadow-[0_0_40px_rgba(255,186,0,0.06)]",
-    blue:    "shadow-[0_0_40px_rgba(59,130,246,0.06)]",
+    blue:    "shadow-[0_0_40px_rgba(34,197,94,0.06)]",
     green:   "shadow-[0_0_40px_rgba(34,197,94,0.06)]",
     default: "",
   };
@@ -87,7 +87,7 @@ function VencedorPanel({ r, onNovaRodada }: { r: ResultadoRodada; onNovaRodada: 
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { label: "Palpite", value: `R$ ${v.valor.toLocaleString("pt-BR")}`, color: "#93c5fd" },
+                    { label: "Palpite", value: `R$ ${v.valor.toLocaleString("pt-BR")}`, color: "#86efac" },
                     { label: "Real", value: `R$ ${r.resultado.toLocaleString("pt-BR")}`, color: "#4ade80" },
                     { label: "Diferença", value: `R$ ${v.diferenca.toLocaleString("pt-BR")}`, color: "#fbbf24" },
                   ].map(s => (
@@ -107,11 +107,11 @@ function VencedorPanel({ r, onNovaRodada }: { r: ResultadoRodada; onNovaRodada: 
             {r.palpites.map((p) => (
               <div key={p.username} className="flex items-center gap-3 px-4 py-3 rounded-xl"
                 style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <div className="w-7 h-7 rounded-full bg-[#1d4ed8]/30 border border-[#1d4ed8]/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-[10px] font-bold text-blue-300 uppercase">{p.username[0]}</span>
+                <div className="w-7 h-7 rounded-full bg-[#16a34a]/30 border border-[#16a34a]/30 flex items-center justify-center flex-shrink-0">
+                  <span className="text-[10px] font-bold text-green-300 uppercase">{p.username[0]}</span>
                 </div>
                 <p className="text-sm font-bold text-white flex-1 truncate">@{p.username}</p>
-                <span className="text-sm font-black text-[#93c5fd]">R$ {p.valor.toLocaleString("pt-BR")}</span>
+                <span className="text-sm font-black text-[#86efac]">R$ {p.valor.toLocaleString("pt-BR")}</span>
               </div>
             ))}
           </div>
@@ -446,7 +446,7 @@ export default function AdminPalpitesPage() {
                 <div className="flex items-center gap-3 -mt-4">
                   <span className="text-[11px] font-mono text-gray-700">!p &lt;valor&gt; no chat</span>
                   <span className="text-[11px] font-black px-2.5 py-1 rounded-full"
-                    style={{ background: "rgba(59,130,246,0.12)", color: "#93c5fd", border: "1px solid rgba(59,130,246,0.2)" }}>
+                    style={{ background: "rgba(34,197,94,0.12)", color: "#86efac", border: "1px solid rgba(34,197,94,0.2)" }}>
                     {rodada?.palpites.length ?? 0} palpite{(rodada?.palpites.length ?? 0) !== 1 ? "s" : ""}
                   </span>
                 </div>
@@ -471,11 +471,11 @@ export default function AdminPalpitesPage() {
                         {rodada.palpites.length - i}
                       </span>
                       <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-                        style={{ background: "rgba(29,78,216,0.25)", border: "1px solid rgba(29,78,216,0.35)" }}>
-                        <span className="text-[10px] font-black text-blue-300 uppercase">{p.username[0]}</span>
+                        style={{ background: "rgba(22,163,74,0.25)", border: "1px solid rgba(22,163,74,0.35)" }}>
+                        <span className="text-[10px] font-black text-green-300 uppercase">{p.username[0]}</span>
                       </div>
                       <span className="flex-1 text-sm font-semibold text-white truncate">{p.username}</span>
-                      <span className="text-sm font-black tabular-nums" style={{ color: "#93c5fd" }}>
+                      <span className="text-sm font-black tabular-nums" style={{ color: "#86efac" }}>
                         R$ {p.valor.toLocaleString("pt-BR")}
                       </span>
                     </div>
@@ -540,7 +540,7 @@ export default function AdminPalpitesPage() {
                         <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px]">
                           <span className="text-gray-600">Bônus: <span className="text-white font-bold">R$ {r.buyIn.toLocaleString("pt-BR")}</span></span>
                           {r.resultado > 0 && <span className="text-gray-600">Real: <span className="text-green-400 font-bold">R$ {r.resultado.toLocaleString("pt-BR")}</span></span>}
-                          {destaque && <span className="text-gray-600">Palpite: <span className="text-[#93c5fd] font-bold">R$ {destaque.valor.toLocaleString("pt-BR")}</span></span>}
+                          {destaque && <span className="text-gray-600">Palpite: <span className="text-[#86efac] font-bold">R$ {destaque.valor.toLocaleString("pt-BR")}</span></span>}
                           {top && <span className="text-gray-600">Diferença: <span className="text-yellow-400 font-bold">R$ {top.diferenca.toLocaleString("pt-BR")}</span></span>}
                           <span className="text-gray-600">{r.totalParticipantes} participante{r.totalParticipantes !== 1 ? "s" : ""}</span>
                         </div>

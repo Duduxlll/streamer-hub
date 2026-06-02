@@ -153,7 +153,7 @@ function SlotRow({
             value={editValor}
             onChange={e => setEditValor(e.target.value)}
             onBlur={() => onJogo(editNome, editValor)}
-            className="w-[68px] flex-shrink-0 text-[10px] bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-blue-300 placeholder-gray-700 focus:outline-none focus:border-blue-500/40 transition-colors"
+            className="w-[68px] flex-shrink-0 text-[10px] bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-green-300 placeholder-gray-700 focus:outline-none focus:border-green-500/40 transition-colors"
           />
         </div>
       )}
@@ -162,7 +162,7 @@ function SlotRow({
         <div className="flex items-center gap-2 ml-6">
           {slot.jogoNome && <span className="text-[10px] text-gray-500 truncate">{slot.jogoNome}</span>}
           {slot.jogoValor != null && slot.jogoValor > 0 && (
-            <span className="text-[10px] font-black text-blue-400 tabular-nums flex-shrink-0">
+            <span className="text-[10px] font-black text-green-400 tabular-nums flex-shrink-0">
               R$ {slot.jogoValor.toLocaleString("pt-BR")}
             </span>
           )}
@@ -393,8 +393,8 @@ export default function AdminBatalhaPage() {
               </span>
             )}
             {batalha?.status === "ativa" && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border bg-blue-500/10 border-blue-500/40 text-blue-400">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-widest border bg-green-500/10 border-green-500/40 text-green-400">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
                 Em Andamento
               </span>
             )}
@@ -530,7 +530,7 @@ export default function AdminBatalhaPage() {
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Inscritos</p>
                 <span className="text-sm font-black text-white">
-                  <span className={batalha.inscricoes.length === batalha.vagas ? "text-green-400" : "text-[#93c5fd]"}>
+                  <span className={batalha.inscricoes.length === batalha.vagas ? "text-green-400" : "text-[#86efac]"}>
                     {batalha.inscricoes.length}
                   </span>
                   <span className="text-gray-600">/{batalha.vagas}</span>
@@ -542,8 +542,8 @@ export default function AdminBatalhaPage() {
               ) : (
                 <div className="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto">
                   {batalha.inscricoes.map(j => (
-                    <span key={j.username} className="flex items-center gap-1.5 text-xs font-bold pl-1 pr-2.5 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300">
-                      <PlayerAvatar image={j.image} name={j.displayName} size={20} color="#3b82f6" />
+                    <span key={j.username} className="flex items-center gap-1.5 text-xs font-bold pl-1 pr-2.5 py-1 rounded-full border border-green-500/30 bg-green-500/10 text-green-300">
+                      <PlayerAvatar image={j.image} name={j.displayName} size={20} color="#22c55e" />
                       {j.displayName}
                     </span>
                   ))}
