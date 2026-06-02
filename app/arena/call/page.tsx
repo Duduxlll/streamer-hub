@@ -5,7 +5,7 @@ import Link from "next/link";
 import PlayerAvatar from "@/components/PlayerAvatar";
 import type { CallState } from "@/lib/callStore";
 
-const C = "#06b6d4";
+const C = "#22c55e";
 
 const CSS = `
   @keyframes slideUp {
@@ -13,8 +13,8 @@ const CSS = `
     to   { opacity: 1; transform: translateY(0);   }
   }
   @keyframes pulse-cyan {
-    0%,100% { box-shadow: 0 0 0 0 rgba(6,182,212,0.35); }
-    50%      { box-shadow: 0 0 0 8px rgba(6,182,212,0);  }
+    0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.35); }
+    50%      { box-shadow: 0 0 0 8px rgba(34,197,94,0);  }
   }
 `;
 
@@ -62,7 +62,7 @@ export default function ArenaCallPage() {
         <div>
           <span
             className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-3"
-            style={{ background: "rgba(6,182,212,0.1)", color: C, border: "1px solid rgba(6,182,212,0.3)" }}
+            style={{ background: "rgba(34,197,94,0.1)", color: C, border: "1px solid rgba(34,197,94,0.3)" }}
           >
             📋 ARENA
           </span>
@@ -84,7 +84,7 @@ export default function ArenaCallPage() {
           ) : aberta ? (
             <div
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-black"
-              style={{ background: "rgba(6,182,212,0.1)", color: C, border: "1px solid rgba(6,182,212,0.35)", animation: "pulse-cyan 2s infinite" }}
+              style={{ background: "rgba(34,197,94,0.1)", color: C, border: "1px solid rgba(34,197,94,0.35)", animation: "pulse-cyan 2s infinite" }}
             >
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: C }} />
@@ -110,7 +110,7 @@ export default function ArenaCallPage() {
           >
             <div
               className="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-6"
-              style={{ background: "rgba(6,182,212,0.05)", border: "1px solid rgba(6,182,212,0.12)" }}
+              style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.12)" }}
             >
               <span className="text-4xl">📋</span>
             </div>
@@ -127,7 +127,7 @@ export default function ArenaCallPage() {
             {/* Instrução destaque */}
             <div
               className="rounded-2xl px-5 py-5"
-              style={{ background: "rgba(6,182,212,0.06)", border: "1px solid rgba(6,182,212,0.22)" }}
+              style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.22)" }}
             >
               <p className="text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: C }}>
                 Comando ativo no chat
@@ -150,7 +150,7 @@ export default function ArenaCallPage() {
                 </p>
                 <span
                   className="text-[10px] font-black px-2.5 py-0.5 rounded-full"
-                  style={{ background: "rgba(6,182,212,0.1)", color: C, border: "1px solid rgba(6,182,212,0.25)" }}
+                  style={{ background: "rgba(34,197,94,0.1)", color: C, border: "1px solid rgba(34,197,94,0.25)" }}
                 >
                   {entries.length}
                 </span>
@@ -173,15 +173,15 @@ export default function ArenaCallPage() {
                         key={e.id}
                         className="flex items-center gap-3 px-4 py-3 rounded-2xl"
                         style={{
-                          background: "rgba(6,182,212,0.03)",
-                          border: "1px solid rgba(6,182,212,0.12)",
+                          background: "rgba(34,197,94,0.03)",
+                          border: "1px solid rgba(34,197,94,0.12)",
                           animation: "slideUp 0.3s ease-out both",
                           animationDelay: `${i * 0.04}s`,
                         }}
                       >
                         <div
                           className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-[11px] flex-shrink-0"
-                          style={{ background: "rgba(6,182,212,0.1)", color: C, border: "1px solid rgba(6,182,212,0.2)" }}
+                          style={{ background: "rgba(34,197,94,0.1)", color: C, border: "1px solid rgba(34,197,94,0.2)" }}
                         >
                           {i + 1}
                         </div>

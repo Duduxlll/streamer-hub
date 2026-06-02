@@ -8,7 +8,7 @@ import { isAdmin } from "@/lib/admins";
 import PlayerAvatar from "@/components/PlayerAvatar";
 import type { CallState, CallEntry } from "@/lib/callStore";
 
-const C = "#06b6d4";
+const C = "#22c55e";
 
 const CSS = `
   @keyframes slideDown {
@@ -16,8 +16,8 @@ const CSS = `
     to   { opacity: 1; transform: translateY(0)    scale(1);    }
   }
   @keyframes pulse-cyan {
-    0%,100% { box-shadow: 0 0 0 0 rgba(6,182,212,0.4); }
-    50%      { box-shadow: 0 0 0 8px rgba(6,182,212,0); }
+    0%,100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+    50%      { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
   }
 `;
 
@@ -35,8 +35,8 @@ function CopyBtn({ text }: { text: string }) {
       title="Copiar nome do jogo"
       className="flex items-center justify-center w-7 h-7 rounded-lg transition-all hover:scale-110 active:scale-95 flex-shrink-0"
       style={{
-        background: copied ? "rgba(6,182,212,0.2)" : "rgba(255,255,255,0.05)",
-        border: `1px solid ${copied ? "rgba(6,182,212,0.5)" : "rgba(255,255,255,0.1)"}`,
+        background: copied ? "rgba(34,197,94,0.2)" : "rgba(255,255,255,0.05)",
+        border: `1px solid ${copied ? "rgba(34,197,94,0.5)" : "rgba(255,255,255,0.1)"}`,
         color: copied ? C : "#6b7280",
       }}
     >
@@ -105,14 +105,14 @@ function EntryRow({ entry, num, onRemover, removing }: {
     <div
       className="flex items-center gap-3 px-4 py-3 rounded-2xl transition-all"
       style={{
-        background: "rgba(6,182,212,0.04)",
-        border: "1px solid rgba(6,182,212,0.15)",
+        background: "rgba(34,197,94,0.04)",
+        border: "1px solid rgba(34,197,94,0.15)",
         animation: "slideDown 0.3s ease-out both",
       }}
     >
       <div
         className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-[11px] flex-shrink-0"
-        style={{ background: "rgba(6,182,212,0.12)", color: C, border: "1px solid rgba(6,182,212,0.25)" }}
+        style={{ background: "rgba(34,197,94,0.12)", color: C, border: "1px solid rgba(34,197,94,0.25)" }}
       >
         {num}
       </div>
@@ -243,7 +243,7 @@ export default function AdminCallPage() {
         <div className="flex items-start gap-4">
           <div className="flex-1">
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
-              style={{ background: "rgba(6,182,212,0.12)", color: C, border: "1px solid rgba(6,182,212,0.3)" }}>
+              style={{ background: "rgba(34,197,94,0.12)", color: C, border: "1px solid rgba(34,197,94,0.3)" }}>
               📋 PAINEL ADMIN
             </span>
             <h1 className="text-3xl font-black text-white">Call de Slot</h1>
@@ -264,7 +264,7 @@ export default function AdminCallPage() {
         <div className="flex items-center gap-3">
           {aberta ? (
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-black"
-              style={{ background: "rgba(6,182,212,0.1)", color: C, border: "1px solid rgba(6,182,212,0.35)", animation: "pulse-cyan 2s infinite" }}>
+              style={{ background: "rgba(34,197,94,0.1)", color: C, border: "1px solid rgba(34,197,94,0.35)", animation: "pulse-cyan 2s infinite" }}>
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ background: C }} />
                 <span className="relative inline-flex rounded-full h-2 w-2" style={{ background: C }} />
@@ -284,9 +284,9 @@ export default function AdminCallPage() {
         {!aberta ? (
           /* ── FECHADA ── */
           <div className="rounded-3xl overflow-hidden text-center py-16 px-6"
-            style={{ background: "rgba(6,16,10,0.95)", border: "1px solid rgba(6,182,212,0.12)" }}>
+            style={{ background: "rgba(6,16,10,0.95)", border: "1px solid rgba(34,197,94,0.12)" }}>
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-6"
-              style={{ background: "rgba(6,182,212,0.06)", border: "1px solid rgba(6,182,212,0.15)" }}>
+              style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.15)" }}>
               <span className="text-4xl">📋</span>
             </div>
             <h2 className="text-lg font-black text-white mb-2">Call do Chat fechada</h2>
@@ -300,7 +300,7 @@ export default function AdminCallPage() {
               style={{
                 background: `linear-gradient(135deg, ${C}, #0891b2)`,
                 color: "#000",
-                boxShadow: `0 4px 24px rgba(6,182,212,0.3)`,
+                boxShadow: `0 4px 24px rgba(34,197,94,0.3)`,
               }}
             >
               {busy ? "Abrindo..." : "📋 Abrir Call do Chat"}
@@ -311,7 +311,7 @@ export default function AdminCallPage() {
           <div className="space-y-4">
             {/* Instrução */}
             <div className="rounded-2xl px-5 py-4"
-              style={{ background: "rgba(6,182,212,0.05)", border: "1px solid rgba(6,182,212,0.2)" }}>
+              style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.2)" }}>
               <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: C }}>Comando ativo</p>
               <p className="text-white font-black font-mono text-lg">!call [nome do jogo]</p>
               <p className="text-xs text-gray-500 mt-1">1 call por pessoa · as calls aparecem abaixo em tempo real</p>
@@ -323,7 +323,7 @@ export default function AdminCallPage() {
               <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/5">
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex-1">Calls recebidas</p>
                 <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full"
-                  style={{ background: "rgba(6,182,212,0.1)", color: C, border: "1px solid rgba(6,182,212,0.25)" }}>
+                  style={{ background: "rgba(34,197,94,0.1)", color: C, border: "1px solid rgba(34,197,94,0.25)" }}>
                   {entries.length}
                 </span>
               </div>
