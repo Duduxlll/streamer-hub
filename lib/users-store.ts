@@ -21,8 +21,9 @@ export interface SiteUser {
   totalLogins: number;
 }
 
-const KEY_USERS      = "admin:users:v1";
-const KEY_BANNED_IPS = "admin:banned-ips:v1";
+const KEY_USERS         = "admin:users:v1";
+const KEY_BANNED_IPS    = "admin:banned-ips:v1";
+const KEY_BANNED_LOGINS = "admin:banned-logins:v1";
 
 async function loadUsers(): Promise<SiteUser[]> {
   try {
@@ -36,14 +37,25 @@ async function saveUsers(list: SiteUser[]): Promise<void> {
   await dbSet(KEY_USERS, JSON.stringify(list));
 }
 
-async function rebuildBannedIps(list: SiteUser[]): Promise<void> {
-  const ips = new Set<string>();
+// Reconstrói as listas de bloqueio: IPs (de banidos) e logins (banidos + suspensos ativos).
+// O proxy consulta essas listas para bloquear o acesso em toda requisição.
+async function rebuildBlocklists(list: SiteUser[]): Promise<void> {
+  const ips    = new Set<string>();
+  // ate = 0 → bloqueio permanente (banido); ate = timestamp → suspensão até essa data
+  const logins: { login: string; ate: number }[] = [];
+  const now    = Date.now();
   for (const u of list) {
-    if (u.status === "banido") {
+    const banido        = u.status === "banido";
+    const suspensoAtivo = u.status === "suspenso" && (u.suspAte ?? 0) > now;
+    if (banido) {
+      logins.push({ login: u.twitchLogin.toLowerCase(), ate: 0 });
       for (const ip of u.bannedIps ?? []) ips.add(ip);
+    } else if (suspensoAtivo) {
+      logins.push({ login: u.twitchLogin.toLowerCase(), ate: u.suspAte! });
     }
   }
-  await dbSet(KEY_BANNED_IPS, JSON.stringify([...ips]));
+  await dbSet(KEY_BANNED_IPS,    JSON.stringify([...ips]));
+  await dbSet(KEY_BANNED_LOGINS, JSON.stringify(logins));
 }
 
 export async function getUsers(): Promise<SiteUser[]> {
@@ -116,7 +128,7 @@ export async function banUser(
   u.banPor    = adminLogin;
   u.bannedIps = [...new Set([...(u.bannedIps ?? []), ...u.ips])];
   await saveUsers(list);
-  await rebuildBannedIps(list);
+  await rebuildBlocklists(list);
   return true;
 }
 
@@ -128,7 +140,7 @@ export async function desbanirUser(twitchLogin: string): Promise<boolean> {
   u.bannedIps = [];
   delete u.banMotivo; delete u.banEm; delete u.banPor;
   await saveUsers(list);
-  await rebuildBannedIps(list);
+  await rebuildBlocklists(list);
   return true;
 }
 
@@ -143,6 +155,7 @@ export async function suspenderUser(
   u.suspMotivo = motivo;
   u.suspPor    = adminLogin;
   await saveUsers(list);
+  await rebuildBlocklists(list);
   return true;
 }
 
@@ -153,6 +166,7 @@ export async function dessuspenderUser(twitchLogin: string): Promise<boolean> {
   u.status = "ativo";
   delete u.suspAte; delete u.suspMotivo; delete u.suspPor;
   await saveUsers(list);
+  await rebuildBlocklists(list);
   return true;
 }
 
@@ -162,3 +176,4 @@ export async function getBannedIps(): Promise<string[]> {
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch { return []; }
 }
+
