@@ -7,7 +7,7 @@ import {
   salvarPagamentos, registrarManual, adicionarParticipanteTeste, fecharSessaoSemPagar, limparSessao,
   getHistoricoGorjeta, limparHistorico, mascarCpf, normalizarChave,
   getPagamentos, adicionarPagamentos, atualizarStatusPagamento, removerPagamento, limparPagamentosFinalizados,
-  type ResultadoPagamento,
+  type ResultadoPagamento, type TipoChavePix,
 } from "@/lib/gorjeta-store";
 import { enviarPix } from "@/lib/ggpix";
 
@@ -257,18 +257,26 @@ export async function POST(req: NextRequest) {
     if (!sessao || sessao.status !== "sorteada") return NextResponse.json({ error: "Sorteie primeiro" }, { status: 400 });
     if (sessao.vencedores.length === 0) return NextResponse.json({ error: "Sem vencedores" }, { status: 400 });
 
+    // Adiciona à fila ANTES de resetar a sessão (precisa dos dados dos vencedores)
     await adicionarPagamentos(sessao.vencedores.map(v => ({
       username:    v.username,
       displayName: v.displayName,
       pixKey:      v.cpf,
-      tipoChave:   v.tipoChave ?? "cpf",
+      tipoChave:   (v.tipoChave ?? "cpf") as TipoChavePix,
       valor:       sessao.valorUnitario,
       tipo:        "sorteio" as const,
     })));
 
-    // Reseta a sessão para "aberta" sem registrar nas transacoes
-    const zerados: ResultadoPagamento[] = [];
-    const sessaoFinal = await salvarPagamentos(zerados, sessao.valorUnitario);
+    // Marca como "enviado" na sessão para reduzir o saldo e mostrar em "PIX enviados"
+    const committed: ResultadoPagamento[] = sessao.vencedores.map(v => ({
+      username:    v.username,
+      displayName: v.displayName,
+      cpf:         v.cpf,
+      nomeCompleto: v.nomeCompleto,
+      status:      "enviado" as const,
+      txid:        `fila-${v.username}-${Date.now()}`,
+    }));
+    const sessaoFinal = await salvarPagamentos(committed, sessao.valorUnitario);
     return NextResponse.json({ ok: true, sessao: sessaoFinal }, { headers: NO_CACHE });
   }
 
@@ -300,7 +308,12 @@ export async function POST(req: NextRequest) {
       tipo:        "manual" as const,
     }]);
 
-    return NextResponse.json({ ok: true }, { headers: NO_CACHE });
+    // Reduz o saldo e registra em "PIX enviados nesta sessão"
+    const sessaoAtualizada = await registrarManual(
+      participante.username, participante.displayName, valorNum,
+      { status: "enviado", txid: `fila-${participante.username}-${Date.now()}` },
+    );
+    return NextResponse.json({ ok: true, sessao: sessaoAtualizada }, { headers: NO_CACHE });
   }
 
   if (action === "fila-enviar") {

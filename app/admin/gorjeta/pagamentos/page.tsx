@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import QRCode from "qrcode";
 import type { PagamentoPendente } from "@/lib/gorjeta-store";
+import { generatePixPayload } from "@/lib/pix-payload";
 
 function fmtBRL(v: number) { return v.toLocaleString("pt-BR", { minimumFractionDigits: 2 }); }
 function fmtDate(ts: number) {
@@ -11,7 +13,7 @@ function fmtDate(ts: number) {
 function StatusBadge({ status }: { status: PagamentoPendente["status"] }) {
   const map = {
     pendente: { label: "Pendente", color: "#ffba00", bg: "rgba(255,186,0,0.12)",  border: "rgba(255,186,0,0.3)"  },
-    enviado:  { label: "Enviado",  color: "#4ade80", bg: "rgba(74,222,128,0.1)",  border: "rgba(74,222,128,0.3)" },
+    enviado:  { label: "Pago",     color: "#4ade80", bg: "rgba(74,222,128,0.1)",  border: "rgba(74,222,128,0.3)" },
     falhou:   { label: "Falhou",   color: "#f87171", bg: "rgba(248,113,113,0.1)", border: "rgba(248,113,113,0.3)" },
   };
   const s = map[status];
@@ -23,11 +25,121 @@ function StatusBadge({ status }: { status: PagamentoPendente["status"] }) {
   );
 }
 
-function PagamentoCard({ p, ggpixOk, onEnviar, onMarcarPago, onRemover, busy }: {
-  p: PagamentoPendente;
-  ggpixOk: boolean;
-  onEnviar: () => Promise<void>;
+// ── Modal de QR Code PIX ──────────────────────────────────────────────────────
+
+function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
+  pagamento: PagamentoPendente;
   onMarcarPago: () => Promise<void>;
+  onClose: () => void;
+  busy: boolean;
+}) {
+  const [qrUrl, setQrUrl]   = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [erro, setErro]     = useState<string | null>(null);
+
+  // payload PIX EMV — copia e cola padrão de qualquer banco
+  const payload = generatePixPayload({
+    pixKey:       pagamento.pixKey,
+    amount:       pagamento.valor,
+    merchantName: pagamento.displayName,
+    txId:         pagamento.id.replace(/[^a-zA-Z0-9]/g, "").slice(0, 25) || "GORJETA",
+  });
+
+  useEffect(() => {
+    QRCode.toDataURL(payload, { width: 280, margin: 2, errorCorrectionLevel: "M" })
+      .then(setQrUrl)
+      .catch(() => setErro("Não foi possível gerar o QR Code — verifique se a chave PIX é válida."));
+  }, [payload]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md" onClick={onClose}>
+      <div className="w-full max-w-xs rounded-3xl overflow-hidden" onClick={e => e.stopPropagation()}
+        style={{ background: "rgba(5,4,16,0.99)", border: "1px solid rgba(255,186,0,0.25)", boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 50px rgba(255,186,0,0.06)" }}>
+
+        {/* Header */}
+        <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
+          <div>
+            <p className="text-sm font-black text-white">Pagar com PIX</p>
+            <p className="text-[11px] text-gray-500">{pagamento.displayName} · @{pagamento.username}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-600 hover:text-white transition-colors text-lg">✕</button>
+        </div>
+
+        {/* Valor */}
+        <div className="px-5 pt-4 text-center">
+          <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Valor</p>
+          <p className="text-2xl font-black" style={{ color: "#ffba00" }}>R$ {fmtBRL(pagamento.valor)}</p>
+        </div>
+
+        {/* QR Code */}
+        <div className="px-5 py-4 flex flex-col items-center gap-3">
+          {erro ? (
+            <div className="w-[240px] h-[240px] flex items-center justify-center text-center px-6 rounded-2xl"
+              style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.2)" }}>
+              <p className="text-xs text-red-400">{erro}</p>
+            </div>
+          ) : qrUrl ? (
+            <div className="rounded-2xl overflow-hidden bg-white p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qrUrl} alt="QR Code PIX" className="w-[220px] h-[220px]" />
+            </div>
+          ) : (
+            <div className="w-[240px] h-[240px] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full border-2 border-[#ffba00] border-t-transparent animate-spin" />
+            </div>
+          )}
+
+          <p className="text-[11px] text-gray-600 text-center px-2">
+            Escaneie com o app do seu banco ou copie o código abaixo
+          </p>
+
+          {/* Chave PIX */}
+          <div className="w-full px-3 py-2 rounded-xl text-center"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+            <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">{pagamento.tipoChave}</p>
+            <p className="text-xs font-bold text-white break-all">{pagamento.pixKey}</p>
+          </div>
+
+          {/* Copia e cola */}
+          <button
+            onClick={async () => {
+              await navigator.clipboard.writeText(payload);
+              setCopied(true);
+              setTimeout(() => setCopied(false), 2000);
+            }}
+            className="w-full py-2.5 rounded-xl text-xs font-black transition-all"
+            style={copied
+              ? { background: "rgba(74,222,128,0.15)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.3)" }
+              : { background: "rgba(255,255,255,0.05)", color: "#9ca3af", border: "1px solid rgba(255,255,255,0.1)" }}>
+            {copied ? "✓ Código copiado!" : "📋 Copiar código PIX (copia e cola)"}
+          </button>
+        </div>
+
+        {/* Ações */}
+        <div className="px-5 pb-5 pt-1 space-y-2 border-t border-white/5">
+          <button
+            disabled={busy}
+            onClick={onMarcarPago}
+            className="w-full py-3 rounded-xl text-sm font-black text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:scale-100"
+            style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}>
+            {busy ? "..." : "✓ Marcar como pago"}
+          </button>
+          <button onClick={onClose}
+            className="w-full py-2 rounded-xl text-xs font-black transition-all hover:bg-white/5"
+            style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.06)" }}>
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Card de pagamento ──────────────────────────────────────────────────────────
+
+function PagamentoCard({ p, onEnviar, onRemover, busy }: {
+  p: PagamentoPendente;
+  onEnviar: () => void;
   onRemover: () => Promise<void>;
   busy: boolean;
 }) {
@@ -49,7 +161,6 @@ function PagamentoCard({ p, ggpixOk, onEnviar, onMarcarPago, onRemover, busy }: 
             </span>
           </div>
           <p className="text-[11px] text-gray-600">@{p.username} · {fmtDate(p.criadoEm)}</p>
-          {p.erro && <p className="text-[10px] text-red-400 mt-0.5">Erro: {p.erro}</p>}
         </div>
         <div className="text-right flex-shrink-0">
           <p className="text-base font-black text-white">R$ {fmtBRL(p.valor)}</p>
@@ -59,30 +170,17 @@ function PagamentoCard({ p, ggpixOk, onEnviar, onMarcarPago, onRemover, busy }: 
 
       {p.status !== "enviado" && (
         <div className="px-4 pb-3 flex gap-2 border-t border-white/[0.04] pt-3">
-          {/* Enviar via GGPix */}
-          <button
-            disabled={busy || !ggpixOk}
-            onClick={onEnviar}
-            title={!ggpixOk ? "Configure o GGPix para usar este recurso" : ""}
-            className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02] disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed"
-            style={{ background: "linear-gradient(135deg, rgba(255,186,0,0.3), rgba(255,140,0,0.2))", color: "#ffba00", border: "1px solid rgba(255,186,0,0.35)" }}>
-            {busy ? "..." : "⚡ Enviar PIX Auto"}
-          </button>
-
-          {/* Marcar como pago manualmente */}
           <button
             disabled={busy}
-            onClick={onMarcarPago}
-            className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02] disabled:opacity-50 disabled:scale-100"
-            style={{ color: "#4ade80", border: "1px solid rgba(74,222,128,0.25)", background: "rgba(74,222,128,0.06)" }}>
-            {busy ? "..." : "✓ Marcar pago"}
+            onClick={onEnviar}
+            className="flex-1 py-2 rounded-lg text-xs font-black text-black transition-all hover:scale-[1.02] disabled:opacity-50 disabled:scale-100"
+            style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
+            {busy ? "..." : "💸 Enviar PIX"}
           </button>
-
-          {/* Remover */}
           <button
             disabled={busy}
             onClick={onRemover}
-            className="px-2 py-1.5 rounded-lg text-[11px] font-black transition-all hover:bg-red-500/10 disabled:opacity-50"
+            className="px-3 py-2 rounded-lg text-xs font-black transition-all hover:bg-red-500/10 disabled:opacity-50"
             style={{ color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}>
             🗑
           </button>
@@ -104,21 +202,19 @@ function PagamentoCard({ p, ggpixOk, onEnviar, onMarcarPago, onRemover, busy }: 
   );
 }
 
+// ── Página ──────────────────────────────────────────────────────────────────────
+
 export default function PagamentosPage() {
   const [pagamentos, setPagamentos] = useState<PagamentoPendente[]>([]);
   const [loading,    setLoading]    = useState(true);
-  const [ggpixOk,   setGgpixOk]    = useState(false);
-  const [busyId,    setBusyId]     = useState<string | null>(null);
-  const [msg,       setMsg]         = useState<{ text: string; ok: boolean } | null>(null);
-  const [limpando,  setLimpando]   = useState(false);
+  const [busyId,     setBusyId]     = useState<string | null>(null);
+  const [msg,        setMsg]         = useState<{ text: string; ok: boolean } | null>(null);
+  const [limpando,   setLimpando]   = useState(false);
+  const [qrModal,    setQrModal]     = useState<PagamentoPendente | null>(null);
 
   const fetchAll = useCallback(async () => {
-    const [pagRes, cfgRes] = await Promise.all([
-      fetch("/api/gorjeta?tipo=pagamentos"),
-      fetch("/api/config"),
-    ]);
-    if (pagRes.ok) { const d = await pagRes.json(); setPagamentos(d.pagamentos ?? []); }
-    if (cfgRes.ok) { const d = await cfgRes.json(); setGgpixOk(d.ggpix?.ok ?? false); }
+    const res = await fetch("/api/gorjeta?tipo=pagamentos");
+    if (res.ok) { const d = await res.json(); setPagamentos(d.pagamentos ?? []); }
     setLoading(false);
   }, []);
 
@@ -138,20 +234,12 @@ export default function PagamentosPage() {
     return res.json();
   }
 
-  async function enviar(id: string) {
-    setBusyId(id);
-    try {
-      const d = await apiCall("fila-enviar", id);
-      flash(d.ok ? "PIX enviado com sucesso! ✓" : `Falha: ${d.erro ?? "Erro desconhecido"}`, d.ok);
-      await fetchAll();
-    } finally { setBusyId(null); }
-  }
-
   async function marcarPago(id: string) {
     setBusyId(id);
     try {
       await apiCall("fila-marcar-pago", id);
-      flash("Marcado como pago.", true);
+      flash("Marcado como pago! ✓", true);
+      setQrModal(null);
       await fetchAll();
     } finally { setBusyId(null); }
   }
@@ -168,7 +256,7 @@ export default function PagamentosPage() {
     setLimpando(true);
     try {
       await apiCall("fila-limpar");
-      flash("Enviados e com falha removidos.", true);
+      flash("Finalizados removidos.", true);
       await fetchAll();
     } finally { setLimpando(false); }
   }
@@ -179,29 +267,28 @@ export default function PagamentosPage() {
 
   return (
     <div className="page-enter max-w-2xl mx-auto px-4 sm:px-6 pt-10 pb-24 space-y-5">
+      {qrModal && (
+        <QrCodeModal
+          pagamento={qrModal}
+          busy={busyId === qrModal.id}
+          onMarcarPago={() => marcarPago(qrModal.id)}
+          onClose={() => setQrModal(null)} />
+      )}
+
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-3xl font-black text-white">Pagamentos</h1>
           <p className="text-sm text-gray-600 mt-1">
-            {pendentes.length} pendente{pendentes.length !== 1 ? "s" : ""} · {enviados.length} enviado{enviados.length !== 1 ? "s" : ""}
+            {pendentes.length} pendente{pendentes.length !== 1 ? "s" : ""} · {enviados.length} pago{enviados.length !== 1 ? "s" : ""}
           </p>
         </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          {!ggpixOk && (
-            <span className="text-[11px] font-black px-3 py-1.5 rounded-xl"
-              style={{ background: "rgba(234,179,8,0.1)", color: "#fbbf24", border: "1px solid rgba(234,179,8,0.25)" }}>
-              ⚠️ GGPix não configurado
-            </span>
-          )}
-          {(enviados.length > 0 || falhos.length > 0) && (
-            <button disabled={limpando} onClick={limpar}
-              className="text-[11px] font-black px-3 py-1.5 rounded-xl transition-all hover:bg-red-500/10 disabled:opacity-50"
-              style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.08)" }}>
-              {limpando ? "..." : "🗑 Limpar finalizados"}
-            </button>
-          )}
-        </div>
+        {(enviados.length > 0 || falhos.length > 0) && (
+          <button disabled={limpando} onClick={limpar}
+            className="text-[11px] font-black px-3 py-1.5 rounded-xl transition-all hover:bg-red-500/10 disabled:opacity-50"
+            style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.08)" }}>
+            {limpando ? "..." : "🗑 Limpar finalizados"}
+          </button>
+        )}
       </div>
 
       {msg && (
@@ -224,44 +311,38 @@ export default function PagamentosPage() {
           style={{ background: "rgba(5,4,16,0.7)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <p className="text-3xl mb-3">💳</p>
           <p className="text-sm font-black text-white mb-1">Nenhum pagamento na fila</p>
-          <p className="text-xs text-gray-600">Pagamentos serão adicionados aqui quando você usar a opção "Enviar para Pagamentos" no sorteio ou envio manual.</p>
+          <p className="text-xs text-gray-600">Pagamentos aparecem aqui quando você usa &quot;Enviar para Pagamentos&quot; no sorteio ou envio manual.</p>
         </div>
       )}
 
-      {/* Pendentes */}
       {pendentes.length > 0 && (
         <div className="space-y-3">
           <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Pendentes ({pendentes.length})</p>
           {pendentes.map(p => (
-            <PagamentoCard key={p.id} p={p} ggpixOk={ggpixOk} busy={busyId === p.id}
-              onEnviar={() => enviar(p.id)}
-              onMarcarPago={() => marcarPago(p.id)}
+            <PagamentoCard key={p.id} p={p} busy={busyId === p.id}
+              onEnviar={() => setQrModal(p)}
               onRemover={() => remover(p.id)} />
           ))}
         </div>
       )}
 
-      {/* Com falha */}
       {falhos.length > 0 && (
         <div className="space-y-3">
           <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Com falha ({falhos.length})</p>
           {falhos.map(p => (
-            <PagamentoCard key={p.id} p={p} ggpixOk={ggpixOk} busy={busyId === p.id}
-              onEnviar={() => enviar(p.id)}
-              onMarcarPago={() => marcarPago(p.id)}
+            <PagamentoCard key={p.id} p={p} busy={busyId === p.id}
+              onEnviar={() => setQrModal(p)}
               onRemover={() => remover(p.id)} />
           ))}
         </div>
       )}
 
-      {/* Enviados */}
       {enviados.length > 0 && (
         <div className="space-y-3">
-          <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Enviados ({enviados.length})</p>
+          <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Pagos ({enviados.length})</p>
           {enviados.map(p => (
-            <PagamentoCard key={p.id} p={p} ggpixOk={ggpixOk} busy={busyId === p.id}
-              onEnviar={() => enviar(p.id)}
-              onMarcarPago={() => marcarPago(p.id)}
+            <PagamentoCard key={p.id} p={p} busy={busyId === p.id}
+              onEnviar={() => setQrModal(p)}
               onRemover={() => remover(p.id)} />
           ))}
         </div>
