@@ -41,8 +41,6 @@ function RoletaIdle({ participantes }: { participantes: Participante[] }) {
           to   { transform: translateX(-50%); }
         }
       `}</style>
-      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[152px] z-10 pointer-events-none rounded-xl"
-        style={{ border: "2px solid rgba(255,186,0,0.28)" }} />
       <div className="absolute top-1 left-1/2 -translate-x-1/2 z-20">
         <div className="w-0 h-0" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: "9px solid rgba(255,186,0,0.35)" }} />
       </div>
@@ -98,23 +96,23 @@ function Roleta({ participantes, vencedor }: { participantes: Participante[]; ve
       if (!stripRef.current) return;
       const containerW = stripRef.current.parentElement?.clientWidth ?? 600;
       const target = WINNER_POS * UNIT - (containerW / 2 - ITEM_W / 2);
-      // Deslocamento de suspense: para o giro com o vencedor um pouco à direita do centro,
-      // como se fosse cair no vizinho, e depois desliza devagar até encaixar.
-      const offsetSuspense = UNIT * 0.62;
+      // Deslocamento de suspense: para o giro com o vencedor quase um item inteiro fora do
+      // centro, e depois desliza BEM devagar até encaixar — o suspense final.
+      const offsetSuspense = UNIT * 0.92;
 
       // ── Fase 1: giro principal, desacelera forte e quase para ──
-      stripRef.current.style.transition = "transform 7.4s cubic-bezier(0.07, 0.85, 0.14, 1)";
+      stripRef.current.style.transition = "transform 6.5s cubic-bezier(0.05, 0.85, 0.12, 1)";
       stripRef.current.style.transform  = `translateX(-${target - offsetSuspense}px)`;
 
-      // ── Fase 2: deslize final lento — o "tranco" de suspense ──
+      // ── Fase 2: deslize final ~5s, o mais lento possível, indo indo até parar ──
       timers.push(setTimeout(() => {
         if (!stripRef.current) return;
-        stripRef.current.style.transition = "transform 3.1s cubic-bezier(0.22, 1, 0.24, 1)";
+        stripRef.current.style.transition = "transform 5s cubic-bezier(0.18, 0.7, 0.1, 1)";
         stripRef.current.style.transform  = `translateX(-${target}px)`;
-      }, 7600));
+      }, 6700));
 
       // Marca o vencedor quando o deslize final termina
-      timers.push(setTimeout(() => setFinalizado(true), 10900));
+      timers.push(setTimeout(() => setFinalizado(true), 11850));
     }, 300));
 
     return () => timers.forEach(clearTimeout);
@@ -124,8 +122,6 @@ function Roleta({ participantes, vencedor }: { participantes: Participante[]; ve
   return (
     <div className="relative rounded-2xl overflow-hidden"
       style={{ background: "rgba(10,8,24,0.9)", border: "1px solid rgba(255,186,0,0.25)" }}>
-      <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-[152px] z-10 pointer-events-none rounded-xl"
-        style={{ border: `2px solid ${finalizado ? "rgba(255,186,0,0.8)" : "rgba(255,186,0,0.4)"}`, transition: "all 0.5s" }} />
       <div className="absolute top-1 left-1/2 -translate-x-1/2 z-20">
         <div className="w-0 h-0" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: `9px solid ${finalizado ? "#ffba00" : "rgba(255,186,0,0.5)"}`, transition: "all 0.5s" }} />
       </div>
@@ -461,7 +457,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
             <div className="px-4 pb-4">
               <Roleta participantes={sorteio.participantes} vencedor={sorteio.vencedor} />
             </div>
-            <div className="px-6 pb-8 text-center animate-in" style={{ animationDelay: "11.1s", opacity: 0 }}>
+            <div className="px-6 pb-8 text-center animate-in" style={{ animationDelay: "12s", opacity: 0 }}>
               <div className="w-full h-px mb-6" style={{ background: "linear-gradient(90deg, transparent, rgba(255,186,0,0.3), transparent)" }} />
               <p className="text-xs font-black uppercase tracking-widest mb-5" style={{ color: "#ffba00" }}>🏆 Vencedor do Sorteio</p>
               <div className="inline-flex flex-col items-center gap-4">
