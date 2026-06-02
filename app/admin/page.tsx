@@ -41,16 +41,16 @@ function Card({ icon, title, subtitle, href, active, badge, warn, delay = 0 }: {
         <div className="flex items-center gap-2">
           {badge && (
             <span className="px-2 py-0.5 rounded-full text-[10px] font-black"
-              style={{ background: "rgba(255,186,0,0.15)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.3)" }}>
+              style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }}>
               {badge}
             </span>
           )}
           {active && <ActiveDot />}
-          {warn && !active && <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" style={{ boxShadow: "0 0 6px #fbbf24" }} />}
+          {warn && !active && <span className="w-2.5 h-2.5 rounded-full bg-yellow-400" style={{ boxShadow: "0 0 6px #4ade80" }} />}
         </div>
       </div>
       <div>
-        <p className="text-sm font-black text-white group-hover:text-[#ffba00] transition-colors">{title}</p>
+        <p className="text-sm font-black text-white group-hover:text-[#22c55e] transition-colors">{title}</p>
         <p className="text-[11px] text-gray-600 mt-0.5 leading-relaxed">{subtitle}</p>
       </div>
     </Link>
