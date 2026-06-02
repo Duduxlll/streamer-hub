@@ -477,8 +477,8 @@ export default function AdminGorjetaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const initialTab = (searchParams.get("tab") as "sessao" | "cadastros" | "historico") ?? "sessao";
-  const [tab, setTab] = useState<"sessao" | "cadastros" | "historico">(initialTab);
+  // tab é derivado do URL — navegação feita pelo sidebar
+  const tab = (searchParams.get("tab") as "sessao" | "cadastros" | "historico") ?? "sessao";
   const [cadastroFiltro, setCadastroFiltro] = useState<"pendente" | "aprovado" | "rejeitado">("pendente");
   const [sessaoTab, setSessaoTab] = useState<"sortear" | "manual">("sortear");
   const [cadastros, setCadastros] = useState<CadastroGorjeta[]>([]);
@@ -645,25 +645,6 @@ export default function AdminGorjetaPage() {
               {msg.text}
             </div>
           )}
-        </div>
-
-        {/* Tabs principais */}
-        <div className="flex gap-1 mb-6 p-1 rounded-2xl" style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.05)" }}>
-          {(["sessao", "cadastros", "historico"] as const).map(t => {
-            const labels = { sessao: "Sessão", cadastros: "Cadastros", historico: "Histórico" };
-            return (
-              <button key={t} onClick={() => setTab(t)}
-                className="flex-1 py-2.5 rounded-xl text-xs font-black transition-all relative"
-                style={tab === t
-                  ? { background: "rgba(255,186,0,0.1)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.2)", boxShadow: "0 0 20px rgba(255,186,0,0.06)" }
-                  : { color: "#4b5563" }}>
-                {labels[t]}
-                {t === "cadastros" && pendentes.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[#ffba00]" style={{ boxShadow: "0 0 6px #ffba00" }} />
-                )}
-              </button>
-            );
-          })}
         </div>
 
         {/* ── ABA SESSÃO ── */}

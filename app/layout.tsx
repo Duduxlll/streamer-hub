@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import CasinoBackground from "@/components/CasinoBackground";
-import Footer from "@/components/Footer";
+import FooterWrapper from "@/components/FooterWrapper";
 import AuthProvider from "@/components/AuthProvider";
 
 export const metadata: Metadata = {
@@ -27,7 +27,7 @@ export default function RootLayout({
           <CasinoBackground />
           <Navbar />
           <main className="flex-1">{children}</main>
-          <Footer />
+          <FooterWrapper />
         </AuthProvider>
       </body>
     </html>
