@@ -150,7 +150,7 @@ function SidebarContent({ status, onClose }: { status: StatusData; onClose?: () 
         {/* Gorjeta */}
         <AccordionGroup icon="💰" label="Gorjeta" defaultPaths={["/admin/gorjeta"]} onClose={onClose}>
           <SideLink href="/admin/gorjeta"                  icon="▶"  label="Sessão"     onClose={onClose} />
-          <SideLink href="/admin/gorjeta/pagamentos"       icon="💳" label="Pagamentos" onClose={onClose} />
+          <SideLink href="/admin/gorjeta/pagamentos"       icon="💳" label="Pagamentos manual" onClose={onClose} />
           <SideLink href="/admin/gorjeta?tab=cadastros"    icon="📋" label="Cadastros"  onClose={onClose}
             dot={pending > 0 ? "yellow" : undefined} />
           <SideLink href="/admin/gorjeta?tab=historico"    icon="📜" label="Histórico"  onClose={onClose} />

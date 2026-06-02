@@ -33,9 +33,10 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
   onClose: () => void;
   busy: boolean;
 }) {
-  const [qrUrl, setQrUrl]   = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [erro, setErro]     = useState<string | null>(null);
+  const [qrUrl, setQrUrl]       = useState<string | null>(null);
+  const [copied, setCopied]     = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
+  const [erro, setErro]         = useState<string | null>(null);
 
   // payload PIX EMV — copia e cola padrão de qualquer banco
   const payload = generatePixPayload({
@@ -51,63 +52,114 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
       .catch(() => setErro("Não foi possível gerar o QR Code — verifique se a chave PIX é válida."));
   }, [payload]);
 
+  async function copiarChave() {
+    await navigator.clipboard.writeText(pagamento.pixKey);
+    setCopiedKey(true);
+    setTimeout(() => setCopiedKey(false), 2000);
+  }
+
+  async function copiarPayload() {
+    await navigator.clipboard.writeText(payload);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md" onClick={onClose}>
-      <div className="w-full max-w-xs rounded-3xl overflow-hidden" onClick={e => e.stopPropagation()}
-        style={{ background: "rgba(5,4,16,0.99)", border: "1px solid rgba(255,186,0,0.25)", boxShadow: "0 20px 60px rgba(0,0,0,0.7), 0 0 50px rgba(255,186,0,0.06)" }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+      style={{ animation: "pixFadeIn 0.2s ease-out" }}
+      onClick={onClose}>
+      <style>{`
+        @keyframes pixFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pixModalIn { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes pixQrIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        @keyframes pixValuePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.04); } }
+      `}</style>
 
-        {/* Header */}
-        <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
-          <div>
-            <p className="text-sm font-black text-white">Pagar com PIX</p>
-            <p className="text-[11px] text-gray-500">{pagamento.displayName} · @{pagamento.username}</p>
+      <div
+        className="w-full max-w-xs rounded-3xl overflow-hidden flex flex-col max-h-[92vh]"
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: "rgba(5,4,16,0.99)",
+          border: "1px solid rgba(255,186,0,0.25)",
+          boxShadow: "0 20px 70px rgba(0,0,0,0.75), 0 0 60px rgba(255,186,0,0.08)",
+          animation: "pixModalIn 0.32s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}>
+
+        {/* Header — sticky com gradiente */}
+        <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+          style={{
+            background: "linear-gradient(135deg, rgba(255,186,0,0.1), rgba(255,140,0,0.03))",
+            borderBottom: "1px solid rgba(255,186,0,0.12)",
+          }}>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-base flex-shrink-0"
+              style={{ background: "rgba(255,186,0,0.15)", border: "1px solid rgba(255,186,0,0.3)" }}>
+              💸
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-black text-white leading-tight">Pagar com PIX</p>
+              <p className="text-[11px] text-gray-500 truncate">{pagamento.displayName}</p>
+            </div>
           </div>
-          <button onClick={onClose} className="text-gray-600 hover:text-white transition-colors text-lg">✕</button>
+          <button onClick={onClose}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/5 transition-all flex-shrink-0">
+            ✕
+          </button>
         </div>
 
-        {/* Valor */}
-        <div className="px-5 pt-4 text-center">
-          <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Valor</p>
-          <p className="text-2xl font-black" style={{ color: "#ffba00" }}>R$ {fmtBRL(pagamento.valor)}</p>
-        </div>
+        {/* Conteúdo com scroll */}
+        <div className="overflow-y-auto px-5 py-4 flex flex-col items-center gap-3"
+          style={{ scrollbarWidth: "thin" }}>
 
-        {/* QR Code */}
-        <div className="px-5 py-4 flex flex-col items-center gap-3">
+          {/* Valor */}
+          <div className="text-center">
+            <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Valor a pagar</p>
+            <p className="text-3xl font-black" style={{ color: "#ffba00", animation: "pixValuePulse 2.5s ease-in-out infinite" }}>
+              R$ {fmtBRL(pagamento.valor)}
+            </p>
+          </div>
+
+          {/* QR Code */}
           {erro ? (
-            <div className="w-[240px] h-[240px] flex items-center justify-center text-center px-6 rounded-2xl"
+            <div className="w-[220px] h-[220px] flex items-center justify-center text-center px-6 rounded-2xl"
               style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.2)" }}>
               <p className="text-xs text-red-400">{erro}</p>
             </div>
           ) : qrUrl ? (
-            <div className="rounded-2xl overflow-hidden bg-white p-2">
+            <div className="rounded-2xl overflow-hidden bg-white p-2.5"
+              style={{ animation: "pixQrIn 0.4s ease-out", boxShadow: "0 0 30px rgba(255,186,0,0.12)" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={qrUrl} alt="QR Code PIX" className="w-[220px] h-[220px]" />
+              <img src={qrUrl} alt="QR Code PIX" className="w-[200px] h-[200px] block" />
             </div>
           ) : (
-            <div className="w-[240px] h-[240px] flex items-center justify-center">
+            <div className="w-[220px] h-[220px] flex items-center justify-center">
               <div className="w-8 h-8 rounded-full border-2 border-[#ffba00] border-t-transparent animate-spin" />
             </div>
           )}
 
-          <p className="text-[11px] text-gray-600 text-center px-2">
-            Escaneie com o app do seu banco ou copie o código abaixo
+          <p className="text-[11px] text-gray-600 text-center px-2 leading-relaxed">
+            Escaneie com o app do seu banco ou use as opções abaixo
           </p>
 
-          {/* Chave PIX */}
-          <div className="w-full px-3 py-2 rounded-xl text-center"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-            <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">{pagamento.tipoChave}</p>
-            <p className="text-xs font-bold text-white break-all">{pagamento.pixKey}</p>
+          {/* Chave PIX camuflada + copiar */}
+          <div className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl"
+            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div className="flex-1 min-w-0">
+              <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Chave PIX</p>
+              <p className="text-sm font-black text-gray-400 tracking-widest leading-none">••••••••••</p>
+            </div>
+            <button onClick={copiarChave}
+              className="flex-shrink-0 px-3 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.03] active:scale-95"
+              style={copiedKey
+                ? { background: "rgba(74,222,128,0.15)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.3)" }
+                : { background: "rgba(255,186,0,0.1)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.3)" }}>
+              {copiedKey ? "✓ Copiado" : "📋 Copiar"}
+            </button>
           </div>
 
-          {/* Copia e cola */}
-          <button
-            onClick={async () => {
-              await navigator.clipboard.writeText(payload);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            }}
-            className="w-full py-2.5 rounded-xl text-xs font-black transition-all"
+          {/* Copia e cola (payload completo) */}
+          <button onClick={copiarPayload}
+            className="w-full py-2.5 rounded-xl text-xs font-black transition-all hover:scale-[1.01] active:scale-95"
             style={copied
               ? { background: "rgba(74,222,128,0.15)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.3)" }
               : { background: "rgba(255,255,255,0.05)", color: "#9ca3af", border: "1px solid rgba(255,255,255,0.1)" }}>
@@ -115,13 +167,13 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
           </button>
         </div>
 
-        {/* Ações */}
-        <div className="px-5 pb-5 pt-1 space-y-2 border-t border-white/5">
+        {/* Ações — fixas embaixo */}
+        <div className="px-5 pb-5 pt-3 space-y-2 flex-shrink-0 border-t border-white/5">
           <button
             disabled={busy}
             onClick={onMarcarPago}
             className="w-full py-3 rounded-xl text-sm font-black text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:scale-100"
-            style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}>
+            style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)", boxShadow: "0 4px 20px rgba(74,222,128,0.2)" }}>
             {busy ? "..." : "✓ Marcar como pago"}
           </button>
           <button onClick={onClose}
