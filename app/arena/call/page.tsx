@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import PlayerAvatar from "@/components/PlayerAvatar";
 import type { CallState } from "@/lib/callStore";
 
 const C = "#06b6d4";
@@ -179,13 +180,14 @@ export default function ArenaCallPage() {
                         }}
                       >
                         <div
-                          className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs flex-shrink-0"
+                          className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-[11px] flex-shrink-0"
                           style={{ background: "rgba(6,182,212,0.1)", color: C, border: "1px solid rgba(6,182,212,0.2)" }}
                         >
                           {i + 1}
                         </div>
+                        <PlayerAvatar image={e.image} name={e.displayName} size={32} color={C} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-500 font-semibold truncate">@{e.username}</p>
+                          <p className="text-xs text-gray-500 font-semibold truncate">{e.displayName} · @{e.username}</p>
                           <p className="text-sm font-black text-white truncate leading-tight">{e.jogo}</p>
                         </div>
                       </div>

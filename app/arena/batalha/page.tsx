@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { isAdmin } from "@/lib/admins";
+import PlayerAvatar from "@/components/PlayerAvatar";
 import type { Batalha, BatalhaMatch, BatalhaSlot } from "@/lib/batalhaStore";
 
 const MH   = 140;
@@ -71,13 +72,17 @@ function SlotPublic({ slot }: { slot: BatalhaSlot }) {
   return (
     <div className={`flex-1 min-h-0 px-3 flex flex-col justify-center gap-1.5 transition-all ${isLose ? "opacity-35" : ""}`}>
       <div className="flex items-center gap-1.5">
-        <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-black ${
-          isWin ? "bg-green-500/30 text-green-300"
-          : hasPlayer ? "bg-[#9146ff]/30 text-purple-300"
-          : "bg-white/8 text-gray-700"
-        }`}>
-          {hasPlayer ? slot.jogador!.displayName[0].toUpperCase() : "—"}
-        </div>
+        {hasPlayer && slot.jogador!.image ? (
+          <PlayerAvatar image={slot.jogador!.image} name={slot.jogador!.displayName} size={20} color={isWin ? "#22c55e" : "#9146ff"} />
+        ) : (
+          <div className={`w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[9px] font-black ${
+            isWin ? "bg-green-500/30 text-green-300"
+            : hasPlayer ? "bg-[#9146ff]/30 text-purple-300"
+            : "bg-white/8 text-gray-700"
+          }`}>
+            {hasPlayer ? slot.jogador!.displayName[0].toUpperCase() : "—"}
+          </div>
+        )}
         <span className={`flex-1 text-xs font-bold truncate ${
           isWin ? "text-green-300" : isLose ? "text-gray-600" : hasPlayer ? "text-white" : "text-gray-700 italic"
         }`}>
@@ -291,7 +296,8 @@ export default function ArenaTransferePage() {
               ) : (
                 <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto">
                   {batalha.inscricoes.map(j => (
-                    <span key={j.username} className="text-xs font-bold px-2.5 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300">
+                    <span key={j.username} className="flex items-center gap-1.5 text-xs font-bold pl-1 pr-2.5 py-1 rounded-full border border-blue-500/30 bg-blue-500/10 text-blue-300">
+                      <PlayerAvatar image={j.image} name={j.displayName} size={20} color="#3b82f6" />
                       {j.displayName}
                     </span>
                   ))}

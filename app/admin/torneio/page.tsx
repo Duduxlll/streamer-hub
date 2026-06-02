@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { isAdmin } from "@/lib/admins";
+import PlayerAvatar from "@/components/PlayerAvatar";
 import type { Torneio } from "@/lib/torneioStore";
 import { useToast, ToastContainer } from "@/components/toast";
 import { useConfirm } from "@/components/confirm-modal";
@@ -469,12 +470,16 @@ export default function AdminTorneioPage() {
                             <p className="text-[10px] text-gray-700 text-center py-3">Nenhum voto</p>
                           ) : votos.map(v => (
                             <div key={v.username} className="flex items-center gap-1.5">
-                              <div
-                                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-black"
-                                style={{ background: avBg, color: avTxt }}
-                              >
-                                {v.username[0].toUpperCase()}
-                              </div>
+                              {v.image ? (
+                                <PlayerAvatar image={v.image} name={v.displayName} size={20} color="#3b82f6" />
+                              ) : (
+                                <div
+                                  className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-black"
+                                  style={{ background: avBg, color: avTxt }}
+                                >
+                                  {v.username[0].toUpperCase()}
+                                </div>
+                              )}
                               <span className="text-[11px] text-gray-400 truncate font-medium">{v.displayName}</span>
                             </div>
                           ))}

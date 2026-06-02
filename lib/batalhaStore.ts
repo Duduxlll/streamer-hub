@@ -5,6 +5,7 @@ export type VagasOptions = 8 | 16 | 32;
 export interface BatalhaJogador {
   username: string;
   displayName: string;
+  image?: string | null;
 }
 
 export interface BatalhaSlot {
@@ -96,7 +97,7 @@ export async function criarBatalha(
 }
 
 export async function entrarBatalha(
-  username: string, displayName: string
+  username: string, displayName: string, image: string | null = null
 ): Promise<{ ok: boolean; motivo?: string }> {
   await ensureLoaded();
   if (!_state) return { ok: false, motivo: "Sem batalha ativa." };
@@ -104,7 +105,7 @@ export async function entrarBatalha(
   if (_state.inscricoes.length >= _state.vagas) return { ok: false, motivo: "Batalha lotada!" };
   if (_state.inscricoes.find(j => j.username === username))
     return { ok: false, motivo: "Você já está inscrito!" };
-  _state.inscricoes.push({ username, displayName });
+  _state.inscricoes.push({ username, displayName, image });
   await save();
   return { ok: true };
 }

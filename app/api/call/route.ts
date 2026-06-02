@@ -18,11 +18,11 @@ export async function POST(req: NextRequest) {
     if (!secret || secret !== process.env.BOT_SECRET) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
-    const { username, displayName, jogo } = body;
+    const { username, displayName, jogo, image } = body;
     if (!username || !jogo?.trim()) {
       return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
     }
-    const result = await submeterCall(username, displayName ?? username, jogo);
+    const result = await submeterCall(username, displayName ?? username, jogo, typeof image === "string" ? image : null);
     return NextResponse.json(result, { status: result.ok ? 200 : 400, headers: NO_CACHE });
   }
 

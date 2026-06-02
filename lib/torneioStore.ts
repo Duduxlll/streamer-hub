@@ -3,6 +3,7 @@ import { dbGet, dbSet } from "@/lib/store";
 export interface EscolhaParticipante {
   username: string;
   displayName: string;
+  image?: string | null;
   time: string;
   atualizadaEm: number;
 }
@@ -169,7 +170,8 @@ export async function setValorBonus(faseNum: number, time: string, valor: number
 export async function registrarEscolha(
   username: string,
   displayName: string,
-  time: string
+  time: string,
+  image: string | null = null
 ): Promise<{ ok: boolean; atualizado: boolean; motivo?: string }> {
   await ensureLoaded();
   if (!_state || _state.status !== "ativo")
@@ -192,11 +194,12 @@ export async function registrarEscolha(
   if (idx >= 0) {
     fase.escolhas[idx].time = timeReal;
     fase.escolhas[idx].atualizadaEm = Date.now();
+    if (image) fase.escolhas[idx].image = image;
     await save();
     return { ok: true, atualizado: true };
   }
 
-  fase.escolhas.push({ username, displayName, time: timeReal, atualizadaEm: Date.now() });
+  fase.escolhas.push({ username, displayName, image, time: timeReal, atualizadaEm: Date.now() });
   await save();
   return { ok: true, atualizado: false };
 }

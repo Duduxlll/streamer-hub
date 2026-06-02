@@ -4,6 +4,7 @@ export interface CallEntry {
   id: string;
   username: string;
   displayName: string;
+  image?: string | null;
   jogo: string;
   criadoEm: number;
 }
@@ -53,7 +54,8 @@ export async function fecharCall(): Promise<CallState> {
 export async function submeterCall(
   username: string,
   displayName: string,
-  jogo: string
+  jogo: string,
+  image: string | null = null
 ): Promise<{ ok: boolean; error?: string; state: CallState }> {
   const s = await load();
   if (s.status !== "aberta") return { ok: false, error: "Call fechada", state: s };
@@ -63,6 +65,7 @@ export async function submeterCall(
     id: `${Date.now()}-${username}`,
     username,
     displayName,
+    image,
     jogo: jogo.trim(),
     criadoEm: Date.now(),
   };

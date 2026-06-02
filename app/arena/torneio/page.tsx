@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
 import { isAdmin } from "@/lib/admins";
+import PlayerAvatar from "@/components/PlayerAvatar";
 import type { Torneio } from "@/lib/torneioStore";
 
 const TEAM_COLORS = [
@@ -203,12 +204,16 @@ export default function TorneioPage() {
                             <p className="text-[11px] text-gray-700 text-center py-3">Nenhum ainda</p>
                           ) : participantes.map(p => (
                             <div key={p.username} className="flex items-center gap-2">
-                              <div
-                                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-black"
-                                style={{ background: cor.avatar, color: cor.avatarText }}
-                              >
-                                {p.displayName[0].toUpperCase()}
-                              </div>
+                              {p.image ? (
+                                <PlayerAvatar image={p.image} name={p.displayName} size={20} color={cor.text} />
+                              ) : (
+                                <div
+                                  className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-black"
+                                  style={{ background: cor.avatar, color: cor.avatarText }}
+                                >
+                                  {p.displayName[0].toUpperCase()}
+                                </div>
+                              )}
                               <span className="text-xs text-gray-300 font-medium truncate">{p.displayName}</span>
                             </div>
                           ))}

@@ -8,8 +8,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  const body = await req.json() as { username: string; displayName: string; time: string };
-  const result = await registrarEscolha(body.username, body.displayName, body.time);
+  const body = await req.json() as { username: string; displayName: string; time: string; image?: string | null };
+  const result = await registrarEscolha(body.username, body.displayName, body.time, typeof body.image === "string" ? body.image : null);
 
   if (result.ok && BOT_USER_RESPONDS()) {
     await queueChatMessage(

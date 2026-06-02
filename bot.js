@@ -212,10 +212,12 @@ client.on("message", async (_channel, tags, message, self) => {
 
   if (batalhaComando && msg.toLowerCase() === batalhaComando.toLowerCase()) {
     try {
+      if (!avatarCache.has(login)) await getUserInfo(login);
+      const image = avatarCache.get(login) ?? null;
       const res  = await fetch(`${SITE_URL}/api/batalha/entrar`, {
         method : "POST",
         headers: { "Content-Type": "application/json", "x-bot-secret": BOT_SECRET },
-        body   : JSON.stringify({ username: login, displayName }),
+        body   : JSON.stringify({ username: login, displayName, image }),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -254,10 +256,12 @@ client.on("message", async (_channel, tags, message, self) => {
     const jogo = matchCall[1].trim();
     if (!jogo) return;
     try {
+      if (!avatarCache.has(login)) await getUserInfo(login);
+      const image = avatarCache.get(login) ?? null;
       const res  = await fetch(`${SITE_URL}/api/call`, {
         method : "POST",
         headers: { "Content-Type": "application/json" },
-        body   : JSON.stringify({ action: "submeter", secret: BOT_SECRET, username: login, displayName, jogo }),
+        body   : JSON.stringify({ action: "submeter", secret: BOT_SECRET, username: login, displayName, jogo, image }),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
@@ -278,10 +282,12 @@ client.on("message", async (_channel, tags, message, self) => {
     const time = matchT[1].trim();
     if (!time) return;
     try {
+      if (!avatarCache.has(login)) await getUserInfo(login);
+      const image = avatarCache.get(login) ?? null;
       const res  = await fetch(`${SITE_URL}/api/torneio/participar`, {
         method : "POST",
         headers: { "Content-Type": "application/json", "x-bot-secret": BOT_SECRET },
-        body   : JSON.stringify({ username: login, displayName, time }),
+        body   : JSON.stringify({ username: login, displayName, time, image }),
       });
       const data = await res.json();
       console.log(`🏆  Torneio ${displayName}: ${data.ok ? "registrado" : data.motivo}`);

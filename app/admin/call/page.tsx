@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
+import PlayerAvatar from "@/components/PlayerAvatar";
 import type { CallState, CallEntry } from "@/lib/callStore";
 
 const C = "#06b6d4";
@@ -110,14 +111,16 @@ function EntryRow({ entry, num, onRemover, removing }: {
       }}
     >
       <div
-        className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-xs flex-shrink-0"
+        className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-[11px] flex-shrink-0"
         style={{ background: "rgba(6,182,212,0.12)", color: C, border: "1px solid rgba(6,182,212,0.25)" }}
       >
         {num}
       </div>
 
+      <PlayerAvatar image={entry.image} name={entry.displayName} size={32} color={C} />
+
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-gray-400 font-semibold truncate">@{entry.username}</p>
+        <p className="text-xs text-gray-400 font-semibold truncate">{entry.displayName} · @{entry.username}</p>
         <p className="text-sm font-black text-white truncate leading-tight">{entry.jogo}</p>
       </div>
 

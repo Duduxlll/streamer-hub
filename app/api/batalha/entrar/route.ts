@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 
-  const { username, displayName } = await req.json();
+  const { username, displayName, image } = await req.json();
   if (!username) return NextResponse.json({ error: "username obrigatório" }, { status: 400 });
 
   const batalha = await getBatalha();
@@ -15,6 +15,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, motivo: "Inscrições não estão abertas." });
   }
 
-  const result = await entrarBatalha(username, displayName ?? username);
+  const result = await entrarBatalha(username, displayName ?? username, typeof image === "string" ? image : null);
   return NextResponse.json(result);
 }
