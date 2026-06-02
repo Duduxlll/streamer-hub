@@ -67,8 +67,9 @@ export default function AdminDashboardPage() {
   const [siteStatus, setSiteStatus] = useState<SiteStatus | null>(null);
 
   useEffect(() => {
-    // Config (integrações)
-    fetch("/api/config").then(r => r.ok ? r.json() : null).then(d => setConfig(d)).catch(() => {});
+    // Integrações — usa o TESTE REAL de conexão (mesma fonte da página de Configurações),
+    // para o status bater com o que aparece lá e não dar "piscada"/divergência.
+    fetch("/api/config?test=1").then(r => r.ok ? r.json() : null).then(d => setConfig(d)).catch(() => {});
 
     // Usuários
     fetch("/api/admin/users").then(r => r.ok ? r.json() : null).then(d => {

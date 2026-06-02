@@ -298,7 +298,7 @@ export default function AdminCallPage() {
               disabled={busy}
               className="px-10 py-4 rounded-2xl font-black text-sm transition-all hover:scale-[1.03] active:scale-95 disabled:opacity-50"
               style={{
-                background: `linear-gradient(135deg, ${C}, #0891b2)`,
+                background: `linear-gradient(135deg, ${C}, #16a34a)`,
                 color: "#000",
                 boxShadow: `0 4px 24px rgba(34,197,94,0.3)`,
               }}

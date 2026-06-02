@@ -57,7 +57,7 @@ const FEATURES = [
     icon: "📋",
     title: "Call de Slot",
     description: "Peça o jogo que quer ver! Use !call [jogo] no chat da Twitch quando a call estiver aberta.",
-    color: "#06b6d4",
+    color: "#22c55e",
     href: "/arena/call",
     adminHref: "/admin/call",
     available: true,
@@ -124,7 +124,7 @@ export default function ArenaPage() {
       ? [{ icon: "🎰", label: jackpot!.nome, sub: "Jackpot em andamento — acompanhe ao vivo!", href: "/arena/jackpot", color: "#f59e0b" }]
       : []),
     ...(callLive
-      ? [{ icon: "📋", label: "Call de Slot aberta!", sub: `${callInfo!.entries.length} call${callInfo!.entries.length !== 1 ? "s" : ""} recebida${callInfo!.entries.length !== 1 ? "s" : ""} · use !call [jogo] no chat`, href: "/arena/call", color: "#06b6d4" }]
+      ? [{ icon: "📋", label: "Call de Slot aberta!", sub: `${callInfo!.entries.length} call${callInfo!.entries.length !== 1 ? "s" : ""} recebida${callInfo!.entries.length !== 1 ? "s" : ""} · use !call [jogo] no chat`, href: "/arena/call", color: "#22c55e" }]
       : []),
   ];
 
