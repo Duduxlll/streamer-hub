@@ -25,6 +25,7 @@
 *.pem
 .data/
 .livepix-token.json
+.jackpot.json
 
 # debug
 npm-debug.log*
