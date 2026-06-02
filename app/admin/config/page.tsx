@@ -236,6 +236,42 @@ function AccordionSection({
   );
 }
 
+/* ─── Status de conexão (teste real) ─────────────────────────────────── */
+function ConexaoStatus({ test, testing, onTest }: {
+  test: { ok: boolean; error?: string } | null;
+  testing: boolean;
+  onTest: () => void;
+}) {
+  const style = test === null || testing
+    ? { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }
+    : test.ok
+      ? { background: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.25)" }
+      : { background: "rgba(239,68,68,0.07)", border: "1px solid rgba(239,68,68,0.25)" };
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 rounded-xl" style={style}>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] font-black uppercase tracking-widest text-gray-600 mb-0.5">Status da conexão</p>
+        {testing ? (
+          <p className="text-sm font-black text-gray-400 flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full border-2 border-gray-500 border-t-transparent animate-spin inline-block" /> Testando...
+          </p>
+        ) : test === null ? (
+          <p className="text-sm font-black text-gray-500">Não testado ainda</p>
+        ) : test.ok ? (
+          <p className="text-sm font-black text-green-400">✓ Conectado e funcionando</p>
+        ) : (
+          <p className="text-sm font-black text-red-400 leading-snug">✕ {test.error}</p>
+        )}
+      </div>
+      <button type="button" onClick={onTest} disabled={testing}
+        className="flex-shrink-0 px-3 py-2 rounded-lg text-[11px] font-black transition-all hover:bg-white/5 disabled:opacity-50"
+        style={{ color: "#9ca3af", border: "1px solid rgba(255,255,255,0.12)" }}>
+        {testing ? "..." : "🔄 Testar"}
+      </button>
+    </div>
+  );
+}
+
 /* ─── Página ─────────────────────────────────────────────────────────── */
 export default function AdminConfigPage() {
   const { data: session, status } = useSession();
@@ -262,8 +298,26 @@ export default function AdminConfigPage() {
   const [ggSaving,   setGgSaving]   = useState(false);
   const [ggMsg,      setGgMsg]      = useState<{ ok: boolean; text: string } | null>(null);
 
+  // Resultado do teste REAL de conexão (chama as APIs)
+  const [liveTest, setLiveTest] = useState<{ ok: boolean; error?: string } | null>(null);
+  const [ggTest,   setGgTest]   = useState<{ ok: boolean; error?: string } | null>(null);
+  const [testing,  setTesting]  = useState(false);
+
   const liveMsgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const ggMsgTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const runTest = useCallback(async () => {
+    setTesting(true);
+    try {
+      const res = await fetch("/api/config?test=1");
+      if (res.ok) {
+        const d = await res.json() as { livepix: { ok: boolean; error?: string }; ggpix: { ok: boolean; error?: string } };
+        setLiveTest(d.livepix);
+        setGgTest(d.ggpix);
+      }
+    } catch { /* ignora */ }
+    finally { setTesting(false); }
+  }, []);
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
@@ -286,7 +340,8 @@ export default function AdminConfigPage() {
   useEffect(() => {
     if (status !== "authenticated") return;
     fetchConfig();
-  }, [status, fetchConfig]);
+    runTest();
+  }, [status, fetchConfig, runTest]);
 
   // URL do webhook do LivePix — atualiza em tempo real com o secret digitado
   const livepixWebhookDisplay = (() => {
@@ -324,7 +379,14 @@ export default function AdminConfigPage() {
       });
 
       if (res.ok) {
-        showMsg(setLiveMsg, liveMsgTimer, { ok: true, text: "Credenciais do LivePix salvas com sucesso!" });
+        const d = await res.json().catch(() => ({})) as { test?: { ok: boolean; error?: string } };
+        const test = d.test ?? null;
+        setLiveTest(test);
+        if (test && !test.ok) {
+          showMsg(setLiveMsg, liveMsgTimer, { ok: false, text: `Salvo, mas a conexão falhou: ${test.error}` });
+        } else {
+          showMsg(setLiveMsg, liveMsgTimer, { ok: true, text: "Credenciais salvas e conexão funcionando! ✓" });
+        }
         setLiveClientId(""); setLiveClientSecret(""); setLiveWebhookSec("");
         await fetchConfig();
       } else {
@@ -354,7 +416,14 @@ export default function AdminConfigPage() {
       });
 
       if (res.ok) {
-        showMsg(setGgMsg, ggMsgTimer, { ok: true, text: "Credenciais do GGPix salvas com sucesso!" });
+        const d = await res.json().catch(() => ({})) as { test?: { ok: boolean; error?: string } };
+        const test = d.test ?? null;
+        setGgTest(test);
+        if (test && !test.ok) {
+          showMsg(setGgMsg, ggMsgTimer, { ok: false, text: `Salvo, mas a conexão falhou: ${test.error}` });
+        } else {
+          showMsg(setGgMsg, ggMsgTimer, { ok: true, text: "Credenciais salvas e conexão funcionando! ✓" });
+        }
         setGgApiKey(""); setGgBearer(""); setGgHmac("");
         await fetchConfig();
       } else {
@@ -376,8 +445,9 @@ export default function AdminConfigPage() {
     );
   }
 
-  const ggpixOk   = config?.ggpix.ok   ?? false;
-  const livepixOk = config?.livepix.ok ?? false;
+  // status mostrado = resultado do teste real (quando disponível); senão, existência das credenciais
+  const ggpixOk   = ggTest   ? ggTest.ok   : (config?.ggpix.ok   ?? false);
+  const livepixOk = liveTest ? liveTest.ok : (config?.livepix.ok ?? false);
 
   return (
     <div className="page-enter relative min-h-[calc(100vh-4rem)]">
@@ -425,6 +495,8 @@ export default function AdminConfigPage() {
           onToggle={() => setOpenLive((v) => !v)}
         >
           <form onSubmit={saveLivePix} className="space-y-5">
+
+            <ConexaoStatus test={liveTest} testing={testing} onTest={runTest} />
 
             {/* Instruções */}
             <div className="space-y-3">
@@ -510,6 +582,8 @@ export default function AdminConfigPage() {
           onToggle={() => setOpenGg((v) => !v)}
         >
           <form onSubmit={saveGGPix} className="space-y-5">
+
+            <ConexaoStatus test={ggTest} testing={testing} onTest={runTest} />
 
             {/* Instruções */}
             <div className="space-y-3">

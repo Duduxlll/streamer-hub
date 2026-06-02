@@ -28,6 +28,39 @@ export async function isConfigured(): Promise<boolean> {
   return !!(process.env.LIVEPIX_CLIENT_ID && process.env.LIVEPIX_CLIENT_SECRET);
 }
 
+/**
+ * Testa de verdade se as credenciais do LivePix funcionam, tentando obter
+ * um token OAuth. Detecta credenciais removidas/inválidas no lado do LivePix.
+ */
+export async function testConnection(): Promise<{ ok: boolean; error?: string }> {
+  const { clientId, clientSecret } = await getClientIdAndSecret();
+  if (!clientId || !clientSecret) {
+    return { ok: false, error: "Credenciais não preenchidas" };
+  }
+  // Limpa o cache do token para forçar uma verificação real
+  globalThis.__livepix_token = undefined;
+  try {
+    const res = await fetch("https://oauth.livepix.gg/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type:    "client_credentials",
+        client_id:     clientId,
+        client_secret: clientSecret,
+        scope:         "messages:read",
+      }),
+      cache: "no-store",
+    });
+    if (res.ok) return { ok: true };
+    if (res.status === 401 || res.status === 400) {
+      return { ok: false, error: "O LivePix recusou as credenciais (Client ID/Secret inválidos ou removidos)" };
+    }
+    return { ok: false, error: `O LivePix respondeu com erro (HTTP ${res.status})` };
+  } catch {
+    return { ok: false, error: "Não foi possível conectar ao LivePix" };
+  }
+}
+
 async function getClientToken(): Promise<string> {
   const cached = globalThis.__livepix_token;
   if (cached && cached.expires_at > Date.now() + 60_000) {

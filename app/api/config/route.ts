@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
-import { isConfigured as livepixConfigured } from "@/lib/livepix";
+import { isConfigured as livepixConfigured, testConnection as testLivepix } from "@/lib/livepix";
+import { testConnection as testGgpix } from "@/lib/ggpix";
 import { getCredentials, patchLivePix, patchGGPix, type WebhookAuthMode } from "@/lib/credentials";
 import { getSiteUrl } from "@/lib/site-url";
 import { addLog } from "@/lib/security-log";
@@ -10,10 +11,16 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 const NO_CACHE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!isAdmin(session?.user?.twitchLogin)) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+  }
+
+  // ?test=1 → faz teste REAL de conexão (chama as APIs). Mais lento, usado na página de config.
+  if (req.nextUrl.searchParams.get("test") === "1") {
+    const [livepix, ggpix] = await Promise.all([testLivepix(), testGgpix()]);
+    return NextResponse.json({ livepix, ggpix }, { headers: NO_CACHE });
   }
 
   const [livepixOk, creds] = await Promise.all([livepixConfigured(), getCredentials()]);
@@ -75,7 +82,9 @@ export async function POST(req: NextRequest) {
     await patchLivePix(patch);
     globalThis.__livepix_token = undefined;
     await addLog({ admin: session!.user!.twitchLogin!, action: "config_livepix", detail: "Credenciais LivePix atualizadas" });
-    return NextResponse.json({ ok: true }, { headers: NO_CACHE });
+    // Testa a conexão logo após salvar
+    const test = await testLivepix();
+    return NextResponse.json({ ok: true, test }, { headers: NO_CACHE });
   }
 
   if (type === "ggpix") {
@@ -86,7 +95,9 @@ export async function POST(req: NextRequest) {
     if (typeof body.hmacSecret      === "string")                                 patch.hmacSecret      = body.hmacSecret.trim();
     await patchGGPix(patch);
     await addLog({ admin: session!.user!.twitchLogin!, action: "config_ggpix", detail: "Credenciais GGPix atualizadas" });
-    return NextResponse.json({ ok: true }, { headers: NO_CACHE });
+    // Testa a conexão logo após salvar
+    const test = await testGgpix();
+    return NextResponse.json({ ok: true, test }, { headers: NO_CACHE });
   }
 
   return NextResponse.json({ error: "Tipo inválido" }, { status: 400 });
