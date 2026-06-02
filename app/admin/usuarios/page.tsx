@@ -196,7 +196,11 @@ function SuspendModal({ user, onClose, onSave }: { user: SiteUser; onClose: () =
   );
 }
 
-function UserCard({ user, onAction }: { user: SiteUser; onAction: (type: "ban" | "unban" | "suspend" | "unsuspend" | "history") => void }) {
+function UserCard({ user, onAction, busy = false }: {
+  user: SiteUser;
+  onAction: (type: "ban" | "unban" | "suspend" | "unsuspend" | "history") => void;
+  busy?: boolean;
+}) {
   const isBanned    = user.status === "banido";
   const isSuspended = user.status === "suspenso";
 
@@ -278,18 +282,18 @@ function UserCard({ user, onAction }: { user: SiteUser; onAction: (type: "ban" |
         )}
 
         {isSuspended && (
-          <button onClick={() => onAction("unsuspend")}
-            className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02]"
+          <button onClick={() => onAction("unsuspend")} disabled={busy}
+            className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02] disabled:opacity-50 disabled:scale-100"
             style={{ color: "#4ade80", border: "1px solid rgba(34,197,94,0.25)", background: "rgba(34,197,94,0.06)" }}>
-            ✓ Levantar suspensão
+            {busy ? "..." : "✓ Levantar suspensão"}
           </button>
         )}
 
         {isBanned && (
-          <button onClick={() => onAction("unban")}
-            className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02]"
+          <button onClick={() => onAction("unban")} disabled={busy}
+            className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02] disabled:opacity-50 disabled:scale-100"
             style={{ color: "#4ade80", border: "1px solid rgba(34,197,94,0.25)", background: "rgba(34,197,94,0.06)" }}>
-            ✓ Desbanir
+            {busy ? "..." : "✓ Desbanir"}
           </button>
         )}
       </div>
@@ -298,12 +302,14 @@ function UserCard({ user, onAction }: { user: SiteUser; onAction: (type: "ban" |
 }
 
 export default function UsuariosPage() {
-  const [users,   setUsers]   = useState<SiteUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [busca,   setBusca]   = useState("");
-  const [filtro,  setFiltro]  = useState<"todos" | "ativo" | "banido" | "suspenso">("todos");
-  const [modal,   setModal]   = useState<ModalState>(null);
-  const [msg,     setMsg]     = useState<{ text: string; ok: boolean } | null>(null);
+  const [users,     setUsers]     = useState<SiteUser[]>([]);
+  const [loading,   setLoading]   = useState(true);
+  const [busca,     setBusca]     = useState("");
+  const [filtro,    setFiltro]    = useState<"todos" | "ativo" | "banido" | "suspenso">("todos");
+  const [modal,     setModal]     = useState<ModalState>(null);
+  const [msg,       setMsg]       = useState<{ text: string; ok: boolean } | null>(null);
+  // twitchId do usuário sendo processado — impede double-click
+  const [busyUser,  setBusyUser]  = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
     const res = await fetch("/api/admin/users");
@@ -422,24 +428,31 @@ export default function UsuariosPage() {
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-2">
+      {/* Scroll interno — só a lista de usuários rola, não a página inteira */}
+      <div
+        className="overflow-y-auto pr-1"
+        style={{ maxHeight: "calc(100vh - 340px)", scrollbarWidth: "thin", scrollbarColor: "rgba(255,186,0,0.2) transparent" }}>
+        <div className="grid gap-3 sm:grid-cols-2">
         {filtered.map(u => (
           <UserCard key={u.twitchId} user={u} onAction={(type) => {
             if (type === "history") { setModal({ type: "history", user: u }); return; }
             if (type === "ban")     { setModal({ type: "ban",     user: u }); return; }
             if (type === "suspend") { setModal({ type: "suspend", user: u }); return; }
             if (type === "unban") {
-              apiAction("unban", u.twitchLogin).then(ok =>
-                flash(ok ? `@${u.twitchLogin} desbanido.` : "Erro ao desbanir", ok)
-              );
+              setBusyUser(u.twitchId);
+              apiAction("unban", u.twitchLogin)
+                .then(ok => flash(ok ? `@${u.twitchLogin} desbanido.` : "Erro ao desbanir", ok))
+                .finally(() => setBusyUser(null));
             }
             if (type === "unsuspend") {
-              apiAction("unsuspend", u.twitchLogin).then(ok =>
-                flash(ok ? `Suspensão de @${u.twitchLogin} levantada.` : "Erro", ok)
-              );
+              setBusyUser(u.twitchId);
+              apiAction("unsuspend", u.twitchLogin)
+                .then(ok => flash(ok ? `Suspensão de @${u.twitchLogin} levantada.` : "Erro", ok))
+                .finally(() => setBusyUser(null));
             }
-          }} />
+          }} busy={busyUser === u.twitchId} />
         ))}
+        </div>
       </div>
     </div>
   );

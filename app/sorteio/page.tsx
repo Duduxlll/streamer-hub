@@ -182,7 +182,7 @@ export default function SorteioListPage() {
   const finalizados = sorteios.filter(s => s.status === "finalizado");
   const [historicoAberto, setHistoricoAberto] = useState(false);
 
-  if (loading || status === "loading" || (status === "authenticated" && admin)) {
+  if (loading || status === "loading") {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
         <div className="w-8 h-8 rounded-full border-2 border-[#ffba00] border-t-transparent animate-spin" />
