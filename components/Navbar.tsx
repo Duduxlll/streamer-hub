@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { isAdmin } from "@/lib/admins";
+import { JONBET_URL, JONBET_LOGO } from "@/lib/partner";
 
 function NavLink({ href, label, from, to, alsoActiveOn }: { href: string; label: string; from: string; to: string; alsoActiveOn?: string[] }) {
   const pathname = usePathname();
@@ -220,20 +221,32 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
 
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#1d4ed8]/40 shadow-lg shadow-blue-950/50 group-hover:shadow-blue-700/40 transition-all flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#1d4ed8]/40 shadow-lg shadow-blue-950/50 group-hover:shadow-blue-700/40 transition-all flex-shrink-0">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="https://static-cdn.jtvnw.net/jtv_user_pictures/8c7083c8-3b8e-4f5e-abe2-d681f5b6df8b-profile_image-300x300.png"
+                  alt="stainzincs"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <span className="font-bold text-lg tracking-tight">
+                <span className="text-white">stain</span>
+                <span className="gradient-text">zincs</span>
+              </span>
+            </Link>
+
+            {/* Parceiro oficial — JonBet */}
+            <a href={JONBET_URL} target="_blank" rel="noopener noreferrer"
+              className="hidden sm:flex items-center gap-2 pl-3 transition-all hover:opacity-80"
+              style={{ borderLeft: "1px solid rgba(255,255,255,0.1)" }}
+              title="Parceiro oficial — JonBet">
+              <span className="text-[9px] font-black uppercase tracking-widest text-gray-600 leading-none">Parceiro</span>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://static-cdn.jtvnw.net/jtv_user_pictures/8c7083c8-3b8e-4f5e-abe2-d681f5b6df8b-profile_image-300x300.png"
-                alt="stainzincs"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <span className="font-bold text-lg tracking-tight">
-              <span className="text-white">stain</span>
-              <span className="gradient-text">zincs</span>
-            </span>
-          </Link>
+              <img src={JONBET_LOGO} alt="JonBet" className="h-4 w-auto" />
+            </a>
+          </div>
 
           <div className="hidden md:flex items-center gap-2">
             <NavLink href="/" label="Home" from="#93c5fd" to="#3b82f6" />

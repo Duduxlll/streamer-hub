@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { JONBET_URL, JONBET_LOGO } from "@/lib/partner";
 
 function TwitchIcon({ className }: { className?: string }) {
   return (
@@ -104,6 +105,14 @@ export default function Footer() {
                   stainzincs
                 </span>
               </span>
+
+              {/* x JonBet — parceiro oficial */}
+              <span className="text-2xl font-black text-gray-700 mx-1">×</span>
+              <a href={JONBET_URL} target="_blank" rel="noopener noreferrer"
+                className="transition-all hover:opacity-80" title="Parceiro oficial — JonBet">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={JONBET_LOGO} alt="JonBet" className="h-7 w-auto" />
+              </a>
             </div>
           </div>
 

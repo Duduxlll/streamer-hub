@@ -1,5 +1,6 @@
 import TwitchStatus from "@/components/TwitchStatus";
 import SorteioDestaque from "@/components/SorteioDestaque";
+import { JONBET_URL, JONBET_LOGO } from "@/lib/partner";
 
 function TwitchIcon({ className }: { className?: string }) {
   return (
@@ -59,6 +60,18 @@ export default function HomePage() {
                 <TwitchIcon className="w-5 h-5 text-[#9146ff]" />
               </a>
 
+              {/* Logo JonBet — parceiro oficial, clicável */}
+              <a
+                href={JONBET_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Parceiro oficial — JonBet"
+                className="flex items-center px-4 py-2 rounded-full transition-all hover:scale-[1.04]"
+                style={{ background: "rgba(31,224,107,0.1)", border: "1px solid rgba(31,224,107,0.35)", boxShadow: "0 0 18px rgba(31,224,107,0.12)" }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={JONBET_LOGO} alt="JonBet" className="h-5 w-auto" />
+              </a>
             </div>
           </div>
 
@@ -76,6 +89,51 @@ export default function HomePage() {
               Lives de cassino ao vivo e a melhor comunidade do Brasil. Entre e participe!
             </p>
 
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Banner Parceiro Oficial — JonBet ─── */}
+      <section className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="rounded-3xl overflow-hidden relative"
+          style={{
+            background: "linear-gradient(135deg, rgba(31,224,107,0.12), rgba(8,20,12,0.9))",
+            border: "1px solid rgba(31,224,107,0.3)",
+            boxShadow: "0 0 60px rgba(31,224,107,0.1)",
+          }}>
+          {/* brilho de fundo */}
+          <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, rgba(31,224,107,0.18), transparent 70%)", filter: "blur(40px)" }} />
+
+          <div className="relative px-6 sm:px-10 py-10 flex flex-col lg:flex-row items-center gap-8 text-center lg:text-left">
+            <div className="flex-1">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4"
+                style={{ background: "rgba(31,224,107,0.12)", border: "1px solid rgba(31,224,107,0.3)" }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#1fe06b] animate-pulse" />
+                <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: "#1fe06b" }}>Parceiro Oficial</span>
+              </div>
+
+              <div className="mb-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={JONBET_LOGO} alt="JonBet" className="h-10 w-auto mx-auto lg:mx-0" />
+              </div>
+
+              <p className="text-gray-400 text-sm sm:text-base max-w-lg leading-relaxed mb-1">
+                A <strong className="text-white">JonBet</strong> é a casa oficial do <strong className="text-white">stainzincs</strong>!
+                Cassino e apostas com saque rápido via Pix. Cadastre-se agora e jogue junto com a comunidade. 🎰
+              </p>
+              <p className="text-[11px] text-gray-600">+18 · Jogue com responsabilidade</p>
+            </div>
+
+            <a
+              href={JONBET_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 px-8 py-4 rounded-2xl font-black text-black text-sm transition-all hover:scale-[1.04] active:scale-95"
+              style={{ background: "linear-gradient(135deg, #1fe06b, #16b85a)", boxShadow: "0 8px 28px rgba(31,224,107,0.35)" }}
+            >
+              🎁 Cadastre-se agora
+            </a>
           </div>
         </div>
       </section>
