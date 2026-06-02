@@ -79,7 +79,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
         className="w-full max-w-xs rounded-3xl overflow-hidden flex flex-col max-h-[92vh]"
         onClick={e => e.stopPropagation()}
         style={{
-          background: "rgba(5,4,16,0.99)",
+          background: "rgba(6,15,9,0.99)",
           border: "1px solid rgba(255,186,0,0.25)",
           boxShadow: "0 20px 70px rgba(0,0,0,0.75), 0 0 60px rgba(255,186,0,0.08)",
           animation: "pixModalIn 0.32s cubic-bezier(0.16, 1, 0.3, 1)",
@@ -198,7 +198,7 @@ function PagamentoCard({ p, onEnviar, onRemover, busy }: {
   return (
     <div className="rounded-2xl overflow-hidden transition-all"
       style={{
-        background: p.status === "enviado" ? "rgba(5,20,5,0.7)" : p.status === "falhou" ? "rgba(20,5,5,0.7)" : "rgba(5,4,16,0.92)",
+        background: p.status === "enviado" ? "rgba(5,20,5,0.7)" : p.status === "falhou" ? "rgba(20,5,5,0.7)" : "rgba(6,15,9,0.92)",
         border: p.status === "enviado" ? "1px solid rgba(74,222,128,0.18)" : p.status === "falhou" ? "1px solid rgba(248,113,113,0.18)" : "1px solid rgba(255,186,0,0.15)",
         backdropFilter: "blur(20px)",
       }}>
@@ -360,7 +360,7 @@ export default function PagamentosPage() {
 
       {!loading && pagamentos.length === 0 && (
         <div className="text-center py-16 rounded-2xl"
-          style={{ background: "rgba(5,4,16,0.7)", border: "1px solid rgba(255,255,255,0.06)" }}>
+          style={{ background: "rgba(6,15,9,0.7)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <p className="text-3xl mb-3">💳</p>
           <p className="text-sm font-black text-white mb-1">Nenhum pagamento na fila</p>
           <p className="text-xs text-gray-600">Pagamentos aparecem aqui quando você usa &quot;Enviar para Pagamentos&quot; no sorteio ou envio manual.</p>

@@ -284,7 +284,7 @@ export default function AdminCallPage() {
         {!aberta ? (
           /* ── FECHADA ── */
           <div className="rounded-3xl overflow-hidden text-center py-16 px-6"
-            style={{ background: "rgba(5,7,16,0.95)", border: "1px solid rgba(6,182,212,0.12)" }}>
+            style={{ background: "rgba(6,16,10,0.95)", border: "1px solid rgba(6,182,212,0.12)" }}>
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-6"
               style={{ background: "rgba(6,182,212,0.06)", border: "1px solid rgba(6,182,212,0.15)" }}>
               <span className="text-4xl">📋</span>
@@ -319,7 +319,7 @@ export default function AdminCallPage() {
 
             {/* Lista de entries */}
             <div className="rounded-3xl overflow-hidden"
-              style={{ background: "rgba(5,7,16,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              style={{ background: "rgba(6,16,10,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}>
               <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/5">
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex-1">Calls recebidas</p>
                 <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full"

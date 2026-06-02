@@ -34,7 +34,7 @@ export default function TwitchStatus() {
 
   if (!data) {
     return (
-      <div className="flex items-center gap-1.5 bg-[#070f1f] border border-[#16a34a]/30 rounded-full px-4 py-1.5 whitespace-nowrap">
+      <div className="flex items-center gap-1.5 bg-[#091a11] border border-[#16a34a]/30 rounded-full px-4 py-1.5 whitespace-nowrap">
         <span className="w-2 h-2 rounded-full bg-gray-600 animate-pulse" />
         <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">carregando</span>
       </div>
@@ -43,7 +43,7 @@ export default function TwitchStatus() {
 
   if (data.isLive) {
     return (
-      <div className="flex items-center gap-2 bg-[#070f1f] border border-red-500/50 rounded-full px-4 py-1.5 shadow-lg shadow-red-950/40 whitespace-nowrap">
+      <div className="flex items-center gap-2 bg-[#091a11] border border-red-500/50 rounded-full px-4 py-1.5 shadow-lg shadow-red-950/40 whitespace-nowrap">
         <span className="live-dot w-2 h-2 rounded-full bg-red-500" style={{ background: "#ef4444" }} />
         <span className="text-xs font-black text-red-400 uppercase tracking-widest">Ao Vivo</span>
         {data.viewerCount !== undefined && (
@@ -60,7 +60,7 @@ export default function TwitchStatus() {
   }
 
   return (
-    <div className="flex items-center gap-1.5 bg-[#070f1f] border border-white/8 rounded-full px-4 py-1.5 whitespace-nowrap">
+    <div className="flex items-center gap-1.5 bg-[#091a11] border border-white/8 rounded-full px-4 py-1.5 whitespace-nowrap">
       <span className="w-2 h-2 rounded-full bg-gray-600" />
       <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Offline</span>
     </div>

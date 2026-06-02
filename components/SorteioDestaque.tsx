@@ -90,7 +90,7 @@ function SorteioCard({ s }: { s: Sorteio }) {
       <div
         className="relative rounded-2xl overflow-hidden"
         style={{
-          background: "rgba(8,10,20,0.95)",
+          background: "rgba(8,20,13,0.95)",
           border: "1px solid rgba(255,186,0,0.22)",
           boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
         }}

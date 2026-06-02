@@ -150,7 +150,7 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
 
         {admin && (
           <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wide"
-            style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.35)" }}>
+            style={{ background: "rgba(255,186,0,0.15)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.35)" }}>
             👑 Admin
           </span>
         )}
@@ -166,13 +166,13 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-white/8 bg-[#070f1f] shadow-2xl shadow-black/50 z-50 overflow-hidden">
+          <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-white/8 bg-[#091a11] shadow-2xl shadow-black/50 z-50 overflow-hidden">
             <div className="px-4 py-3 border-b border-white/5">
               <div className="flex items-center gap-2 mb-0.5">
                 <p className="text-sm font-bold text-white truncate">{name}</p>
                 {admin && (
                   <span className="text-[10px] font-black px-1.5 py-0.5 rounded-full"
-                    style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e" }}>
+                    style={{ background: "rgba(255,186,0,0.15)", color: "#ffba00" }}>
                     👑 Admin
                   </span>
                 )}
@@ -185,7 +185,7 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
                   href="/admin"
                   onClick={() => setOpen(false)}
                   className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold hover:bg-white/5 transition-colors"
-                  style={{ color: "#22c55e" }}
+                  style={{ color: "#ffba00" }}
                 >
                   <span className="text-base">◈</span>
                   <span className="flex-1">Painel Admin</span>
@@ -251,7 +251,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-2">
             <NavLink href="/" label="Home" from="#86efac" to="#22c55e" />
             <NavLink href="/arena"   label="Arena"   from="#c084fc" to="#9146ff" />
-            <NavLink href="/sorteio" label="Sorteio" from="#22c55e" to="#e6a000" />
+            <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" />
             <NavLink href="/gorjeta" label="Gorjeta" from="#4ade80" to="#22c55e" />
           </div>
 
@@ -298,14 +298,14 @@ export default function Navbar() {
               <NavLink href="/arena"   label="Arena"   from="#c084fc" to="#9146ff" />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
-              <NavLink href="/sorteio" label="Sorteio" from="#22c55e" to="#e6a000" />
+              <NavLink href="/sorteio" label="Sorteio" from="#ffba00" to="#e6a000" />
             </div>
             <div onClick={() => setOpen(false)} className="block px-0">
               <NavLink href="/gorjeta" label="Gorjeta" from="#4ade80" to="#22c55e" />
             </div>
             {admin && (
               <div onClick={() => setOpen(false)} className="block px-0">
-                <NavLink href="/admin" label="Painel Admin" from="#22c55e" to="#ff8c00" alsoActiveOn={["/admin"]} />
+                <NavLink href="/admin" label="Painel Admin" from="#ffba00" to="#ff8c00" alsoActiveOn={["/admin"]} />
               </div>
             )}
             <a

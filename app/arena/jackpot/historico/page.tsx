@@ -20,7 +20,7 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
 
   return (
     <div className="rounded-2xl overflow-hidden transition-all"
-      style={{ background: "rgba(8,10,20,0.97)", border: "1px solid rgba(245,158,11,0.15)", backdropFilter: "blur(12px)" }}>
+      style={{ background: "rgba(8,20,13,0.97)", border: "1px solid rgba(245,158,11,0.15)", backdropFilter: "blur(12px)" }}>
 
       {/* Header — clicável */}
       <button
@@ -204,7 +204,7 @@ export default function JackpotHistoricoPage() {
 
         {historico !== null && historico.length === 0 && (
           <div className="rounded-2xl text-center py-20 px-6"
-            style={{ background: "rgba(8,10,20,0.97)", border: "1px solid rgba(245,158,11,0.1)" }}>
+            style={{ background: "rgba(8,20,13,0.97)", border: "1px solid rgba(245,158,11,0.1)" }}>
             <p className="text-4xl mb-4">🎰</p>
             <p className="text-base font-black text-white mb-2">Nenhuma batalha ainda</p>
             <p className="text-sm text-gray-600">O histórico aparece aqui após a primeira rodada ser finalizada.</p>

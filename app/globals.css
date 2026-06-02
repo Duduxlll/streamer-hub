@@ -6,8 +6,8 @@
   --blue-text: #4ade80;
   --blue-dark: #0a2e1a;
   --blue-deeper: #04140c;
-  --bg-dark: #030610;
-  --bg-card: #070f1f;
+  --bg-dark: #040e09;
+  --bg-card: #091a11;
   --bg-card2: #0a1f14;
   --twitch-purple: #9146ff;
 }
@@ -373,7 +373,7 @@ body {
 .navbar-blur {
   backdrop-filter: blur(28px) saturate(200%);
   -webkit-backdrop-filter: blur(28px) saturate(200%);
-  background: rgba(3,6,16,0.92);
+  background: rgba(4,14,9,0.92);
   border-bottom: 1px solid rgba(22,163,74,0.12);
 }
 

@@ -18,7 +18,7 @@ function IdleRoleta({ jogadores }: { jogadores: Jackpot["jogadores"] }) {
   const items = Array.from({ length: 20 }, (_, i) => jogadores[i % jogadores.length]);
   const all = [...items, ...items];
   return (
-    <div className="relative overflow-hidden" style={{ height: 100, background: "rgba(8,10,20,0.98)" }}>
+    <div className="relative overflow-hidden" style={{ height: 100, background: "rgba(8,20,13,0.98)" }}>
       <style>{`
         @keyframes idle-jk {
           from { transform: translateX(0); }
@@ -32,9 +32,9 @@ function IdleRoleta({ jogadores }: { jogadores: Jackpot["jogadores"] }) {
         <div className="w-0 h-0" style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderBottom: "8px solid rgba(245,158,11,0.4)" }} />
       </div>
       <div className="absolute inset-y-0 left-0 w-32 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(90deg,rgba(8,10,20,1) 0%,transparent 100%)" }} />
+        style={{ background: "linear-gradient(90deg,rgba(8,20,13,1) 0%,transparent 100%)" }} />
       <div className="absolute inset-y-0 right-0 w-32 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(270deg,rgba(8,10,20,1) 0%,transparent 100%)" }} />
+        style={{ background: "linear-gradient(270deg,rgba(8,20,13,1) 0%,transparent 100%)" }} />
       <div className="absolute inset-0 flex items-center px-2 overflow-hidden">
         <div style={{ display: "flex", gap: RG, width: "max-content", animation: "idle-jk 22s linear infinite" }}>
           {all.map((p, i) => (
@@ -89,7 +89,7 @@ function SpinRoleta({ randomPool, target, onFinished }: {
   }, []);
 
   return (
-    <div className="relative overflow-hidden" style={{ height: 110, background: "rgba(8,10,20,0.98)" }}>
+    <div className="relative overflow-hidden" style={{ height: 110, background: "rgba(8,20,13,0.98)" }}>
       <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 transition-all duration-500">
         <div className="w-0 h-0" style={{ borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderTop: `10px solid ${finalizado ? "#f59e0b" : "rgba(245,158,11,0.5)"}` }} />
       </div>
@@ -97,9 +97,9 @@ function SpinRoleta({ randomPool, target, onFinished }: {
         <div className="w-0 h-0" style={{ borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderBottom: `10px solid ${finalizado ? "#f59e0b" : "rgba(245,158,11,0.5)"}` }} />
       </div>
       <div className="absolute inset-y-0 left-0 w-36 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(90deg,rgba(8,10,20,1) 0%,rgba(8,10,20,0.7) 65%,transparent 100%)" }} />
+        style={{ background: "linear-gradient(90deg,rgba(8,20,13,1) 0%,rgba(8,20,13,0.7) 65%,transparent 100%)" }} />
       <div className="absolute inset-y-0 right-0 w-36 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(270deg,rgba(8,10,20,1) 0%,rgba(8,10,20,0.7) 65%,transparent 100%)" }} />
+        style={{ background: "linear-gradient(270deg,rgba(8,20,13,1) 0%,rgba(8,20,13,0.7) 65%,transparent 100%)" }} />
       <div className="absolute inset-0 flex items-center px-2 overflow-hidden">
         <div ref={stripRef} style={{ display: "flex", gap: RG, willChange: "transform" }}>
           {strip.map((p, i) => {
@@ -251,7 +251,7 @@ export default function AdminJackpotPage() {
             </span>
             <h1 className="text-3xl font-black text-white">Jackpot</h1>
           </div>
-          <div className="rounded-2xl border border-white/10 p-6" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
+          <div className="rounded-2xl border border-white/10 p-6" style={{ background: "rgba(8,20,13,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-5">Criar Sessão</p>
             <div className="space-y-3 mb-5">
               <div>
@@ -325,7 +325,7 @@ export default function AdminJackpotPage() {
               )}
             </div>
           </div>
-          <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
+          <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,20,13,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
               <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Ranking</p>
               <span className="text-[10px] font-black text-gray-700">{rankingSorted.length} participantes · {jackpot.nome}</span>
@@ -403,7 +403,7 @@ export default function AdminJackpotPage() {
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
+          <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,20,13,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">Adicionar Jogador</p>
             <div className="flex gap-2">
               <input value={pNome} onChange={e => setPNome(e.target.value)}
@@ -429,7 +429,7 @@ export default function AdminJackpotPage() {
           </div>
 
           {total > 0 && (
-            <div className="rounded-2xl border border-white/10 overflow-hidden" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
+            <div className="rounded-2xl border border-white/10 overflow-hidden" style={{ background: "rgba(8,20,13,0.97)", backdropFilter: "blur(12px)" }}>
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Jogadores ({total})</p>
                 {custo > 0 && <p className="text-xs font-black text-amber-400">Custo total: R$ {custo.toLocaleString("pt-BR")}</p>}
@@ -566,7 +566,7 @@ export default function AdminJackpotPage() {
         <div
           className="rounded-2xl border overflow-hidden"
           style={{
-            background: "rgba(8,10,20,0.98)",
+            background: "rgba(8,20,13,0.98)",
             borderColor: spinning ? "rgba(245,158,11,0.35)" : !waitingToSpin && jogadorAtual ? "rgba(34,197,94,0.3)" : "rgba(255,255,255,0.08)",
             boxShadow: spinning ? "0 0 40px rgba(245,158,11,0.12)" : "none",
             transition: "all 0.4s ease",
@@ -625,7 +625,7 @@ export default function AdminJackpotPage() {
             className="rounded-3xl border overflow-hidden"
             style={{
               borderColor: "rgba(34,197,94,0.35)",
-              background: "linear-gradient(135deg, rgba(34,197,94,0.07), rgba(8,10,20,0.98))",
+              background: "linear-gradient(135deg, rgba(34,197,94,0.07), rgba(8,20,13,0.98))",
               boxShadow: "0 0 50px rgba(34,197,94,0.1)",
               animation: "jkRegIn 0.4s ease-out",
             }}
@@ -703,7 +703,7 @@ export default function AdminJackpotPage() {
         </div>{/* ════ fim COLUNA CENTRAL ════ */}
 
         {/* ════ COLUNA ESQUERDA — Aguardando ════ */}
-        <div className="order-2 lg:order-1 rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
+        <div className="order-2 lg:order-1 rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,20,13,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">
                 ⏳ Aguardando ({restantes})
@@ -797,7 +797,7 @@ export default function AdminJackpotPage() {
         </div>{/* ════ fim COLUNA ESQUERDA ════ */}
 
         {/* ════ COLUNA DIREITA — Placar ao Vivo ════ */}
-        <div className="order-3 rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.97)", backdropFilter: "blur(12px)" }}>
+        <div className="order-3 rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,20,13,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">🏆 Placar ao Vivo</p>
               <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-green-500/10 text-green-400">{sorted.length}</span>

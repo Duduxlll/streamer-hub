@@ -79,7 +79,7 @@ type HistoricoItem = { id: string; saldoTotal: number; totalEnviado: number; tra
 function HistoricoCard({ h, num }: { h: HistoricoItem; num: number }) {
   const [expanded, setExpanded] = useState(false);
   return (
-    <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,4,18,0.85)", border: "1px solid rgba(255,255,255,0.06)" }}>
+    <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.85)", border: "1px solid rgba(255,255,255,0.06)" }}>
       <button className="w-full px-5 py-4 flex items-center gap-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors text-left" onClick={() => setExpanded(e => !e)}>
         <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-xs text-black" style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>#{num}</div>
         <div className="flex-1 min-w-0">
@@ -128,7 +128,7 @@ function ScreenshotModal({ id, onClose }: { id: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
       <div className={`relative w-full rounded-3xl overflow-hidden transition-all duration-300 ${zoomed ? "max-w-4xl" : "max-w-lg"}`}
-        style={{ background: "rgba(6,4,18,0.98)", border: "1px solid rgba(255,186,0,0.2)", boxShadow: "0 0 60px rgba(255,186,0,0.08)" }}
+        style={{ background: "rgba(6,17,10,0.98)", border: "1px solid rgba(255,186,0,0.2)", boxShadow: "0 0 60px rgba(255,186,0,0.08)" }}
         onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/5">
           <span className="text-sm font-black text-white">Comprovante de depósito</span>
@@ -220,7 +220,7 @@ function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
       <div className="w-full max-w-sm rounded-3xl overflow-hidden"
-        style={{ background: "rgba(6,4,18,0.98)", border: "1px solid rgba(255,186,0,0.3)", boxShadow: "0 0 80px rgba(255,186,0,0.1)" }}>
+        style={{ background: "rgba(6,17,10,0.98)", border: "1px solid rgba(255,186,0,0.3)", boxShadow: "0 0 80px rgba(255,186,0,0.1)" }}>
 
         {/* Header */}
         <div className="px-6 pt-6 pb-4 text-center border-b border-white/5">
@@ -321,7 +321,7 @@ function ConfirmModal({ title, desc, icon, confirmLabel = "Confirmar", onConfirm
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md" onClick={onClose}>
       <div className="w-full max-w-xs rounded-3xl overflow-hidden"
         style={{
-          background: "rgba(6,4,18,0.99)",
+          background: "rgba(6,17,10,0.99)",
           border: "1px solid rgba(248,113,113,0.25)",
           boxShadow: "0 0 80px rgba(248,113,113,0.1), 0 24px 60px rgba(0,0,0,0.7)",
           animation: "fadeInUp 0.25s ease-out",
@@ -391,7 +391,7 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onD
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden transition-all" style={{ background: "rgba(6,4,18,0.9)", border: `1px solid ${borderColor}` }}>
+    <div className="rounded-2xl overflow-hidden transition-all" style={{ background: "rgba(6,17,10,0.9)", border: `1px solid ${borderColor}` }}>
       <div className="px-5 pt-4 pb-3 flex items-start gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -655,7 +655,7 @@ export default function AdminGorjetaPage() {
           <div className="space-y-4">
             {!sessao || sessao.status === "fechada" ? (
               /* Abrir sessão */
-              <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,4,18,0.9)", border: "1px solid rgba(255,186,0,0.15)", boxShadow: "0 0 40px rgba(255,186,0,0.04)" }}>
+              <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.9)", border: "1px solid rgba(255,186,0,0.15)", boxShadow: "0 0 40px rgba(255,186,0,0.04)" }}>
                 <div className="px-6 py-5 border-b border-white/5">
                   <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest mb-1">Nova sessão</p>
                   <h2 className="text-lg font-black text-white">Abrir gorjeta</h2>
@@ -682,7 +682,7 @@ export default function AdminGorjetaPage() {
             ) : (
               <div className="space-y-4">
                 {/* Status + saldo */}
-                <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,4,18,0.95)", border: "1px solid rgba(255,186,0,0.25)", boxShadow: "0 0 50px rgba(255,186,0,0.06)" }}>
+                <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.95)", border: "1px solid rgba(255,186,0,0.25)", boxShadow: "0 0 50px rgba(255,186,0,0.06)" }}>
                   <div className="flex items-center gap-3 px-6 py-4 border-b border-white/5">
                     <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
                       {sessao.status === "aberta" && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ffba00] opacity-75" />}
@@ -724,7 +724,7 @@ export default function AdminGorjetaPage() {
 
                 {/* Participantes */}
                 {sessao.participantes.length > 0 && (
-                  <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,4,18,0.85)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.85)", border: "1px solid rgba(255,255,255,0.06)" }}>
                     <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/5">
                       <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex-1">Inscritos</p>
                       <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full" style={{ background: "rgba(255,186,0,0.1)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.2)" }}>{sessao.participantes.length}</span>
@@ -747,7 +747,7 @@ export default function AdminGorjetaPage() {
                 )}
 
                 {/* Tabs sortear / manual */}
-                <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,4,18,0.9)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.9)", border: "1px solid rgba(255,255,255,0.07)" }}>
                   {/* Sub-tabs */}
                   <div className="flex border-b border-white/5">
                     {(["sortear", "manual"] as const).map(t => (
@@ -865,7 +865,7 @@ export default function AdminGorjetaPage() {
 
                 {/* Histórico de transações da sessão */}
                 {sessao.transacoes.length > 0 && (
-                  <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,4,18,0.8)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                  <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.8)", border: "1px solid rgba(255,255,255,0.05)" }}>
                     <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest px-5 py-3 border-b border-white/5">PIX enviados nesta sessão</p>
                     <div className="px-5 py-3 space-y-2 max-h-48 overflow-y-auto">
                       {[...sessao.transacoes].reverse().map(t => (

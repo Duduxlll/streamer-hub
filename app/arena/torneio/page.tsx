@@ -86,7 +86,7 @@ export default function TorneioPage() {
         </div>
 
         {!torneio ? (
-          <div className="text-center py-20 rounded-2xl border border-white/10" style={{ background: "rgba(5,7,16,0.88)" }}>
+          <div className="text-center py-20 rounded-2xl border border-white/10" style={{ background: "rgba(6,16,10,0.88)" }}>
             <p className="text-6xl mb-4">🏆</p>
             <p className="text-white font-black text-xl mb-2">Sem torneio ativo</p>
             <p className="text-gray-600 text-sm max-w-xs mx-auto leading-relaxed">
@@ -128,7 +128,7 @@ export default function TorneioPage() {
             )}
             {fase?.status === "aberta" && (
               <div className="rounded-2xl border border-purple-500/25 p-5 mb-6"
-                style={{ background: "rgba(5,7,16,0.92)", boxShadow: "0 0 30px rgba(145,70,255,0.10)" }}>
+                style={{ background: "rgba(6,16,10,0.92)", boxShadow: "0 0 30px rgba(145,70,255,0.10)" }}>
                 <p className="text-[11px] font-black text-purple-400 uppercase tracking-widest mb-1.5">
                   ⚡ Como participar
                 </p>
@@ -168,7 +168,7 @@ export default function TorneioPage() {
                         key={time}
                         className={`rounded-2xl border p-4 flex flex-col transition-all ${isElim ? "opacity-40" : ""}`}
                         style={{
-                          background: `linear-gradient(135deg, ${cor.bg} 0%, rgba(5,7,16,0.92) 100%)`,
+                          background: `linear-gradient(135deg, ${cor.bg} 0%, rgba(6,16,10,0.92) 100%)`,
                           borderColor: cor.border,
                           boxShadow: isElim ? undefined : `0 0 24px ${cor.glow}`,
                         }}
@@ -228,7 +228,7 @@ export default function TorneioPage() {
               <div
                 className="rounded-2xl border border-white/12 p-5"
                 style={{
-                  background: "rgba(5,7,16,0.90)",
+                  background: "rgba(6,16,10,0.90)",
                   boxShadow: "0 0 20px rgba(0,0,0,0.2)",
                 }}
               >

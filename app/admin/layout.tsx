@@ -45,11 +45,11 @@ function SideLink({
     <Link href={href} onClick={onClose}
       className="flex items-center gap-2.5 pl-9 pr-3 py-1.5 rounded-xl text-xs font-bold transition-all relative overflow-hidden"
       style={active
-        ? { background: "rgba(34,197,94,0.12)", color: "#22c55e", boxShadow: "inset 0 0 12px rgba(34,197,94,0.06)" }
+        ? { background: "rgba(255,186,0,0.12)", color: "#ffba00", boxShadow: "inset 0 0 12px rgba(255,186,0,0.06)" }
         : { color: "#4b5563" }}>
       {active && (
         <span className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-yellow-400"
-          style={{ boxShadow: "0 0 6px #22c55e" }} />
+          style={{ boxShadow: "0 0 6px #ffba00" }} />
       )}
       <span className="text-sm w-4 text-center flex-shrink-0">{icon}</span>
       <span className="truncate flex-1">{label}</span>
@@ -125,11 +125,11 @@ function SidebarContent({ status, onClose }: { status: StatusData; onClose?: () 
               src={STREAMER_IMG}
               alt="stainzincs"
               className="w-8 h-8 rounded-xl object-cover"
-              style={{ border: "2px solid rgba(34,197,94,0.4)", boxShadow: "0 0 12px rgba(34,197,94,0.25)" }}
+              style={{ border: "2px solid rgba(255,186,0,0.4)", boxShadow: "0 0 12px rgba(255,186,0,0.25)" }}
             />
             {/* Pulsing glow */}
             <span className="absolute -inset-0.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-              style={{ boxShadow: "0 0 16px rgba(34,197,94,0.4)" }} />
+              style={{ boxShadow: "0 0 16px rgba(255,186,0,0.4)" }} />
           </div>
           <div>
             <p className="text-sm font-black text-white leading-tight">Painel Admin</p>
@@ -231,7 +231,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (status === "loading" || (status === "authenticated" && !isAdmin(session?.user?.twitchLogin))) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[#ffba00] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -256,7 +256,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <aside
           className="admin-sidebar-anim hidden md:flex flex-col fixed left-0 top-16 w-56 h-[calc(100vh-4rem)] z-30"
           style={{
-            background: "rgba(4,3,14,0.97)",
+            background: "rgba(5,13,8,0.97)",
             borderRight: "1px solid rgba(255,255,255,0.06)",
             backdropFilter: "blur(24px)",
           }}>
@@ -266,7 +266,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* Botão hamburguer mobile */}
         <button
           className="md:hidden fixed bottom-5 right-5 z-50 w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-2xl transition-transform hover:scale-110 active:scale-95"
-          style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)", color: "#000" }}
+          style={{ background: "linear-gradient(135deg, #ffba00, #ff8c00)", color: "#000" }}
           onClick={() => setMobileOpen(true)}>
           ☰
         </button>
@@ -278,7 +278,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               onClick={() => setMobileOpen(false)} />
             <aside
               className="admin-sidebar-anim md:hidden fixed left-0 top-0 w-64 h-full z-50 flex flex-col"
-              style={{ background: "rgba(4,3,14,0.99)", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
+              style={{ background: "rgba(5,13,8,0.99)", borderRight: "1px solid rgba(255,255,255,0.08)" }}>
               <div className="flex items-center justify-between px-4 py-4 border-b border-white/5">
                 <span className="text-sm font-black text-white">Painel Admin</span>
                 <button onClick={() => setMobileOpen(false)} className="text-gray-500 hover:text-white text-lg transition-colors">✕</button>

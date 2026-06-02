@@ -19,7 +19,7 @@ function timeAgo(ms: number): string {
 
 function PalpiteRow({ palpite, index }: { palpite: Palpite; index: number }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:border-white/18 transition-all" style={{ background: "rgba(5,7,16,0.88)" }}>
+    <div className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:border-white/18 transition-all" style={{ background: "rgba(6,16,10,0.88)" }}>
       <span className="w-6 text-center text-xs font-bold text-gray-600">{index + 1}º</span>
       <div className="w-8 h-8 rounded-full bg-[#16a34a]/30 border border-[#16a34a]/30 flex items-center justify-center flex-shrink-0">
         <span className="text-[11px] font-bold text-green-300 uppercase">{palpite.username[0]}</span>
@@ -38,7 +38,7 @@ function UltimoVencedor({ r }: { r: ResultadoRodada }) {
   if (!destaque) return null;
 
   return (
-    <div className="rounded-2xl border border-yellow-500/35 p-5 mb-6" style={{ background: "rgba(5,7,16,0.92)", boxShadow: "0 0 30px rgba(251,191,36,0.08)" }}>
+    <div className="rounded-2xl border border-yellow-500/35 p-5 mb-6" style={{ background: "rgba(6,16,10,0.92)", boxShadow: "0 0 30px rgba(251,191,36,0.08)" }}>
       <div className="flex items-center gap-2 mb-3">
         <span className="text-lg">🏆</span>
         <p className="text-[11px] font-black text-yellow-400 uppercase tracking-widest">
@@ -84,7 +84,7 @@ function UltimoVencedor({ r }: { r: ResultadoRodada }) {
 function Historico({ lista }: { lista: ResultadoRodada[] }) {
   const [aberto, setAberto] = useState(false);
   return (
-    <div className="rounded-2xl border border-white/12 overflow-hidden mt-6" style={{ background: "rgba(5,7,16,0.90)" }}>
+    <div className="rounded-2xl border border-white/12 overflow-hidden mt-6" style={{ background: "rgba(6,16,10,0.90)" }}>
       <button
         onClick={() => setAberto(v => !v)}
         className="w-full flex items-center justify-between px-5 py-4 hover:bg-white/3 transition-colors"
@@ -111,7 +111,7 @@ function Historico({ lista }: { lista: ResultadoRodada[] }) {
                 const top = r.vencedores[0];
                 const destaque = top ?? r.palpites?.[0];
                 return (
-                  <div key={r.id} className="rounded-xl border border-white/10 px-4 py-3" style={{ background: "rgba(5,7,16,0.85)" }}>
+                  <div key={r.id} className="rounded-xl border border-white/10 px-4 py-3" style={{ background: "rgba(6,16,10,0.85)" }}>
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
                         <span className="text-sm">🏆</span>
@@ -220,11 +220,11 @@ export default function PalpitesPage() {
         {rodada && rodada.palpites.length > 0 ? (
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="rounded-xl border border-white/10 px-4 py-3" style={{ background: "rgba(5,7,16,0.88)" }}>
+              <div className="rounded-xl border border-white/10 px-4 py-3" style={{ background: "rgba(6,16,10,0.88)" }}>
                 <p className="text-[11px] text-gray-600 uppercase tracking-wider mb-1">Valor do Bônus</p>
                 <p className="text-lg font-black text-white">R$ {rodada.buyIn.toLocaleString("pt-BR")}</p>
               </div>
-              <div className="rounded-xl border border-white/10 px-4 py-3" style={{ background: "rgba(5,7,16,0.88)" }}>
+              <div className="rounded-xl border border-white/10 px-4 py-3" style={{ background: "rgba(6,16,10,0.88)" }}>
                 <p className="text-[11px] text-gray-600 uppercase tracking-wider mb-1">Participantes</p>
                 <p className="text-lg font-black text-white">{rodada.palpites.length}</p>
               </div>
@@ -243,7 +243,7 @@ export default function PalpitesPage() {
             </div>
           </div>
         ) : (
-          <div className="text-center py-16 rounded-2xl border border-white/10" style={{ background: "rgba(5,7,16,0.88)" }}>
+          <div className="text-center py-16 rounded-2xl border border-white/10" style={{ background: "rgba(6,16,10,0.88)" }}>
             <p className="text-5xl mb-4">🎯</p>
             <p className="text-white font-bold text-lg mb-1">
               {rodada?.status === "aberta" ? "Seja o primeiro!" : "Nenhuma rodada ativa"}

@@ -144,13 +144,13 @@ export default function LogsPage() {
         <input type="text" placeholder="Buscar por admin, usuário ou detalhe..."
           value={busca} onChange={e => setBusca(e.target.value)}
           className="w-full pl-9 pr-9 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none"
-          style={{ background: "rgba(5,4,16,0.92)", border: `1px solid ${busca ? "rgba(255,186,0,0.35)" : "rgba(255,255,255,0.08)"}`, backdropFilter: "blur(20px)" }} />
+          style={{ background: "rgba(6,15,9,0.92)", border: `1px solid ${busca ? "rgba(255,186,0,0.35)" : "rgba(255,255,255,0.08)"}`, backdropFilter: "blur(20px)" }} />
         {busca && <button onClick={() => setBusca("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white">✕</button>}
       </div>
 
       {/* Lista */}
       <div className="rounded-2xl overflow-hidden"
-        style={{ background: "rgba(5,4,16,0.92)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(20px)", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }}>
+        style={{ background: "rgba(6,15,9,0.92)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(20px)", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }}>
         {loading && (
           <div className="flex items-center justify-center py-16">
             <div className="w-8 h-8 rounded-full border-2 border-[#ffba00] border-t-transparent animate-spin" />

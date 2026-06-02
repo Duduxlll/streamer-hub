@@ -35,7 +35,7 @@ function Card({ children, className, accent }: { children: React.ReactNode; clas
   return (
     <div
       className={`rounded-2xl border ${borders[key]} ${glows[key]} ${className ?? ""}`}
-      style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}
+      style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}
     >
       {children}
     </div>

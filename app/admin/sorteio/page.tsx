@@ -155,7 +155,7 @@ export default function AdminSorteioPage() {
               <p className="text-sm text-gray-600 mt-1">Configure e lance um novo sorteio para sua live</p>
             </div>
             <div className="rounded-2xl overflow-hidden"
-              style={{ background: "rgba(5,4,16,0.92)", border: "1px solid rgba(255,186,0,0.2)", backdropFilter: "blur(20px)", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
+              style={{ background: "rgba(6,15,9,0.92)", border: "1px solid rgba(255,186,0,0.2)", backdropFilter: "blur(20px)", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
               <div className="px-5 py-4 border-b border-white/5">
                 <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Novo sorteio</p>
               </div>
@@ -250,7 +250,7 @@ export default function AdminSorteioPage() {
 
             {ativos.length === 0 && (
               <div className="text-center py-16 rounded-2xl"
-                style={{ background: "rgba(5,4,16,0.7)", border: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(12px)" }}>
+                style={{ background: "rgba(6,15,9,0.7)", border: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(12px)" }}>
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
                   style={{ background: "rgba(255,186,0,0.08)", border: "1px solid rgba(255,186,0,0.2)" }}>
                   <span className="text-3xl">🎟️</span>
@@ -289,7 +289,7 @@ function HistoricoAcordeon({ finalizados, onCancelar, onLimpar, limpando }: {
   const [aberto, setAberto] = useState(false);
   return (
     <div className="rounded-2xl overflow-hidden"
-      style={{ background: "rgba(8,6,20,0.7)", border: "1px solid rgba(255,186,0,0.12)", backdropFilter: "blur(12px)" }}>
+      style={{ background: "rgba(8,20,12,0.7)", border: "1px solid rgba(255,186,0,0.12)", backdropFilter: "blur(12px)" }}>
       <button
         onClick={() => setAberto(o => !o)}
         className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-white/[0.02]"

@@ -34,7 +34,7 @@ function RoletaIdle({ participantes }: { participantes: Participante[] }) {
 
   return (
     <div className="relative rounded-2xl overflow-hidden"
-      style={{ background: "rgba(10,8,24,0.92)", border: "1px solid rgba(255,186,0,0.2)" }}>
+      style={{ background: "rgba(10,24,15,0.92)", border: "1px solid rgba(255,186,0,0.2)" }}>
       <style>{`
         @keyframes idle-scroll {
           from { transform: translateX(0); }
@@ -48,9 +48,9 @@ function RoletaIdle({ participantes }: { participantes: Participante[] }) {
         <div className="w-0 h-0" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderBottom: "9px solid rgba(255,186,0,0.35)" }} />
       </div>
       <div className="absolute inset-y-0 left-0 w-28 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(90deg, rgba(10,8,24,1) 0%, transparent 100%)" }} />
+        style={{ background: "linear-gradient(90deg, rgba(10,24,15,1) 0%, transparent 100%)" }} />
       <div className="absolute inset-y-0 right-0 w-28 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(270deg, rgba(10,8,24,1) 0%, transparent 100%)" }} />
+        style={{ background: "linear-gradient(270deg, rgba(10,24,15,1) 0%, transparent 100%)" }} />
 
       <div className="py-4 px-2 overflow-hidden">
         <div style={{ display: "flex", gap: ITEM_GAP, width: "max-content", animation: "idle-scroll 20s linear infinite" }}>
@@ -121,7 +121,7 @@ function Roleta({ participantes, vencedor }: { participantes: Participante[]; ve
 
   return (
     <div className="relative rounded-2xl overflow-hidden"
-      style={{ background: "rgba(10,8,24,0.9)", border: "1px solid rgba(255,186,0,0.25)" }}>
+      style={{ background: "rgba(10,24,15,0.9)", border: "1px solid rgba(255,186,0,0.25)" }}>
       <div className="absolute top-1 left-1/2 -translate-x-1/2 z-20">
         <div className="w-0 h-0" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderTop: `9px solid ${finalizado ? "#ffba00" : "rgba(255,186,0,0.5)"}`, transition: "all 0.5s" }} />
       </div>
@@ -129,9 +129,9 @@ function Roleta({ participantes, vencedor }: { participantes: Participante[]; ve
         <div className="w-0 h-0" style={{ borderLeft: "7px solid transparent", borderRight: "7px solid transparent", borderBottom: `9px solid ${finalizado ? "#ffba00" : "rgba(255,186,0,0.5)"}`, transition: "all 0.5s" }} />
       </div>
       <div className="absolute inset-y-0 left-0 w-32 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(90deg, rgba(10,8,24,1) 0%, rgba(10,8,24,0.8) 60%, transparent 100%)" }} />
+        style={{ background: "linear-gradient(90deg, rgba(10,24,15,1) 0%, rgba(10,24,15,0.8) 60%, transparent 100%)" }} />
       <div className="absolute inset-y-0 right-0 w-32 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(270deg, rgba(10,8,24,1) 0%, rgba(10,8,24,0.8) 60%, transparent 100%)" }} />
+        style={{ background: "linear-gradient(270deg, rgba(10,24,15,1) 0%, rgba(10,24,15,0.8) 60%, transparent 100%)" }} />
       <div className="py-5 px-2">
         <div ref={stripRef} className="flex gap-[10px]" style={{ willChange: "transform" }}>
           {strip.map((p, i) => {
@@ -164,7 +164,7 @@ function Roleta({ participantes, vencedor }: { participantes: Participante[]; ve
 function EntradaCard({ p }: { p: Participante }) {
   return (
     <div className="relative overflow-hidden rounded-2xl flex flex-col items-center"
-      style={{ background: "rgba(8,6,20,0.85)", border: "1px solid rgba(255,255,255,0.09)" }}>
+      style={{ background: "rgba(8,20,12,0.85)", border: "1px solid rgba(255,255,255,0.09)" }}>
       {p.image && (
         <img src={p.image} alt="" className="absolute inset-0 w-full h-full object-cover pointer-events-none"
           style={{ filter: "blur(14px) brightness(0.25)", transform: "scale(1.2)" }} />
@@ -305,7 +305,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
         </div>
 
         <div className="rounded-2xl overflow-hidden"
-          style={{ background: "rgba(8,6,20,0.75)", border: "1px solid rgba(255,186,0,0.2)", backdropFilter: "blur(12px)" }}>
+          style={{ background: "rgba(8,20,12,0.75)", border: "1px solid rgba(255,186,0,0.2)", backdropFilter: "blur(12px)" }}>
           <div className="flex items-center gap-2 px-5 py-3 border-b border-[rgba(255,186,0,0.1)]">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ffba00] opacity-60" />
@@ -346,7 +346,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
             },
           ].map((s, i) => (
             <div key={i} className="rounded-2xl p-4 text-center flex flex-col items-center gap-1"
-              style={{ background: "rgba(8,6,20,0.65)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(10px)" }}>
+              style={{ background: "rgba(8,20,12,0.65)", border: "1px solid rgba(255,255,255,0.08)", backdropFilter: "blur(10px)" }}>
               <span className="text-lg">{s.icon}</span>
               <p className="text-lg font-black text-white">{s.value}</p>
               <p className="text-[11px] text-gray-500">{s.label}</p>
@@ -356,7 +356,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
 
         {!finalizado && !admin && (
           <div className="rounded-2xl p-5 space-y-3"
-            style={{ background: "rgba(8,6,20,0.65)", border: "1px solid rgba(22,163,74,0.2)", backdropFilter: "blur(10px)" }}>
+            style={{ background: "rgba(8,20,12,0.65)", border: "1px solid rgba(22,163,74,0.2)", backdropFilter: "blur(10px)" }}>
             <p className="text-xs font-black text-green-400 uppercase tracking-widest">Como participar</p>
             <ul className="space-y-2.5 text-sm text-gray-300">
               {[
@@ -402,7 +402,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
 
         {!finalizado && (
           <div className="rounded-2xl overflow-hidden space-y-0"
-            style={{ background: "rgba(8,6,20,0.7)", border: "1px solid rgba(255,186,0,0.18)", backdropFilter: "blur(12px)" }}>
+            style={{ background: "rgba(8,20,12,0.7)", border: "1px solid rgba(255,186,0,0.18)", backdropFilter: "blur(12px)" }}>
 
             <div className="flex items-center gap-2 px-5 py-3 border-b border-white/5">
               <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#ffba00" }}>
@@ -450,7 +450,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
 
         {mostrarRoleta && sorteio.vencedor && (
           <div className="rounded-3xl overflow-hidden"
-            style={{ background: "rgba(10,8,24,0.95)", border: "1px solid rgba(255,186,0,0.2)" }}>
+            style={{ background: "rgba(10,24,15,0.95)", border: "1px solid rgba(255,186,0,0.2)" }}>
             <div className="px-6 pt-6 pb-2 text-center">
               <p className="text-xs font-black text-[#ffba00] uppercase tracking-widest">🎰 Sorteando o vencedor...</p>
             </div>
@@ -480,7 +480,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
         )}
 
         <div className="rounded-2xl overflow-hidden"
-          style={{ background: "rgba(8,6,20,0.7)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(12px)" }}>
+          style={{ background: "rgba(8,20,12,0.7)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(12px)" }}>
           <div className="flex items-center gap-2 px-5 py-3 border-b border-white/5">
             <p className="text-sm font-black text-white">Últimas entradas</p>
             <span className="text-xs px-2 py-0.5 rounded-full font-bold"

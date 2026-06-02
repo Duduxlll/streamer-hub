@@ -23,7 +23,7 @@ export default function Footer() {
   return (
     <footer
       className="relative border-t border-[rgba(22,163,74,0.1)]"
-      style={{ zIndex: 10, background: "rgb(2,4,12)" }}
+      style={{ zIndex: 10, background: "rgb(2,12,7)" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-6">
 

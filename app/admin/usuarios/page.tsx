@@ -63,7 +63,7 @@ function HistoricoModal({ twitchLogin, onClose }: { twitchLogin: string; onClose
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
       <div className="w-full max-w-sm rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}
-        style={{ background: "rgba(5,4,16,0.98)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
+        style={{ background: "rgba(6,15,9,0.98)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
         <div className="px-5 py-4 flex items-center justify-between border-b border-white/5">
           <div>
             <p className="text-sm font-black text-white">Histórico de ganhos</p>
@@ -112,7 +112,7 @@ function BanModal({ user, onClose, onSave }: { user: SiteUser; onClose: () => vo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
       <div className="w-full max-w-xs rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}
-        style={{ background: "rgba(5,4,16,0.98)", border: "1px solid rgba(239,68,68,0.25)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
+        style={{ background: "rgba(6,15,9,0.98)", border: "1px solid rgba(239,68,68,0.25)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
         <div className="px-5 py-4 border-b border-white/5">
           <p className="text-sm font-black text-white">Banir usuário</p>
           <p className="text-[11px] text-gray-500">@{user.twitchLogin} — bloqueia conta + IPs</p>
@@ -157,7 +157,7 @@ function SuspendModal({ user, onClose, onSave }: { user: SiteUser; onClose: () =
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
       <div className="w-full max-w-xs rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}
-        style={{ background: "rgba(5,4,16,0.98)", border: "1px solid rgba(234,179,8,0.25)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
+        style={{ background: "rgba(6,15,9,0.98)", border: "1px solid rgba(234,179,8,0.25)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
         <div className="px-5 py-4 border-b border-white/5">
           <p className="text-sm font-black text-white">Suspender usuário</p>
           <p className="text-[11px] text-gray-500">@{user.twitchLogin}</p>
@@ -211,7 +211,7 @@ function UserCard({ user, onAction, busy = false }: {
           ? "rgba(30,4,4,0.92)"
           : isSuspended
             ? "rgba(20,16,2,0.92)"
-            : "rgba(5,4,16,0.92)",
+            : "rgba(6,15,9,0.92)",
         border: isBanned
           ? "1px solid rgba(239,68,68,0.2)"
           : isSuspended
@@ -397,7 +397,7 @@ export default function UsuariosPage() {
             className="rounded-xl py-2.5 flex flex-col items-center gap-0.5 transition-all"
             style={filtro === f.key
               ? { background: `${f.color}18`, border: `1px solid ${f.color}40`, color: f.color }
-              : { background: "rgba(5,4,16,0.7)", border: "1px solid rgba(255,255,255,0.06)", color: "#374151" }}>
+              : { background: "rgba(6,15,9,0.7)", border: "1px solid rgba(255,255,255,0.06)", color: "#374151" }}>
             <span className="text-lg font-black">{f.count}</span>
             <span className="text-[10px] font-black">{f.label}</span>
           </button>
@@ -410,7 +410,7 @@ export default function UsuariosPage() {
         <input type="text" placeholder="Buscar por nome ou @login..."
           value={busca} onChange={e => setBusca(e.target.value)}
           className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none transition-all"
-          style={{ background: "rgba(5,4,16,0.92)", border: `1px solid ${busca ? "rgba(255,186,0,0.35)" : "rgba(255,255,255,0.08)"}`, backdropFilter: "blur(20px)" }} />
+          style={{ background: "rgba(6,15,9,0.92)", border: `1px solid ${busca ? "rgba(255,186,0,0.35)" : "rgba(255,255,255,0.08)"}`, backdropFilter: "blur(20px)" }} />
         {busca && <button onClick={() => setBusca("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors">✕</button>}
       </div>
 

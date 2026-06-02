@@ -119,7 +119,7 @@ function MatchPublic({ match }: { match: BatalhaMatch }) {
       className={`flex flex-col rounded-xl overflow-hidden border transition-all ${
         decided ? "border-white/10" : "border-white/18"
       }`}
-      style={{ width: MW, height: MH, background: "rgba(5,7,16,0.92)" }}
+      style={{ width: MW, height: MH, background: "rgba(6,16,10,0.92)" }}
     >
       <SlotPublic slot={match.slot1} />
       <div className="h-px bg-white/8 flex-shrink-0" />
@@ -265,7 +265,7 @@ export default function ArenaTransferePage() {
         </div>
 
         {!batalha ? (
-          <div className="text-center py-20 rounded-2xl border border-white/10 max-w-md mx-auto" style={{ background: "rgba(5,7,16,0.88)" }}>
+          <div className="text-center py-20 rounded-2xl border border-white/10 max-w-md mx-auto" style={{ background: "rgba(6,16,10,0.88)" }}>
             <p className="text-6xl mb-4">⚔️</p>
             <p className="text-white font-black text-xl mb-2">Sem batalha ativa</p>
             <p className="text-gray-600 text-sm max-w-xs mx-auto leading-relaxed">
@@ -274,7 +274,7 @@ export default function ArenaTransferePage() {
           </div>
         ) : batalha.status === "inscricao" ? (
           <div className="max-w-lg mx-auto space-y-4">
-            <div className="rounded-2xl border border-purple-500/25 p-5" style={{ background: "rgba(5,7,16,0.92)", boxShadow: "0 0 30px rgba(145,70,255,0.08)" }}>
+            <div className="rounded-2xl border border-purple-500/25 p-5" style={{ background: "rgba(6,16,10,0.92)", boxShadow: "0 0 30px rgba(145,70,255,0.08)" }}>
               <p className="text-[11px] font-black text-purple-400 uppercase tracking-widest mb-2">⚡ Como participar</p>
               <p className="text-sm text-gray-400 mb-3">Digite no chat da Twitch:</p>
               <span className="font-mono font-black text-lg px-5 py-2.5 rounded-xl border border-purple-500/35 text-purple-200 inline-block"
@@ -283,7 +283,7 @@ export default function ArenaTransferePage() {
               </span>
             </div>
 
-            <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,16,0.90)" }}>
+            <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(6,16,10,0.90)" }}>
               <div className="flex items-center justify-between mb-3">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Inscritos</p>
                 <span className="text-sm font-black">
@@ -306,7 +306,7 @@ export default function ArenaTransferePage() {
             </div>
 
             {batalha.premiacao > 0 && (
-              <div className="rounded-2xl border border-green-500/25 px-5 py-4 text-center" style={{ background: "rgba(5,7,16,0.90)" }}>
+              <div className="rounded-2xl border border-green-500/25 px-5 py-4 text-center" style={{ background: "rgba(6,16,10,0.90)" }}>
                 <p className="text-[11px] text-gray-600 uppercase tracking-widest mb-1">Premiação</p>
                 <p className="text-2xl font-black text-green-400">R$ {batalha.premiacao.toLocaleString("pt-BR")}</p>
               </div>
@@ -316,19 +316,19 @@ export default function ArenaTransferePage() {
           <div>
             <div className="flex items-center gap-3 mb-5 flex-wrap">
               {batalha.premiacao > 0 && (
-                <div className="rounded-xl border border-green-500/25 px-4 py-2.5" style={{ background: "rgba(5,7,16,0.90)" }}>
+                <div className="rounded-xl border border-green-500/25 px-4 py-2.5" style={{ background: "rgba(6,16,10,0.90)" }}>
                   <p className="text-[10px] text-gray-600">Premiação</p>
                   <p className="text-base font-black text-green-400">R$ {batalha.premiacao.toLocaleString("pt-BR")}</p>
                 </div>
               )}
-              <div className="rounded-xl border border-white/10 px-4 py-2.5" style={{ background: "rgba(5,7,16,0.90)" }}>
+              <div className="rounded-xl border border-white/10 px-4 py-2.5" style={{ background: "rgba(6,16,10,0.90)" }}>
                 <p className="text-[10px] text-gray-600">Participantes</p>
                 <p className="text-base font-black text-white">{batalha.inscricoes.length}</p>
               </div>
             </div>
 
             <div className="overflow-x-auto max-w-full pb-2" style={{ WebkitOverflowScrolling: "touch" }}>
-              <div className="rounded-2xl border border-white/10 p-4 sm:p-6 w-fit" style={{ background: "rgba(5,7,16,0.88)" }}>
+              <div className="rounded-2xl border border-white/10 p-4 sm:p-6 w-fit" style={{ background: "rgba(6,16,10,0.88)" }}>
                 <BracketPublic batalha={batalha} />
               </div>
             </div>

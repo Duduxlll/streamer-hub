@@ -232,7 +232,7 @@ export default function ArenaPage() {
                   f.available ? "hover:-translate-y-2 hover:shadow-2xl" : "opacity-50 cursor-default"
                 }`}
                 style={{
-                  background: "rgba(5,7,16,0.92)",
+                  background: "rgba(6,16,10,0.92)",
                   borderColor: live ? `${f.color}60` : f.available ? `${f.color}35` : `${f.color}18`,
                   boxShadow: live ? `0 0 50px ${f.color}22, 0 0 100px ${f.color}08` : undefined,
                   animationDelay: `${0.1 + i * 0.08}s`,

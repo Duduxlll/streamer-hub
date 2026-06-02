@@ -30,7 +30,7 @@ export function useConfirm() {
       <div
         className="rounded-2xl p-6 w-full max-w-sm"
         style={{
-          background: "rgba(8,10,20,0.98)",
+          background: "rgba(8,20,13,0.98)",
           border: "1px solid rgba(255,255,255,0.1)",
           boxShadow: "0 0 40px rgba(0,0,0,0.6), 0 16px 48px rgba(0,0,0,0.4)",
           animation: "toast-in 280ms cubic-bezier(0.34,1.3,0.64,1) forwards",

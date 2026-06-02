@@ -1,7 +1,7 @@
 export default function BanidoPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: "radial-gradient(ellipse at center, #1a0505 0%, #030610 70%)" }}>
+      style={{ background: "radial-gradient(ellipse at center, #1a0505 0%, #040e09 70%)" }}>
       <div className="text-center max-w-sm">
         <div className="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center text-4xl"
           style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)" }}>

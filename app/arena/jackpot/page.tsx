@@ -14,7 +14,7 @@ function IdleRoleta({ jogadores }: { jogadores: Jackpot["jogadores"] }) {
   const items = Array.from({ length: 20 }, (_, i) => jogadores[i % jogadores.length]);
   const all = [...items, ...items];
   return (
-    <div className="relative overflow-hidden" style={{ height: 100, background: "rgba(8,10,20,0.98)" }}>
+    <div className="relative overflow-hidden" style={{ height: 100, background: "rgba(8,20,13,0.98)" }}>
       <style>{`
         @keyframes idle-jk-pub {
           from { transform: translateX(0); }
@@ -28,9 +28,9 @@ function IdleRoleta({ jogadores }: { jogadores: Jackpot["jogadores"] }) {
         <div className="w-0 h-0" style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderBottom: "8px solid rgba(245,158,11,0.4)" }} />
       </div>
       <div className="absolute inset-y-0 left-0 w-32 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(90deg,rgba(8,10,20,1) 0%,transparent 100%)" }} />
+        style={{ background: "linear-gradient(90deg,rgba(8,20,13,1) 0%,transparent 100%)" }} />
       <div className="absolute inset-y-0 right-0 w-32 z-10 pointer-events-none"
-        style={{ background: "linear-gradient(270deg,rgba(8,10,20,1) 0%,transparent 100%)" }} />
+        style={{ background: "linear-gradient(270deg,rgba(8,20,13,1) 0%,transparent 100%)" }} />
       <div className="absolute inset-0 flex items-center px-2 overflow-hidden">
         <div style={{ display: "flex", gap: RG, width: "max-content", animation: "idle-jk-pub 22s linear infinite" }}>
           {all.map((p, i) => (
@@ -130,7 +130,7 @@ export default function ArenaJackpotPage() {
               )}
             </div>
           </div>
-          <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,10,20,0.95)" }}>
+          <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,20,13,0.95)" }}>
             <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/5">
               <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Ranking</p>
               <span className="text-[10px] font-black text-gray-700">{rankingSorted.length} participantes</span>
@@ -190,7 +190,7 @@ export default function ArenaJackpotPage() {
         <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-700" style={{ width: `${progPct}%`, background: "linear-gradient(90deg,#f59e0b,#fbbf24)" }} />
         </div>
-        <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,10,20,0.98)" }}>
+        <div className="rounded-2xl border border-white/8 overflow-hidden" style={{ background: "rgba(8,20,13,0.98)" }}>
           <IdleRoleta jogadores={jogadoresNaRoleta} />
           {jogadorAtual && (
             <div className="border-t border-white/8 px-6 py-5 text-center">
@@ -200,7 +200,7 @@ export default function ArenaJackpotPage() {
             </div>
           )}
         </div>
-        <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,10,20,0.95)" }}>
+        <div className="rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,20,13,0.95)" }}>
           <div className="flex items-center justify-between mb-4">
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Placar ao Vivo</p>
             <div className="flex items-center gap-2">

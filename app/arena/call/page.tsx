@@ -106,7 +106,7 @@ export default function ArenaCallPage() {
           /* ── FECHADA ── */
           <div
             className="rounded-3xl text-center py-20 px-6"
-            style={{ background: "rgba(5,7,16,0.97)", border: "1px solid rgba(255,255,255,0.06)" }}
+            style={{ background: "rgba(6,16,10,0.97)", border: "1px solid rgba(255,255,255,0.06)" }}
           >
             <div
               className="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-6"
@@ -142,7 +142,7 @@ export default function ArenaCallPage() {
             {/* Lista de calls */}
             <div
               className="rounded-3xl overflow-hidden"
-              style={{ background: "rgba(5,7,16,0.97)", border: "1px solid rgba(255,255,255,0.07)" }}
+              style={{ background: "rgba(6,16,10,0.97)", border: "1px solid rgba(255,255,255,0.07)" }}
             >
               <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/5">
                 <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex-1">

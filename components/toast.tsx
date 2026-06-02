@@ -48,7 +48,7 @@ function ToastCard({ item, onDismiss }: { item: ToastItem; onDismiss: (id: numbe
       onClick={() => onDismiss(item.id)}
       className="relative flex items-start gap-3 px-4 py-3.5 rounded-2xl cursor-pointer select-none overflow-hidden"
       style={{
-        background: "rgba(8,10,20,0.96)",
+        background: "rgba(8,20,13,0.96)",
         border: `1px solid ${cfg.border}`,
         boxShadow: `0 0 24px ${cfg.glow}, 0 8px 32px rgba(0,0,0,0.5)`,
         backdropFilter: "blur(16px)",

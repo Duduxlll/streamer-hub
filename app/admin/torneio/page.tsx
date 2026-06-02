@@ -192,7 +192,7 @@ export default function AdminTorneioPage() {
           <div className="rounded-3xl border overflow-hidden"
             style={{
               borderColor: "rgba(255,186,0,0.4)",
-              background: "linear-gradient(160deg, rgba(255,186,0,0.1), rgba(5,7,18,0.98))",
+              background: "linear-gradient(160deg, rgba(255,186,0,0.1), rgba(6,18,11,0.98))",
               boxShadow: "0 0 60px rgba(255,186,0,0.12)",
               animation: "tnFinalIn 0.5s cubic-bezier(0.16,1,0.3,1)",
             }}>
@@ -262,7 +262,7 @@ export default function AdminTorneioPage() {
             </div>
           </div>
         ) : !torneio ? (
-          <div className="rounded-2xl border border-white/12 p-6" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
+          <div className="rounded-2xl border border-white/12 p-6" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-5">Criar Torneio</p>
             <div className="mb-4">
               <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Nome do Torneio</label>
@@ -297,7 +297,7 @@ export default function AdminTorneioPage() {
               <p className="text-2xl font-black text-white">{torneio.nome}</p>
             </div>
             {fase && (
-              <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
+              <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Comandos do Chat</p>
                   <button
@@ -319,7 +319,7 @@ export default function AdminTorneioPage() {
               </div>
             )}
             {fase && (
-              <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
+              <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">
                   Controle · Fase {torneio.faseAtual}
                 </p>
@@ -386,7 +386,7 @@ export default function AdminTorneioPage() {
                     const isElim = !!(fase.vencedor && !isVenc);
                     const tc = TEAM_COLORS[idx % TEAM_COLORS.length];
 
-                    const cardBg   = isVenc ? "rgba(251,191,36,0.1)"  : isElim ? "rgba(5,7,16,0.85)" : tc.bg;
+                    const cardBg   = isVenc ? "rgba(251,191,36,0.1)"  : isElim ? "rgba(6,16,10,0.85)" : tc.bg;
                     const cardBdr  = isVenc ? "rgba(251,191,36,0.45)" : isElim ? "rgba(255,255,255,0.08)" : tc.border;
                     const shadow   = isElim ? undefined : isVenc ? "0 0 28px rgba(251,191,36,0.2)" : `0 0 20px ${tc.glow}`;
                     const numColor = isVenc ? "#fbbf24" : tc.text;
@@ -397,7 +397,7 @@ export default function AdminTorneioPage() {
                       <div
                         key={time}
                         className={`rounded-2xl border p-4 flex flex-col transition-all ${isElim ? "opacity-45" : ""}`}
-                        style={{ background: isVenc ? `linear-gradient(135deg, rgba(251,191,36,0.15), rgba(5,7,16,0.92))` : isElim ? "rgba(5,7,16,0.80)" : `linear-gradient(135deg, ${tc.bg}, rgba(5,7,16,0.92))`, borderColor: cardBdr, boxShadow: shadow }}
+                        style={{ background: isVenc ? `linear-gradient(135deg, rgba(251,191,36,0.15), rgba(6,16,10,0.92))` : isElim ? "rgba(6,16,10,0.80)" : `linear-gradient(135deg, ${tc.bg}, rgba(6,16,10,0.92))`, borderColor: cardBdr, boxShadow: shadow }}
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div>
@@ -490,7 +490,7 @@ export default function AdminTorneioPage() {
                 </div>
               </div>
             )}
-            <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
+            <div className="rounded-2xl border border-white/12 p-5" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
               <div className="flex items-center gap-2.5 mb-3">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">
                   Classificados

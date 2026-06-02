@@ -191,7 +191,7 @@ function AccordionSection({
     <div
       className="rounded-2xl overflow-hidden"
       style={{
-        background: "rgba(5,4,16,0.92)",
+        background: "rgba(6,15,9,0.92)",
         border: `1px solid ${ok ? "rgba(34,197,94,0.2)" : "rgba(255,255,255,0.08)"}`,
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
