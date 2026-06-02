@@ -50,17 +50,35 @@ function LogRow({ entry }: { entry: LogEntry }) {
 }
 
 export default function LogsPage() {
-  const [logs,    setLogs]    = useState<LogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filtro,  setFiltro]  = useState<string>("todos");
-  const [busca,   setBusca]   = useState("");
+  const [logs,       setLogs]       = useState<LogEntry[]>([]);
+  const [loading,    setLoading]    = useState(true);
+  const [filtro,     setFiltro]     = useState<string>("todos");
+  const [busca,      setBusca]      = useState("");
+  const [testBusy,   setTestBusy]   = useState(false);
+  const [testMsg,    setTestMsg]    = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchLogs = () => {
     fetch("/api/admin/logs")
       .then(r => r.json())
       .then(d => setLogs(d.logs ?? []))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { fetchLogs(); }, []);
+
+  async function testarLog() {
+    setTestBusy(true);
+    setTestMsg(null);
+    const res = await fetch("/api/admin/logs", { method: "POST" });
+    if (res.ok) {
+      setTestMsg("✅ Log registrado com sucesso! Apareceu na lista abaixo.");
+      fetchLogs();
+    } else {
+      setTestMsg("❌ Falhou — verifique o banco de dados.");
+    }
+    setTestBusy(false);
+    setTimeout(() => setTestMsg(null), 5000);
+  }
 
   const categorias = [
     { key: "todos",     label: "Todos" },
@@ -85,10 +103,27 @@ export default function LogsPage() {
 
   return (
     <div className="page-enter max-w-3xl mx-auto px-4 sm:px-6 pt-10 pb-24">
-      <div className="mb-6">
-        <h1 className="text-3xl font-black text-white">Logs de Segurança</h1>
-        <p className="text-sm text-gray-600 mt-1">{logs.length} registros totais</p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-black text-white">Logs de Segurança</h1>
+          <p className="text-sm text-gray-600 mt-1">{logs.length} registros totais</p>
+        </div>
+        <button
+          disabled={testBusy}
+          onClick={testarLog}
+          className="flex-shrink-0 px-3 py-2 rounded-xl text-xs font-black transition-all hover:scale-[1.02] disabled:opacity-50"
+          style={{ background: "rgba(255,255,255,0.05)", color: "#6b7280", border: "1px solid rgba(255,255,255,0.1)" }}>
+          {testBusy ? "..." : "🧪 Testar log"}
+        </button>
       </div>
+      {testMsg && (
+        <div className={`mb-4 px-4 py-2.5 rounded-xl text-xs font-black ${testMsg.startsWith("✅") ? "text-green-400" : "text-red-400"}`}
+          style={testMsg.startsWith("✅")
+            ? { background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.25)" }
+            : { background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.25)" }}>
+          {testMsg}
+        </div>
+      )}
 
       {/* Filtros */}
       <div className="flex gap-2 flex-wrap mb-4">

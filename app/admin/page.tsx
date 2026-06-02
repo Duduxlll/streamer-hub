@@ -19,14 +19,14 @@ function ActiveDot() {
   );
 }
 
-function Card({ icon, title, subtitle, href, active, badge, warn }: {
+function Card({ icon, title, subtitle, href, active, badge, warn, delay = 0 }: {
   icon: string; title: string; subtitle: string; href: string;
-  active?: boolean; badge?: string; warn?: boolean;
+  active?: boolean; badge?: string; warn?: boolean; delay?: number;
 }) {
   return (
     <Link href={href}
-      className="rounded-2xl p-4 flex flex-col gap-3 transition-all hover:scale-[1.02] group cursor-pointer"
-      style={{
+      className="admin-card-anim rounded-2xl p-4 flex flex-col gap-3 transition-all hover:scale-[1.02] hover:shadow-xl group cursor-pointer"
+      style={{ animationDelay: `${delay}ms`,
         background: "rgba(5,4,16,0.92)",
         border: warn
           ? "1px solid rgba(234,179,8,0.25)"
@@ -98,6 +98,13 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="page-enter max-w-4xl mx-auto px-4 sm:px-6 pt-10 pb-24 space-y-8">
+      <style>{`
+        @keyframes cardPop {
+          from { opacity: 0; transform: translateY(12px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .admin-card-anim { animation: cardPop 0.4s ease-out both; }
+      `}</style>
       <div>
         <h1 className="text-3xl font-black text-white">Dashboard</h1>
         <p className="text-sm text-gray-600 mt-1">Visão geral do painel de administração</p>
@@ -109,16 +116,15 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Card icon="▶" title="Sessão"
             subtitle={siteStatus?.gorjeta.sessaoAtiva ? "Gorjeta ao vivo" : "Nenhuma sessão ativa"}
-            href="/admin/gorjeta"
-            active={siteStatus?.gorjeta.sessaoAtiva} />
+            href="/admin/gorjeta" active={siteStatus?.gorjeta.sessaoAtiva} delay={0} />
           <Card icon="📋" title="Cadastros"
             subtitle={gorjetaPendentes > 0 ? `${gorjetaPendentes} pendentes de aprovação` : "Nenhum cadastro pendente"}
             href="/admin/gorjeta?tab=cadastros"
             warn={gorjetaPendentes > 0}
-            badge={gorjetaPendentes > 0 ? `${gorjetaPendentes}` : undefined} />
+            badge={gorjetaPendentes > 0 ? `${gorjetaPendentes}` : undefined} delay={60} />
           <Card icon="📜" title="Histórico"
             subtitle="Sessões encerradas e transações"
-            href="/admin/gorjeta?tab=historico" />
+            href="/admin/gorjeta?tab=historico" delay={120} />
         </div>
       </div>
 
@@ -126,11 +132,11 @@ export default function AdminDashboardPage() {
       <div>
         <SectionLabel>Interações com a live</SectionLabel>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <Card icon="🎯" title="Palpites"     subtitle="Rodadas e apostas do chat"  href="/admin/palpites" />
-          <Card icon="🎰" title="Jackpot"      subtitle="Doações via LivePix"        href="/admin/jackpot"  />
-          <Card icon="🏆" title="Torneio"      subtitle="Competições entre viewers"  href="/admin/torneio"  />
-          <Card icon="⚔️"  title="Batalha"     subtitle="Batalha de bônus"           href="/admin/batalha"  />
-          <Card icon="📋" title="Call de Slot" subtitle="Chamadas ao vivo"           href="/admin/call"     />
+          <Card icon="🎯" title="Palpites"     subtitle="Rodadas e apostas do chat"  href="/admin/palpites" delay={0}   />
+          <Card icon="🎰" title="Jackpot"      subtitle="Doações via LivePix"        href="/admin/jackpot"  delay={50}  />
+          <Card icon="🏆" title="Torneio"      subtitle="Competições entre viewers"  href="/admin/torneio"  delay={100} />
+          <Card icon="⚔️"  title="Batalha"     subtitle="Batalha de bônus"           href="/admin/batalha"  delay={150} />
+          <Card icon="📋" title="Call de Slot" subtitle="Chamadas ao vivo"           href="/admin/call"     delay={200} />
         </div>
       </div>
 
