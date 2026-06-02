@@ -94,82 +94,71 @@ export default function HomePage() {
       </section>
 
       {/* ─── Banner Parceiro Oficial — JonBet ─── */}
-      <section className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <style>{`
           @keyframes jbGlow {
-            0%, 100% { box-shadow: 0 0 40px rgba(5,225,13,0.10), inset 0 0 50px rgba(5,225,13,0.04); border-color: rgba(5,225,13,0.28); }
-            50%      { box-shadow: 0 0 75px rgba(5,225,13,0.22), inset 0 0 70px rgba(5,225,13,0.08); border-color: rgba(5,225,13,0.5); }
+            0%, 100% { box-shadow: 0 0 26px rgba(34,197,94,0.06), inset 0 0 40px rgba(34,197,94,0.02); border-color: rgba(34,197,94,0.18); }
+            50%      { box-shadow: 0 0 44px rgba(34,197,94,0.12), inset 0 0 50px rgba(34,197,94,0.04); border-color: rgba(34,197,94,0.3); }
           }
           @keyframes jbShine { 0% { background-position: 200% center; } 100% { background-position: -200% center; } }
-          @keyframes jbFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+          @keyframes jbFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
           @keyframes jbRise  { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-          .jb-banner  { animation: jbGlow 4.5s ease-in-out infinite, jbRise 0.6s ease-out both; }
-          .jb-logo    { animation: jbFloat 4s ease-in-out infinite; }
+          .jb-banner  { animation: jbGlow 5s ease-in-out infinite, jbRise 0.6s ease-out both; }
+          .jb-logo    { animation: jbFloat 4.5s ease-in-out infinite; }
           .jb-cta     { position: relative; overflow: hidden; }
           .jb-cta::after {
             content: ""; position: absolute; inset: 0;
-            background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.55) 50%, transparent 70%);
+            background: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.4) 50%, transparent 65%);
             background-size: 220% 100%;
-            animation: jbShine 3.2s ease-in-out infinite;
+            animation: jbShine 3.6s ease-in-out infinite;
             pointer-events: none;
           }
         `}</style>
 
         <div className="jb-banner rounded-3xl overflow-hidden relative"
           style={{
-            background: "linear-gradient(150deg, rgba(5,225,13,0.10) 0%, rgba(6,14,10,0.96) 45%, rgba(4,8,6,0.98) 100%)",
-            border: "1px solid rgba(5,225,13,0.3)",
+            background: "linear-gradient(150deg, rgba(34,197,94,0.07) 0%, rgba(6,12,9,0.96) 45%, rgba(4,8,6,0.98) 100%)",
+            border: "1px solid rgba(34,197,94,0.2)",
           }}>
 
           {/* Linha de luz no topo */}
           <div className="absolute top-0 left-0 right-0 h-px"
-            style={{ background: "linear-gradient(90deg, transparent, rgba(5,225,13,0.8), transparent)" }} />
-          {/* Orbe de brilho */}
-          <div className="absolute -top-24 -right-16 w-80 h-80 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, rgba(5,225,13,0.2), transparent 70%)", filter: "blur(50px)" }} />
-          <div className="absolute -bottom-28 -left-20 w-72 h-72 rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, rgba(5,225,13,0.1), transparent 70%)", filter: "blur(50px)" }} />
+            style={{ background: "linear-gradient(90deg, transparent, rgba(34,197,94,0.5), transparent)" }} />
+          {/* Orbe de brilho suave */}
+          <div className="absolute -top-24 -left-16 w-80 h-80 rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, rgba(34,197,94,0.1), transparent 70%)", filter: "blur(55px)" }} />
 
-          <div className="relative px-6 sm:px-10 py-10 flex flex-col lg:flex-row items-center gap-8 text-center lg:text-left">
+          <div className="relative px-6 sm:px-10 py-9 flex flex-col lg:flex-row items-center gap-8 text-center lg:text-left">
             <div className="flex-1 flex flex-col items-center lg:items-start">
 
               {/* Badge */}
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-5"
-                style={{ background: "rgba(5,225,13,0.1)", border: "1px solid rgba(5,225,13,0.35)" }}>
+                style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)" }}>
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#05e10d] opacity-60" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#05e10d]" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
                 </span>
-                <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: "#3dff45" }}>Parceiro Oficial</span>
+                <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: "#4ade80" }}>Parceiro Oficial</span>
               </div>
 
               {/* Logo */}
               <div className="jb-logo mb-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={JONBET_LOGO} alt="JonBet" className="h-9 sm:h-11 w-auto" style={{ filter: "drop-shadow(0 0 20px rgba(5,225,13,0.35))" }} />
+                <img src={JONBET_LOGO} alt="JonBet" className="h-8 sm:h-10 w-auto" style={{ filter: "drop-shadow(0 0 14px rgba(34,197,94,0.2))" }} />
               </div>
 
               {/* Headline */}
               <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-3">
                 A casa oficial do{" "}
-                <span style={{ background: "linear-gradient(135deg,#3dff45,#05e10d)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>stainzincs</span>
+                <span style={{ background: "linear-gradient(135deg,#4ade80,#22c55e)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>stainzincs</span>
               </h2>
 
-              {/* Texto + destaques */}
-              <p className="text-gray-400 text-sm sm:text-base max-w-lg leading-relaxed mb-4">
-                Cassino e apostas na <strong className="text-white">melhor casa do Brasil</strong>.
+              {/* Texto */}
+              <p className="text-gray-400 text-sm sm:text-base max-w-lg leading-relaxed">
+                A <strong className="text-white">melhor casa do Brasil</strong>, com o <strong className="text-white">saque mais rápido</strong> via Pix direto na sua conta.
                 Cadastre-se agora e jogue junto com a comunidade!
               </p>
-
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 mb-1">
-                {["⚡ Saque rápido via Pix", "🎰 Cassino ao vivo", "🇧🇷 Melhor casa do Brasil"].map(chip => (
-                  <span key={chip} className="text-[11px] font-bold px-2.5 py-1 rounded-lg"
-                    style={{ background: "rgba(5,225,13,0.08)", border: "1px solid rgba(5,225,13,0.22)", color: "#8bff90" }}>
-                    {chip}
-                  </span>
-                ))}
-              </div>
-              <p className="text-[10px] text-gray-600 mt-2">+18 · Jogue com responsabilidade</p>
+              <p className="text-[10px] text-gray-600 mt-3">+18 · Jogue com responsabilidade</p>
             </div>
 
             {/* CTA */}
@@ -178,8 +167,8 @@ export default function HomePage() {
                 href={JONBET_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="jb-cta inline-flex items-center gap-2 px-9 py-4 rounded-2xl font-black text-black text-sm sm:text-base transition-all hover:scale-[1.05] active:scale-95"
-                style={{ background: "linear-gradient(135deg, #3dff45, #05e10d)", boxShadow: "0 10px 32px rgba(5,225,13,0.4)" }}
+                className="jb-cta inline-flex items-center gap-2 px-9 py-4 rounded-2xl font-black text-black text-sm sm:text-base transition-all hover:scale-[1.04] active:scale-95"
+                style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)", boxShadow: "0 8px 26px rgba(34,197,94,0.25)" }}
               >
                 🎁 Cadastre-se agora
               </a>
