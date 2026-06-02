@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       titulo: String(body.titulo || "Sorteio"),
       valor: String(body.valor || ""),
       minutosTicket: Number(body.minutosTicket) || 10,
+      duracaoMs: body.duracaoMs != null ? Number(body.duracaoMs) : undefined,
       duracaoMinutos: Number(body.duracaoMinutos) || 60,
     });
     const list = await getSorteios();

@@ -74,15 +74,19 @@ export async function criarSorteio(params: {
   titulo: string;
   valor: string;
   minutosTicket: number;
-  duracaoMinutos: number;
+  duracaoMinutos?: number;
+  duracaoMs?: number;
 }): Promise<Sorteio> {
   const list = await load();
+  const durMs = params.duracaoMs != null
+    ? params.duracaoMs
+    : (params.duracaoMinutos ?? 60) * 60_000;
   const s: Sorteio = {
     id: Date.now().toString(),
     titulo: params.titulo,
     valor: params.valor,
     minutosTicket: Math.max(1, params.minutosTicket),
-    duracaoMs: Math.max(60_000, params.duracaoMinutos * 60_000),
+    duracaoMs: Math.max(60_000, durMs),
     iniciadoEm: Date.now(),
     status: "ativo",
     participantes: [],
