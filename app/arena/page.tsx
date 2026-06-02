@@ -227,7 +227,7 @@ export default function ArenaPage() {
             return (
               <Link
                 key={f.id}
-                href={admin ? f.adminHref : f.href}
+                href={f.href}
                 className={`group relative rounded-2xl p-6 border transition-all duration-300 animate-in overflow-hidden ${
                   f.available ? "hover:-translate-y-2 hover:shadow-2xl" : "opacity-50 cursor-default"
                 }`}

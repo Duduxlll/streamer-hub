@@ -17,11 +17,19 @@ function useLinkActive(href: string) {
   const pathname = usePathname();
   const params   = useSearchParams();
   const [path, qs] = href.split("?");
-  const tab        = new URLSearchParams(qs ?? "").get("tab") ?? "";
-  const currentTab = params.get("tab") ?? "";
+
   if (path === "/admin") return pathname === "/admin";
-  if (!tab) return pathname === path && !currentTab;
-  return pathname === path && currentTab === tab;
+  if (pathname !== path) return false;
+
+  const hrefEntries = [...new URLSearchParams(qs ?? "").entries()];
+
+  // Sem params no href → ativo só quando não há nenhum param de navegação na URL
+  if (hrefEntries.length === 0) {
+    return !params.get("tab") && !params.get("view");
+  }
+
+  // Com params → todos devem casar com os da URL atual
+  return hrefEntries.every(([key, val]) => params.get(key) === val);
 }
 
 // ── Sub-link ─────────────────────────────────────────────────────────────────
@@ -165,8 +173,8 @@ function SidebarContent({ status, onClose }: { status: StatusData; onClose?: () 
 
         {/* Sorteio */}
         <AccordionGroup icon="🎁" label="Sorteio" defaultPaths={["/admin/sorteio"]} onClose={onClose}>
-          <SideLink href="/admin/sorteio"            icon="✨" label="Criar Sorteio"  onClose={onClose} />
-          <SideLink href="/admin/sorteio?view=ativo" icon="🟢" label="Sorteio Ativo" onClose={onClose} />
+          <SideLink href="/admin/sorteio?view=criar" icon="✨" label="Criar Sorteio"  onClose={onClose} />
+          <SideLink href="/admin/sorteio"            icon="🟢" label="Sorteio Ativo" onClose={onClose} />
         </AccordionGroup>
 
       </nav>

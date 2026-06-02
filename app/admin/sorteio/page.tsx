@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import type { Sorteio, Participante } from "@/lib/sorteio-store";
@@ -25,6 +25,10 @@ function Countdown({ endsAt }: { endsAt: number }) {
 export default function AdminSorteioPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  // view=criar → formulário de criação | default → sorteios ativos
+  const view = searchParams.get("view") ?? "ativo";
+
   const { toasts, toast, dismiss } = useToast();
   const { confirm, ConfirmModal } = useConfirm();
   const [sorteios, setSorteios] = useState<Sorteio[]>([]);
@@ -32,7 +36,6 @@ export default function AdminSorteioPage() {
   const [form, setForm] = useState({ titulo: "", valor: "", minutosTicket: "10", duracaoMinutos: "60" });
   const [criando, setCriando] = useState(false);
   const [limpandoHistorico, setLimpandoHistorico] = useState(false);
-  const [mostrarForm, setMostrarForm] = useState(false);
 
   const fetchSorteios = useCallback(async () => {
     const res = await fetch("/api/sorteio");
@@ -72,8 +75,9 @@ export default function AdminSorteioPage() {
       const data = await res.json();
       setSorteios(data.sorteios ?? []);
       setForm({ titulo: "", valor: "", minutosTicket: "10", duracaoMinutos: "60" });
-      setMostrarForm(false);
       toast("Sorteio criado com sucesso! 🎟️", "success");
+      // Redireciona para a view de sorteios ativos
+      router.push("/admin/sorteio");
     } catch { toast("Erro ao criar sorteio.", "error"); }
     finally { setCriando(false); }
   }
@@ -126,87 +130,102 @@ export default function AdminSorteioPage() {
       <ToastContainer toasts={toasts} dismiss={dismiss} />
       {ConfirmModal}
       <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-12 pb-24 space-y-5">
-        <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-widest"
-            style={{ background: "rgba(255,186,0,0.12)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.35)" }}>
-            🎟️ Admin · Sorteio
-          </div>
-          <button onClick={() => setMostrarForm(f => !f)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl font-black text-sm text-black transition-all hover:scale-[1.02]"
-            style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
-            {mostrarForm ? "✕ Fechar" : "+ Novo Sorteio"}
-          </button>
-        </div>
-        {mostrarForm && (
-          <div className="rounded-2xl overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
-            <div className="px-5 py-4 border-b border-white/5">
-              <h2 className="text-sm font-black text-white">Criar Novo Sorteio</h2>
+
+        {/* ── VIEW: CRIAR SORTEIO ── */}
+        {view === "criar" && (
+          <>
+            <div>
+              <h1 className="text-3xl font-black text-white">Criar Sorteio</h1>
+              <p className="text-sm text-gray-600 mt-1">Configure e lance um novo sorteio para sua live</p>
             </div>
-            <div className="p-5 space-y-3">
-              <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
-                placeholder="Título do sorteio"
-                className="w-full px-4 py-3 rounded-xl text-sm text-white font-semibold focus:outline-none"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
-                onFocus={e => (e.target.style.borderColor = "rgba(255,186,0,0.5)")}
-                onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.1)")} />
-              <input value={form.valor} onChange={e => setForm(f => ({ ...f, valor: e.target.value }))}
-                placeholder="Premiação"
-                className="w-full px-4 py-3 rounded-xl text-sm text-white font-semibold focus:outline-none"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
-                onFocus={e => (e.target.style.borderColor = "rgba(255,186,0,0.5)")}
-                onBlur={e => {
-                  e.target.style.borderColor = "rgba(255,255,255,0.1)";
-                  setForm(f => ({ ...f, valor: formatarValor(f.valor) }));
-                }} />
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] text-gray-600 font-bold uppercase tracking-wide block mb-1">Duração (min)</label>
-                  <input type="number" min="1" value={form.duracaoMinutos}
-                    onChange={e => setForm(f => ({ ...f, duracaoMinutos: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl text-sm text-white font-semibold focus:outline-none"
-                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} />
-                </div>
-                <div>
-                  <label className="text-[10px] text-gray-600 font-bold uppercase tracking-wide block mb-1">Ticket a cada X min</label>
-                  <input type="number" min="1" value={form.minutosTicket}
-                    onChange={e => setForm(f => ({ ...f, minutosTicket: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-xl text-sm text-white font-semibold focus:outline-none"
-                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} />
-                </div>
+            <div className="rounded-2xl overflow-hidden"
+              style={{ background: "rgba(5,4,16,0.92)", border: "1px solid rgba(255,186,0,0.2)", backdropFilter: "blur(20px)", boxShadow: "0 4px 24px rgba(0,0,0,0.4)" }}>
+              <div className="px-5 py-4 border-b border-white/5">
+                <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Novo sorteio</p>
               </div>
-              <button onClick={criar} disabled={criando || !form.titulo.trim()}
-                className="w-full py-3.5 rounded-xl font-black text-sm text-black disabled:opacity-50 transition-all hover:scale-[1.02]"
-                style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
-                {criando ? "Criando..." : "🎟️ Criar Sorteio"}
-              </button>
+              <div className="p-5 space-y-3">
+                <input value={form.titulo} onChange={e => setForm(f => ({ ...f, titulo: e.target.value }))}
+                  placeholder="Título do sorteio"
+                  className="w-full px-4 py-3 rounded-xl text-sm text-white font-semibold focus:outline-none"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  onFocus={e => (e.target.style.borderColor = "rgba(255,186,0,0.5)")}
+                  onBlur={e => (e.target.style.borderColor = "rgba(255,255,255,0.1)")} />
+                <input value={form.valor} onChange={e => setForm(f => ({ ...f, valor: e.target.value }))}
+                  placeholder="Premiação (ex: R$ 100, iPhone 15...)"
+                  className="w-full px-4 py-3 rounded-xl text-sm text-white font-semibold focus:outline-none"
+                  style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  onFocus={e => (e.target.style.borderColor = "rgba(255,186,0,0.5)")}
+                  onBlur={e => {
+                    e.target.style.borderColor = "rgba(255,255,255,0.1)";
+                    setForm(f => ({ ...f, valor: formatarValor(f.valor) }));
+                  }} />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-gray-600 font-bold uppercase tracking-wide block mb-1">Duração (minutos)</label>
+                    <input type="number" min="1" value={form.duracaoMinutos}
+                      onChange={e => setForm(f => ({ ...f, duracaoMinutos: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl text-sm text-white font-semibold focus:outline-none"
+                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-gray-600 font-bold uppercase tracking-wide block mb-1">Ticket a cada X minutos</label>
+                    <input type="number" min="1" value={form.minutosTicket}
+                      onChange={e => setForm(f => ({ ...f, minutosTicket: e.target.value }))}
+                      className="w-full px-4 py-3 rounded-xl text-sm text-white font-semibold focus:outline-none"
+                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }} />
+                  </div>
+                </div>
+                <button onClick={criar} disabled={criando || !form.titulo.trim()}
+                  className="w-full py-3.5 rounded-xl font-black text-sm text-black disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-100"
+                  style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", boxShadow: "0 4px 20px rgba(255,186,0,0.25)" }}>
+                  {criando ? "Criando..." : "🎟️ Criar Sorteio"}
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-        {ativos.length > 0 && (
-          <div className="space-y-3">
-            <p className="text-xs font-black text-gray-500 uppercase tracking-widest">Sorteios Ativos ({ativos.length})</p>
-            {ativos.map(s => (
-              <SorteioCard key={s.id} s={s} onCancelar={() => cancelar(s.id)} />
-            ))}
-          </div>
+          </>
         )}
 
-        {ativos.length === 0 && !mostrarForm && (
-          <div className="text-center py-12 rounded-2xl"
-            style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)" }}>
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
-              style={{ background: "rgba(255,186,0,0.08)", border: "1px solid rgba(255,186,0,0.2)" }}>
-              <span className="text-3xl">🎟️</span>
+        {/* ── VIEW: SORTEIOS ATIVOS (default) ── */}
+        {view !== "criar" && (
+          <>
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div>
+                <h1 className="text-3xl font-black text-white">Sorteio Ativo</h1>
+                <p className="text-sm text-gray-600 mt-1">Sorteios em andamento na sua live</p>
+              </div>
+              <Link href="/admin/sorteio?view=criar"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl font-black text-sm text-black transition-all hover:scale-[1.02]"
+                style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
+                + Criar Sorteio
+              </Link>
             </div>
-            <h3 className="text-base font-black text-white mb-1">Nenhum sorteio ativo</h3>
-            <p className="text-gray-500 text-sm mb-4">Crie um sorteio para sua live e deixe o chat participar!</p>
-            <button onClick={() => setMostrarForm(true)}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-sm text-black transition-all hover:scale-[1.03]"
-              style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
-              + Criar Sorteio
-            </button>
-          </div>
+
+            {ativos.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Em andamento ({ativos.length})</p>
+                {ativos.map(s => (
+                  <SorteioCard key={s.id} s={s} onCancelar={() => cancelar(s.id)} />
+                ))}
+              </div>
+            )}
+
+            {ativos.length === 0 && (
+              <div className="text-center py-16 rounded-2xl"
+                style={{ background: "rgba(5,4,16,0.7)", border: "1px solid rgba(255,255,255,0.06)", backdropFilter: "blur(12px)" }}>
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
+                  style={{ background: "rgba(255,186,0,0.08)", border: "1px solid rgba(255,186,0,0.2)" }}>
+                  <span className="text-3xl">🎟️</span>
+                </div>
+                <h3 className="text-base font-black text-white mb-1">Nenhum sorteio ativo</h3>
+                <p className="text-gray-500 text-sm mb-4">Crie um sorteio para sua live e deixe o chat participar!</p>
+                <Link href="/admin/sorteio?view=criar"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-sm text-black transition-all hover:scale-[1.03]"
+                  style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
+                  + Criar Sorteio
+                </Link>
+              </div>
+            )}
+          </>
         )}
 
         {finalizados.length > 0 && (
