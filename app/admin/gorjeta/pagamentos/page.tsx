@@ -65,7 +65,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pt-24 sm:pt-20 bg-black/85 backdrop-blur-md overflow-y-auto"
       style={{ animation: "pixFadeIn 0.2s ease-out" }}
       onClick={onClose}>
       <style>{`
