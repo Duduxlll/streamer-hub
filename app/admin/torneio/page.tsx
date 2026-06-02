@@ -64,6 +64,7 @@ export default function AdminTorneioPage() {
   const [torneio, setTorneio] = useState<Torneio | null>(null);
   const [loading, setLoading] = useState(false);
   const [carregando, setCarregando] = useState(true);
+  const [resultadoFinal, setResultadoFinal] = useState<{ nome: string; vencedores: { username: string; displayName: string }[] } | null>(null);
   const [novoNome, setNovoNome] = useState("");
   const [novosTimes, setNovosTimes] = useState(["", ""]);
   const [proximosTimes, setProximosTimes] = useState(["", ""]);
@@ -158,30 +159,108 @@ export default function AdminTorneioPage() {
               </span>
             ) : null}
 
-            {torneio && (
+            {torneio && !resultadoFinal && (
               <button
                 onClick={async () => {
-                  if (!await confirm(`Finalizar o torneio "${torneio.nome}"?`, { confirmLabel: "Finalizar", danger: true })) return;
+                  if (!await confirm(`Finalizar o torneio "${torneio.nome}" e decidir os vencedores?`, { confirmLabel: "Finalizar", danger: true })) return;
                   setLoading(true);
-                  await fetch("/api/torneio", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ action: "finalizar" }),
-                  });
-                  setTorneio(null);
-                  setLoading(false);
-                  toast("Torneio finalizado.", "warning");
+                  try {
+                    const res = await fetch("/api/torneio", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ action: "finalizar" }),
+                    });
+                    const data = await res.json() as { nome?: string; vencedores?: { username: string; displayName: string }[] };
+                    setTorneio(null);
+                    if (data.vencedores) {
+                      setResultadoFinal({ nome: data.nome ?? torneio.nome, vencedores: data.vencedores });
+                    }
+                    toast("Torneio finalizado! 🏆", "success");
+                  } finally { setLoading(false); }
                 }}
                 disabled={loading}
                 className="px-3 py-1.5 rounded-xl text-xs font-bold border border-red-500/35 bg-red-500/8 text-red-400 hover:bg-red-500/18 transition-all disabled:opacity-50"
               >
-                Finalizar Torneio
+                Finalizar e Decidir Vencedor
               </button>
             )}
           </div>
         </div>
 
-        {!torneio ? (
+        {resultadoFinal ? (
+          <div className="rounded-3xl border overflow-hidden"
+            style={{
+              borderColor: "rgba(255,186,0,0.4)",
+              background: "linear-gradient(160deg, rgba(255,186,0,0.1), rgba(5,7,18,0.98))",
+              boxShadow: "0 0 60px rgba(255,186,0,0.12)",
+              animation: "tnFinalIn 0.5s cubic-bezier(0.16,1,0.3,1)",
+            }}>
+            <style>{`
+              @keyframes tnFinalIn { from { opacity:0; transform: scale(0.96) translateY(20px); } to { opacity:1; transform: scale(1) translateY(0); } }
+              @keyframes tnWinnerIn { from { opacity:0; transform: translateY(16px) scale(0.9); } to { opacity:1; transform: translateY(0) scale(1); } }
+              @keyframes tnTrophyBounce { 0%,100% { transform: translateY(0) rotate(0deg); } 25% { transform: translateY(-8px) rotate(-6deg); } 75% { transform: translateY(-8px) rotate(6deg); } }
+              @keyframes tnGlow { 0%,100% { text-shadow: 0 0 20px rgba(255,186,0,0.4); } 50% { text-shadow: 0 0 40px rgba(255,186,0,0.7); } }
+            `}</style>
+
+            {/* Cabeçalho */}
+            <div className="px-6 pt-8 pb-5 text-center">
+              <div className="text-6xl mb-3 inline-block" style={{ animation: "tnTrophyBounce 1.8s ease-in-out infinite" }}>🏆</div>
+              <p className="text-[11px] font-black uppercase tracking-[0.25em] mb-1" style={{ color: "#ffba00" }}>Torneio Finalizado</p>
+              <h2 className="text-3xl font-black text-white" style={{ animation: "tnGlow 2.5s ease-in-out infinite" }}>{resultadoFinal.nome}</h2>
+            </div>
+
+            {/* Vencedores */}
+            <div className="px-6 pb-6">
+              {resultadoFinal.vencedores.length === 0 ? (
+                <div className="text-center py-8 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <p className="text-3xl mb-2">🤷</p>
+                  <p className="text-sm font-black text-gray-400">Nenhum vencedor</p>
+                  <p className="text-xs text-gray-600 mt-1">Nenhum participante chegou até o fim.</p>
+                </div>
+              ) : (
+                <>
+                  <p className="text-center text-[11px] font-black text-gray-500 uppercase tracking-widest mb-4">
+                    {resultadoFinal.vencedores.length === 1
+                      ? "🥇 Grande Campeão"
+                      : `🎉 ${resultadoFinal.vencedores.length} Vencedores`}
+                  </p>
+                  <div className={`grid gap-3 ${resultadoFinal.vencedores.length === 1 ? "grid-cols-1 max-w-sm mx-auto" : "grid-cols-1 sm:grid-cols-2"}`}>
+                    {resultadoFinal.vencedores.map((v, i) => (
+                      <div key={v.username}
+                        className="flex items-center gap-3 px-5 py-4 rounded-2xl"
+                        style={{
+                          background: "rgba(255,186,0,0.08)",
+                          border: "1px solid rgba(255,186,0,0.3)",
+                          boxShadow: "0 0 24px rgba(255,186,0,0.08)",
+                          animation: `tnWinnerIn 0.5s ease-out ${0.15 + i * 0.12}s both`,
+                        }}>
+                        <span className="w-9 h-9 rounded-full flex items-center justify-center text-base font-black text-black flex-shrink-0"
+                          style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>
+                          {i + 1}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-lg font-black text-white truncate">{v.displayName}</p>
+                          <p className="text-[11px] text-gray-500 truncate">@{v.username}</p>
+                        </div>
+                        <span className="text-2xl flex-shrink-0">🏆</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Botão próximo torneio */}
+            <div className="px-6 pb-7">
+              <button
+                onClick={() => { setResultadoFinal(null); setTorneio(null); }}
+                className="w-full py-3.5 rounded-2xl font-black text-black text-sm transition-all hover:scale-[1.02] active:scale-95"
+                style={{ background: "linear-gradient(135deg, #ffba00, #e6a000)", boxShadow: "0 4px 24px rgba(255,186,0,0.3)" }}>
+                ▶ Abrir Próximo Torneio
+              </button>
+            </div>
+          </div>
+        ) : !torneio ? (
           <div className="rounded-2xl border border-white/12 p-6" style={{ background: "rgba(5,7,18,0.97)", backdropFilter: "blur(12px)" }}>
             <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-5">Criar Torneio</p>
             <div className="mb-4">

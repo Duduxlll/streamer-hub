@@ -77,9 +77,20 @@ export async function POST(req: Request) {
   if (body.action === "finalizar") {
     const torneio = await finalizarTorneio();
     if (!torneio) return NextResponse.json({ error: "Nenhum torneio ativo" }, { status: 400 });
-    const vencedores = torneio.vencedoresFinais.map(u => `@${u}`).join(", ") || "Nenhum";
-    await queueChatMessage(`🎊 TORNEIO "${torneio.nome}" FINALIZADO! Vencedores: ${vencedores} — Parabéns! 🏆`);
-    return NextResponse.json({ ok: true });
+
+    // Mapeia username → displayName a partir das escolhas de todas as fases
+    const nameMap = new Map<string, string>();
+    for (const fase of torneio.fases) {
+      for (const e of fase.escolhas) nameMap.set(e.username.toLowerCase(), e.displayName);
+    }
+    const vencedores = torneio.vencedoresFinais.map(u => ({
+      username: u,
+      displayName: nameMap.get(u.toLowerCase()) ?? u,
+    }));
+
+    const vencedoresStr = vencedores.map(v => `@${v.displayName}`).join(", ") || "Nenhum";
+    await queueChatMessage(`🎊 TORNEIO "${torneio.nome}" FINALIZADO! Vencedores: ${vencedoresStr} — Parabéns! 🏆`);
+    return NextResponse.json({ ok: true, nome: torneio.nome, vencedores });
   }
 
   return NextResponse.json({ error: "Ação inválida" }, { status: 400 });

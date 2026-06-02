@@ -26,18 +26,29 @@ export async function POST(req: Request) {
     buyIn?: number;
     numVencedores?: number;
     resultado?: number;
+    modoVitoria?: "aproximado" | "exato";
+    multiplosPalpites?: boolean;
   };
 
   if (body.action === "open") {
     const buyIn = Number(body.buyIn ?? 0);
     const numVencedores = Number(body.numVencedores ?? 1);
+    const modoVitoria = body.modoVitoria === "exato" ? "exato" : "aproximado";
+    const multiplosPalpites = body.multiplosPalpites === true;
     if (buyIn <= 0) return NextResponse.json({ error: "Buy-in inválido" }, { status: 400 });
 
-    const rodada = await abrirRodada(buyIn, numVencedores);
+    const rodada = await abrirRodada(buyIn, numVencedores, modoVitoria, multiplosPalpites);
+
+    const regra = modoVitoria === "exato"
+      ? "Quem acertar o valor EXATO ganha!"
+      : "Quem acertar mais perto ganha!";
+    const vezes = multiplosPalpites
+      ? " Você pode palpitar quantas vezes quiser!"
+      : "";
 
     await queueChatMessage(
       `🎯 PALPITE ABERTO! Bônus no valor de R$ ${buyIn.toLocaleString("pt-BR")}. ` +
-      `Use !p <valor> para participar! Ex: !p 230 — Quem acertar mais perto ganha! 🏆`
+      `Use !p <valor> para participar! Ex: !p 230 — ${regra}${vezes} 🏆`
     );
 
     return NextResponse.json(rodada, { headers: NO_STORE_HEADERS });

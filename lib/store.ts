@@ -8,11 +8,15 @@ export interface Palpite {
   createdAt: number;
 }
 
+export type ModoVitoria = "aproximado" | "exato";
+
 export interface Rodada {
   id: string;
   status: "aberta" | "travada" | "fechada";
   buyIn: number;
   numVencedores: number;
+  modoVitoria: ModoVitoria;       // "aproximado" = mais perto ganha | "exato" = valor exato
+  multiplosPalpites: boolean;     // true = palpitar quantas vezes quiser | false = apenas um
   palpites: Palpite[];
   createdAt: number;
 }
@@ -145,8 +149,17 @@ function parseState(raw: unknown): StoreState {
     const value = typeof raw === "string" ? JSON.parse(raw) : raw;
     const state = value as Partial<StoreState & { msgQueue?: unknown }>;
 
+    // Normaliza rodadas antigas que não tinham os campos de configuração
+    const rodada = state.rodada
+      ? {
+          ...state.rodada,
+          modoVitoria: state.rodada.modoVitoria ?? "aproximado",
+          multiplosPalpites: state.rodada.multiplosPalpites ?? false,
+        }
+      : null;
+
     return {
-      rodada: state.rodada ?? null,
+      rodada,
       historico: Array.isArray(state.historico) ? state.historico : [],
     };
   } catch {
@@ -225,7 +238,12 @@ export async function getRodada(): Promise<Rodada | null> {
   return state.rodada ?? null;
 }
 
-export async function abrirRodada(buyIn: number, numVencedores: number): Promise<Rodada> {
+export async function abrirRodada(
+  buyIn: number,
+  numVencedores: number,
+  modoVitoria: ModoVitoria = "aproximado",
+  multiplosPalpites = false,
+): Promise<Rodada> {
   const state = await loadState();
   const now = Date.now();
   const rodada: Rodada = {
@@ -233,6 +251,8 @@ export async function abrirRodada(buyIn: number, numVencedores: number): Promise
     status: "aberta",
     buyIn,
     numVencedores,
+    modoVitoria,
+    multiplosPalpites,
     palpites: [],
     createdAt: now,
   };
@@ -260,15 +280,29 @@ export async function fecharRodada(
 
   let vencedores: VencedorInfo[] = [];
   if (typeof resultado === "number" && r.palpites.length > 0) {
-    const ordenados = [...r.palpites].sort(
-      (a, b) => Math.abs(a.valor - resultado) - Math.abs(b.valor - resultado)
-    );
-    vencedores = ordenados.slice(0, r.numVencedores).map((p, i) => ({
-      posicao: i + 1,
-      username: p.username,
-      valor: p.valor,
-      diferenca: Math.abs(p.valor - resultado),
-    }));
+    if (r.modoVitoria === "exato") {
+      // Só ganha quem acertou o valor exato — desempate por quem palpitou primeiro
+      const exatos = r.palpites
+        .filter(p => p.valor === resultado)
+        .sort((a, b) => a.createdAt - b.createdAt);
+      vencedores = exatos.slice(0, r.numVencedores).map((p, i) => ({
+        posicao: i + 1,
+        username: p.username,
+        valor: p.valor,
+        diferenca: 0,
+      }));
+    } else {
+      // Aproximado — o mais perto ganha
+      const ordenados = [...r.palpites].sort(
+        (a, b) => Math.abs(a.valor - resultado) - Math.abs(b.valor - resultado)
+      );
+      vencedores = ordenados.slice(0, r.numVencedores).map((p, i) => ({
+        posicao: i + 1,
+        username: p.username,
+        valor: p.valor,
+        diferenca: Math.abs(p.valor - resultado),
+      }));
+    }
   }
 
   const entry: ResultadoRodada = {
@@ -298,6 +332,14 @@ export async function addOrUpdatePalpite(
   const r = state.rodada;
   if (!r || r.status !== "aberta") return { ok: false, updated: false };
 
+  // Modo múltiplo: cada palpite é um novo registro (palpitar quantas vezes quiser)
+  if (r.multiplosPalpites) {
+    r.palpites.push({ username, valor, createdAt: Date.now() });
+    await saveState(state);
+    return { ok: true, updated: false };
+  }
+
+  // Modo único: atualiza o palpite existente da pessoa
   const idx = r.palpites.findIndex(
     (p) => p.username.toLowerCase() === username.toLowerCase()
   );

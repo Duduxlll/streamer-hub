@@ -137,6 +137,8 @@ export default function AdminPalpitesPage() {
   const [rodada, setRodada] = useState<Rodada | null>(null);
   const [buyIn, setBuyIn] = useState("");
   const [numVencedores, setNumVencedores] = useState("1");
+  const [modoVitoria, setModoVitoria] = useState<"aproximado" | "exato">("aproximado");
+  const [multiplos, setMultiplos] = useState(false);
   const [resultado, setResultado] = useState("");
   const [ultimoResultado, setUltimoResultado] = useState<ResultadoRodada | null>(null);
   const [historico, setHistorico] = useState<ResultadoRodada[]>([]);
@@ -193,7 +195,7 @@ export default function AdminPalpitesPage() {
       const res = await fetch("/api/palpites/rodada", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "open", buyIn: parseValor(buyIn), numVencedores: parseInt(numVencedores) || 1 }),
+        body: JSON.stringify({ action: "open", buyIn: parseValor(buyIn), numVencedores: parseInt(numVencedores) || 1, modoVitoria, multiplosPalpites: multiplos }),
       });
       setRodada(await res.json());
       toast("Palpites abertos! Chat pode apostar agora 🎯", "success");
@@ -330,6 +332,71 @@ export default function AdminPalpitesPage() {
                     style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }} />
                 </div>
               </div>
+
+              {/* Configurações de modo — só ao abrir nova rodada */}
+              {!rodadaAtiva && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                  {/* Modo de vitória */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 mb-2 block">Como ganha?</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {([
+                        { key: "aproximado", label: "Mais perto", sub: "Aproximado" },
+                        { key: "exato",      label: "Valor exato", sub: "Cravado" },
+                      ] as const).map(o => {
+                        const sel = modoVitoria === o.key;
+                        return (
+                          <button key={o.key} type="button" onClick={() => setModoVitoria(o.key)}
+                            className="flex flex-col items-start px-3 py-2 rounded-xl transition-all"
+                            style={sel
+                              ? { background: "rgba(255,186,0,0.1)", border: "1px solid rgba(255,186,0,0.4)" }
+                              : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                            <span className="text-xs font-black" style={{ color: sel ? "#ffba00" : "#9ca3af" }}>{o.label}</span>
+                            <span className="text-[10px] text-gray-600">{o.sub}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Quantidade de palpites por pessoa */}
+                  <div>
+                    <label className="text-xs font-semibold text-gray-400 mb-2 block">Palpites por pessoa</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {([
+                        { val: false, label: "Apenas um", sub: "Substitui" },
+                        { val: true,  label: "Vários",     sub: "Sem limite" },
+                      ] as const).map(o => {
+                        const sel = multiplos === o.val;
+                        return (
+                          <button key={String(o.val)} type="button" onClick={() => setMultiplos(o.val)}
+                            className="flex flex-col items-start px-3 py-2 rounded-xl transition-all"
+                            style={sel
+                              ? { background: "rgba(255,186,0,0.1)", border: "1px solid rgba(255,186,0,0.4)" }
+                              : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                            <span className="text-xs font-black" style={{ color: sel ? "#ffba00" : "#9ca3af" }}>{o.label}</span>
+                            <span className="text-[10px] text-gray-600">{o.sub}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Resumo do modo durante rodada ativa */}
+              {rodadaAtiva && rodada && (
+                <div className="flex items-center gap-2 flex-wrap mb-5">
+                  <span className="text-[10px] font-black px-2.5 py-1 rounded-full"
+                    style={{ background: "rgba(255,186,0,0.1)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.25)" }}>
+                    {rodada.modoVitoria === "exato" ? "🎯 Valor exato" : "📏 Mais perto ganha"}
+                  </span>
+                  <span className="text-[10px] font-black px-2.5 py-1 rounded-full"
+                    style={{ background: "rgba(255,255,255,0.05)", color: "#9ca3af", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    {rodada.multiplosPalpites ? "♾️ Vários palpites" : "1️⃣ Um palpite por pessoa"}
+                  </span>
+                </div>
+              )}
 
               {!rodadaAtiva && (
                 <button onClick={abrirPalpites} disabled={!podAbrir}
