@@ -94,7 +94,10 @@ function LoginForm() {
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
               </div>
               <div>
-                <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Senha</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Senha</label>
+                  <Link href="/esqueci-senha" className="text-[11px] font-bold text-[#4ade80] hover:underline">Esqueci minha senha</Link>
+                </div>
                 <div className="relative">
                   <input type={showPass ? "text" : "password"} placeholder="••••••••"
                     value={senha}

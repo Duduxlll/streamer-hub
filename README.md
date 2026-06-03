@@ -63,6 +63,10 @@ AUTH_SECRET=
 # Admins: nicks da Twitch (separados por vírgula). Quem criar a conta com esse nick vira admin.
 NEXT_PUBLIC_ADMIN_LOGINS=dudufpss,stainzincs
 
+# Resend (envio do código de "esqueci minha senha" por e-mail) — https://resend.com
+RESEND_API_KEY=
+RESEND_FROM=stainzincs <no-reply@seudominio.com>
+
 # URL de produção
 NEXTAUTH_URL=https://seudominio.com
 SITE_URL=https://seudominio.com
