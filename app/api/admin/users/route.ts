@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import {
-  getUsers, banUser, desbanirUser, suspenderUser, dessuspenderUser,
+  getUsers, banUser, desbanirUser, suspenderUser, dessuspenderUser, setPassword,
 } from "@/lib/users-store";
 import { addLog } from "@/lib/security-log";
 import { getHistoricoGorjeta } from "@/lib/gorjeta-store";
@@ -34,7 +34,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ganhos }, { headers: NO_CACHE });
   }
 
-  const users = await getUsers();
+  // Nunca expõe o hash da senha ao cliente, mesmo para o admin.
+  const users = (await getUsers()).map(({ passwordHash, ...u }) => { void passwordHash; return u; });
   return NextResponse.json({ users }, { headers: NO_CACHE });
 }
 
@@ -45,11 +46,18 @@ export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Body inválido" }, { status: 400 }); }
 
-  const { action, twitchLogin, motivo, suspAte } = body as {
-    action: string; twitchLogin: string; motivo?: string; suspAte?: number;
+  const { action, twitchLogin, motivo, suspAte, novaSenha } = body as {
+    action: string; twitchLogin: string; motivo?: string; suspAte?: number; novaSenha?: string;
   };
 
   if (!twitchLogin) return NextResponse.json({ error: "twitchLogin obrigatório" }, { status: 400 });
+
+  if (action === "reset-senha") {
+    if (!novaSenha || novaSenha.length < 6) return NextResponse.json({ error: "Senha precisa ter no mínimo 6 caracteres" }, { status: 400 });
+    const ok = await setPassword(twitchLogin, novaSenha);
+    if (ok) await addLog({ admin: adminLogin, action: "reset_senha", target: twitchLogin, detail: "Senha redefinida pelo admin" });
+    return NextResponse.json({ ok }, { headers: NO_CACHE });
+  }
 
   if (action === "ban") {
     const ok = await banUser(twitchLogin, motivo ?? "Banido pelo admin", adminLogin);

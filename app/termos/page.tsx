@@ -95,13 +95,13 @@ export default function TermosPage() {
 
           <Section title="3. Cadastro e Autenticação">
             <p>
-              O acesso às funcionalidades interativas requer autenticação via <strong className="text-white">Twitch</strong>.
-              Ao fazer login, você autoriza que a plataforma acesse as informações básicas da sua conta Twitch
-              (nome de usuário, nome de exibição e foto de perfil) conforme descrito em nossa Política de Privacidade.
+              O acesso às funcionalidades interativas requer a criação de uma conta própria, informando seu{" "}
+              <strong className="text-white">nome da Twitch</strong> (que deve ser o mesmo usado no chat), nome completo,
+              CPF, e-mail e uma senha. Os dados são tratados conforme nossa Política de Privacidade.
             </p>
             <p className="mt-3">
-              Você é responsável por manter a segurança da sua conta Twitch. Qualquer ação realizada com suas
-              credenciais é de sua inteira responsabilidade.
+              Sua senha é armazenada de forma criptografada (hash) e nunca é exibida a terceiros. Você é responsável
+              por manter suas credenciais em sigilo. Qualquer ação realizada com sua conta é de sua inteira responsabilidade.
             </p>
           </Section>
 

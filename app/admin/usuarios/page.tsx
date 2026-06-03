@@ -104,7 +104,43 @@ type ModalState =
   | { type: "ban";     user: SiteUser }
   | { type: "suspend"; user: SiteUser }
   | { type: "history"; user: SiteUser }
+  | { type: "reset";   user: SiteUser }
   | null;
+
+function ResetSenhaModal({ user, onClose, onSave }: { user: SiteUser; onClose: () => void; onSave: (novaSenha: string) => Promise<void> }) {
+  const [senha, setSenha] = useState("");
+  const [saving, setSaving] = useState(false);
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+      <div className="w-full max-w-xs rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}
+        style={{ background: "rgba(6,15,9,0.98)", border: "1px solid rgba(34,197,94,0.25)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
+        <div className="px-5 py-4 border-b border-white/5">
+          <p className="text-sm font-black text-white">Resetar senha</p>
+          <p className="text-[11px] text-gray-500">@{user.twitchLogin} — define uma nova senha de acesso</p>
+        </div>
+        <div className="px-5 py-4 space-y-3">
+          <input type="text" placeholder="Nova senha (mín. 6 caracteres)" value={senha}
+            onChange={e => setSenha(e.target.value)}
+            className="w-full px-3 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none"
+            style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.25)" }} />
+          <p className="text-[10px] text-gray-600">Informe a nova senha ao usuário. Ele poderá trocá-la depois.</p>
+          <div className="flex gap-2">
+            <button onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl text-xs font-black transition-all hover:bg-white/5"
+              style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.07)" }}>
+              Cancelar
+            </button>
+            <button disabled={saving || senha.length < 6} onClick={async () => { setSaving(true); await onSave(senha); }}
+              className="flex-1 py-2.5 rounded-xl text-xs font-black text-black disabled:opacity-50 transition-all hover:scale-[1.02]"
+              style={{ background: "rgba(34,197,94,0.8)" }}>
+              {saving ? "..." : "🔑 Salvar senha"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function BanModal({ user, onClose, onSave }: { user: SiteUser; onClose: () => void; onSave: (motivo: string) => Promise<void> }) {
   const [motivo, setMotivo] = useState("");
@@ -198,7 +234,7 @@ function SuspendModal({ user, onClose, onSave }: { user: SiteUser; onClose: () =
 
 function UserCard({ user, onAction, busy = false }: {
   user: SiteUser;
-  onAction: (type: "ban" | "unban" | "suspend" | "unsuspend" | "history") => void;
+  onAction: (type: "ban" | "unban" | "suspend" | "unsuspend" | "history" | "reset") => void;
   busy?: boolean;
 }) {
   const isBanned    = user.status === "banido";
@@ -264,6 +300,12 @@ function UserCard({ user, onAction, busy = false }: {
           className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:bg-white/5"
           style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.07)" }}>
           📊 Histórico
+        </button>
+
+        <button onClick={() => onAction("reset")}
+          className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:bg-white/5"
+          style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.07)" }}>
+          🔑 Senha
         </button>
 
         {!isBanned && !isSuspended && (
@@ -370,6 +412,13 @@ export default function UsuariosPage() {
           setModal(null);
         }} />
       )}
+      {modal?.type === "reset" && (
+        <ResetSenhaModal user={modal.user} onClose={() => setModal(null)} onSave={async (novaSenha) => {
+          const ok = await apiAction("reset-senha", modal.user.twitchLogin, { novaSenha });
+          flash(ok ? `Senha de @${modal.user.twitchLogin} redefinida.` : "Erro ao redefinir senha", ok);
+          setModal(null);
+        }} />
+      )}
 
       <div className="mb-6">
         <h1 className="text-3xl font-black text-white">Usuários</h1>
@@ -436,6 +485,7 @@ export default function UsuariosPage() {
         {filtered.map(u => (
           <UserCard key={u.twitchId} user={u} onAction={(type) => {
             if (type === "history") { setModal({ type: "history", user: u }); return; }
+            if (type === "reset")   { setModal({ type: "reset",   user: u }); return; }
             if (type === "ban")     { setModal({ type: "ban",     user: u }); return; }
             if (type === "suspend") { setModal({ type: "suspend", user: u }); return; }
             if (type === "unban") {

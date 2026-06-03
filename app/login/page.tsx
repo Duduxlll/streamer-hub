@@ -1,77 +1,136 @@
 "use client";
 
 import { signIn, useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 
-function TwitchIcon({ className }: { className?: string }) {
+function Spinner() {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
-    </svg>
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
+      <div className="w-8 h-8 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
+    </div>
   );
 }
 
 export default function LoginPage() {
-  const { data: session, status } = useSession();
+  return (
+    <Suspense fallback={<Spinner />}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
+  const { status } = useSession();
   const router = useRouter();
+  const params = useSearchParams();
+  const callbackUrl = params.get("callbackUrl") || "/";
+
+  const [usuario, setUsuario] = useState("");
+  const [senha, setSenha]     = useState("");
+  const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [erro, setErro]       = useState("");
 
   useEffect(() => {
-    if (status === "authenticated") {
-      router.replace("/");
-    }
-  }, [status, router]);
+    if (status === "authenticated") router.replace(callbackUrl);
+  }, [status, router, callbackUrl]);
 
-  async function handleLogin() {
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
+    setErro("");
+    if (!usuario.trim() || !senha) { setErro("Preencha usuário e senha"); return; }
     setLoading(true);
-    await signIn("twitch", { callbackUrl: "/" });
+    try {
+      const res = await signIn("credentials", {
+        username: usuario.trim(),
+        password: senha,
+        redirect: false,
+      });
+      if (res?.error) {
+        setErro("Nome da Twitch ou senha incorretos");
+        setLoading(false);
+        return;
+      }
+      router.replace(callbackUrl);
+      router.refresh();
+    } catch {
+      setErro("Erro de conexão. Tente novamente.");
+      setLoading(false);
+    }
   }
 
   if (status === "loading" || status === "authenticated") {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
-      </div>
-    );
+    return <Spinner />;
   }
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 relative overflow-hidden">
-
       <div className="w-full max-w-sm relative scale-in">
         <div className="card-dark rounded-2xl overflow-hidden border-[#16a34a]/20">
           <div className="h-1 w-full bg-gradient-to-r from-[#22c55e] via-[#4ade80] to-[#22c55e]" />
 
           <div className="p-8">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center mx-auto mb-4 shadow-xl shadow-purple-950/50">
-                <TwitchIcon className="w-8 h-8 text-white" />
+            <div className="text-center mb-7">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#22c55e] to-[#16a34a] flex items-center justify-center mx-auto mb-4 shadow-xl shadow-green-950/50">
+                <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                  <polyline points="10 17 15 12 10 7" />
+                  <line x1="15" y1="12" x2="3" y2="12" />
+                </svg>
               </div>
               <h1 className="text-2xl font-black text-white">Entrar na plataforma</h1>
-              <p className="text-gray-500 text-sm mt-1.5">Faça login com sua conta Twitch</p>
+              <p className="text-gray-500 text-sm mt-1.5">Acesse com seu nome da Twitch e senha</p>
             </div>
-            <button
-              onClick={handleLogin}
-              disabled={loading}
-              className="btn-twitch w-full flex items-center justify-center gap-3 py-4 rounded-xl font-bold text-white text-base disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-              ) : (
-                <TwitchIcon className="w-5 h-5" />
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Nome da Twitch</label>
+                <input type="text" autoCapitalize="none" autoCorrect="off" placeholder="seu_nome_na_twitch"
+                  value={usuario}
+                  onChange={e => setUsuario(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none transition-all focus:border-[#22c55e]/50"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
+              </div>
+              <div>
+                <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Senha</label>
+                <div className="relative">
+                  <input type={showPass ? "text" : "password"} placeholder="••••••••"
+                    value={senha}
+                    onChange={e => setSenha(e.target.value)}
+                    className="w-full px-4 py-2.5 pr-11 rounded-xl text-sm text-white placeholder-gray-600 outline-none transition-all focus:border-[#22c55e]/50"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
+                  <button type="button" onClick={() => setShowPass(s => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 text-xs font-bold">
+                    {showPass ? "ocultar" : "ver"}
+                  </button>
+                </div>
+              </div>
+
+              {erro && (
+                <div className="rounded-xl px-3 py-2.5 text-sm text-red-400 font-bold"
+                  style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.2)" }}>
+                  {erro}
+                </div>
               )}
-              {loading ? "Redirecionando..." : "Continuar com Twitch"}
-            </button>
-            <div className="mt-4 flex items-center gap-2 justify-center">
-              <svg className="w-3.5 h-3.5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-              </svg>
-              <span className="text-[11px] text-gray-600">Login seguro via OAuth 2.0 da Twitch</span>
+
+              <button type="submit" disabled={loading}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-black text-white text-base transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)", boxShadow: "0 4px 18px rgba(34,197,94,0.3)" }}>
+                {loading ? <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" /> : "Entrar"}
+              </button>
+            </form>
+
+            <div className="mt-5 pt-5 border-t border-white/5 text-center">
+              <p className="text-sm text-gray-500">
+                Ainda não tem conta?{" "}
+                <Link href="/cadastro" className="text-[#4ade80] font-bold hover:underline">Cadastre-se</Link>
+              </p>
             </div>
-            <div className="mt-5 p-4 rounded-xl bg-[#0a2e1a]/40 border border-[#16a34a]/15">
-              <p className="text-xs text-gray-500 text-center leading-relaxed">
+
+            <div className="mt-4 p-3 rounded-xl bg-[#0a2e1a]/40 border border-[#16a34a]/15">
+              <p className="text-[11px] text-gray-500 text-center leading-relaxed">
                 Ao entrar, você concorda com os{" "}
                 <Link href="/termos" className="text-[#4ade80] hover:underline">Termos de Uso</Link>
                 {" "}e{" "}

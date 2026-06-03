@@ -452,11 +452,11 @@ export default function GorjetaPage() {
             <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center text-2xl"
               style={{ background: "rgba(255,186,0,0.08)", border: "1px solid rgba(255,186,0,0.2)" }}>🔐</div>
             <p className="text-base font-black text-white mb-1">Faça login para se cadastrar</p>
-            <p className="text-xs text-gray-500 mb-5">Conecte sua conta Twitch para participar das gorjetas</p>
+            <p className="text-xs text-gray-500 mb-5">Entre na sua conta para participar das gorjetas</p>
             <Link href="/login"
               className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full font-black text-sm text-black transition-all hover:scale-[1.04] active:scale-95"
               style={{ background: "linear-gradient(135deg,#ffe55a,#ffba00)", boxShadow: "0 4px 18px rgba(255,186,0,0.35)" }}>
-              Login com Twitch
+              Entrar
             </Link>
           </div>
         )}

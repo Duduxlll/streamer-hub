@@ -177,7 +177,7 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-600">Twitch</p>
+              <p className="text-xs text-gray-600">Minha conta</p>
             </div>
             {admin && (
               <>
@@ -271,8 +271,7 @@ export default function Navbar() {
                 href="/login"
                 className="btn-twitch flex items-center gap-2 px-5 py-2 rounded-full text-sm font-bold text-white"
               >
-                <TwitchIcon className="w-4 h-4" />
-                Login com Twitch
+                Entrar
               </Link>
             )}
           </div>
@@ -343,8 +342,7 @@ export default function Navbar() {
                   className="btn-twitch flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-sm font-bold text-white"
                   onClick={() => setOpen(false)}
                 >
-                  <TwitchIcon className="w-4 h-4" />
-                  Login com Twitch
+                  Entrar
                 </Link>
               )}
             </div>

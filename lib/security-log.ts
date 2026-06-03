@@ -2,6 +2,7 @@ import { dbGet, dbSet } from "./store";
 
 export type LogAction =
   | "admin_login"
+  | "cadastro" | "reset_senha"
   | "ban" | "unban" | "suspend" | "unsuspend"
   | "config_livepix" | "config_ggpix"
   | "gorjeta_abrir" | "gorjeta_fechar" | "gorjeta_pagar"

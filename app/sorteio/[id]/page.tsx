@@ -243,7 +243,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
   }
 
   async function participar() {
-    if (!session?.user) { signIn("twitch"); return; }
+    if (!session?.user) { signIn(); return; }
     setParticipando(true);
     const res = await fetch("/api/sorteio", {
       method: "POST",
@@ -360,7 +360,7 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
             <p className="text-xs font-black text-green-400 uppercase tracking-widest">Como participar</p>
             <ul className="space-y-2.5 text-sm text-gray-300">
               {[
-                "Faça login com sua conta Twitch",
+                "Crie sua conta ou faça login",
                 `Clique em "Participar do Sorteio"`,
                 `Fique na live! A cada ${sorteio.minutosTicket} minutos assistindo você ganha +1 ticket`,
               ].map((txt, i) => (
@@ -377,13 +377,15 @@ export default function SorteioDetailPage({ params }: { params: Promise<{ id: st
         {!finalizado && !admin && (
           <div className="flex justify-center">
             {status === "unauthenticated" ? (
-              <button onClick={() => signIn("twitch")}
+              <button onClick={() => signIn()}
                 className="flex items-center gap-3 px-8 py-4 rounded-full font-black text-white text-sm transition-all hover:scale-105 active:scale-95"
                 style={{ background: "linear-gradient(135deg, #22c55e, #16a34a)" }}>
-                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z" />
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                  <polyline points="10 17 15 12 10 7" />
+                  <line x1="15" y1="12" x2="3" y2="12" />
                 </svg>
-                Login com Twitch para participar
+                Entrar para participar
               </button>
             ) : jaParticipa ? (
               <div className="flex items-center gap-2.5 px-8 py-4 rounded-full font-black text-sm"

@@ -46,29 +46,27 @@ export default function PrivacidadePage() {
         <div className="space-y-8 text-gray-300 text-sm leading-relaxed">
 
           <Section title="1. Dados que Coletamos" color="#22c55e">
-            <p>Ao fazer login com sua conta Twitch, coletamos automaticamente as seguintes informações:</p>
+            <p>Ao criar sua conta na plataforma, você nos fornece as seguintes informações:</p>
             <div className="mt-4 space-y-3">
-              <DataCard icon="👤" label="Nome de usuário (login)" description="Seu nome de usuário único na Twitch, usado para identificá-lo nas funcionalidades da plataforma." />
-              <DataCard icon="✏️" label="Nome de exibição" description="O nome que aparece publicamente no seu perfil Twitch." />
-              <DataCard icon="🖼️" label="Foto de perfil" description="A imagem de avatar da sua conta Twitch, exibida em placares e listas de participantes." />
-              <DataCard icon="🔑" label="ID de autenticação (OAuth)" description="Token temporário fornecido pela Twitch para verificar sua identidade. Não armazenamos sua senha." />
+              <DataCard icon="👤" label="Nome da Twitch (usuário)" description="Seu nome de usuário na Twitch — usado como login e para identificá-lo no chat e nas funcionalidades da plataforma." />
+              <DataCard icon="🪪" label="Nome completo" description="Necessário para validar o titular da chave PIX e evitar fraudes/duplicidade." />
+              <DataCard icon="🔑" label="CPF (chave PIX)" description="Usado como chave PIX para o recebimento das gorjetas e para validar a titularidade." />
+              <DataCard icon="✉️" label="E-mail" description="Usado para identificar sua conta e contato sobre a plataforma." />
+              <DataCard icon="🔒" label="Senha" description="Armazenada de forma criptografada (hash). Nunca guardamos sua senha em texto puro e não temos acesso a ela." />
               <DataCard icon="🌐" label="Endereço IP" description="Registrado por motivos de segurança — para aplicar banimentos e prevenir abusos na plataforma." />
             </div>
 
             <p className="mt-5">
-              <strong className="text-white">Se você optar por participar da Gorjeta</strong> (recebimento de PIX),
-              coletamos adicionalmente os dados que você nos fornece voluntariamente no cadastro:
+              <strong className="text-white">Para participar da Gorjeta</strong> (recebimento de PIX),
+              coletamos adicionalmente:
             </p>
             <div className="mt-4 space-y-3">
-              <DataCard icon="🔑" label="Chave PIX" description="A chave (CPF, telefone, e-mail ou aleatória) usada para receber as gorjetas. Armazenada de forma protegida." />
-              <DataCard icon="🪪" label="CPF e nome completo" description="Necessários para validar o titular da chave PIX e evitar fraudes/duplicidade." />
-              <DataCard icon="📄" label="Comprovante (imagem)" description="Captura enviada por você para verificação do cadastro pelo administrador." />
+              <DataCard icon="📄" label="Comprovante de depósito (imagem)" description="Captura enviada por você para verificação do cadastro pelo administrador." />
             </div>
 
             <p className="mt-4 text-gray-400">
-              Não coletamos sua senha, dados de cartão ou qualquer dado além dos descritos acima. Os dados de
-              pagamento (chave PIX, CPF) são coletados <strong className="text-white">somente</strong> se você
-              escolher se cadastrar na funcionalidade de Gorjeta.
+              Não coletamos dados de cartão nem qualquer dado além dos descritos acima. Sua senha é
+              armazenada apenas como <strong className="text-white">hash criptográfico</strong> e não pode ser revertida.
             </p>
           </Section>
 

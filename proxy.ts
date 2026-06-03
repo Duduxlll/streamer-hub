@@ -1,6 +1,11 @@
-import { auth } from "@/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
 import { isAdmin } from "@/lib/admins";
 import { NextResponse, type NextRequest } from "next/server";
+
+// Instância "leve" (edge-safe): só lê o JWT da sessão, sem o provider de Credentials
+// (que usa node:crypto e não roda no Edge).
+const { auth } = NextAuth(authConfig);
 
 // Cache das listas de bloqueio — persiste entre requests no mesmo processo (Render single instance)
 let bannedIpsCache: Set<string>       = new Set();

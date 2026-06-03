@@ -1,90 +1,50 @@
 import NextAuth from "next-auth";
-import Twitch from "next-auth/providers/twitch";
+import Credentials from "next-auth/providers/credentials";
+import { authConfig } from "./auth.config";
 import { applyAuthUrlFallback } from "@/lib/site-url";
 import { isAdmin } from "@/lib/admins";
-import { upsertUser, isBanned } from "@/lib/users-store";
+import { verifyCredentials, touchLogin, isBanned } from "@/lib/users-store";
 import { addLog } from "@/lib/security-log";
 
 applyAuthUrlFallback();
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      twitchLogin?: string;
-    };
-  }
-}
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  trustHost: true,
+  ...authConfig,
   providers: [
-    Twitch({
-      clientId: process.env.TWITCH_CLIENT_ID!,
-      clientSecret: process.env.TWITCH_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: "openid user:read:email",
-        },
+    Credentials({
+      name: "credentials",
+      credentials: {
+        username: { label: "Nome da Twitch", type: "text" },
+        password: { label: "Senha", type: "password" },
+      },
+      async authorize(creds) {
+        const username = String(creds?.username ?? "").trim().toLowerCase();
+        const password = String(creds?.password ?? "");
+        if (!username || !password) return null;
+
+        // Valida usuário + senha
+        const user = await verifyCredentials(username, password);
+        if (!user) return null;
+
+        // Bloqueia banidos/suspensos
+        if (await isBanned(username)) {
+          await addLog({ admin: "sistema", action: "acesso_negado", target: username, detail: "Login bloqueado — conta banida ou suspensa" });
+          return null;
+        }
+
+        await touchLogin(username);
+        if (isAdmin(username)) {
+          await addLog({ admin: username, action: "admin_login", detail: "Login no painel admin" });
+        }
+
+        return {
+          id:          user.twitchId,
+          name:        user.displayName,
+          email:       user.email ?? null,
+          image:       user.image ?? null,
+          twitchLogin: user.twitchLogin,
+        };
       },
     }),
   ],
-
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
-    updateAge: 24 * 60 * 60,
-  },
-
-  callbacks: {
-    async signIn({ user, profile }) {
-      try {
-        const twitchLogin = ((profile as Record<string, unknown>)?.preferred_username as string ?? "").toLowerCase();
-        if (!twitchLogin) return true;
-
-        // Bloqueia login de usuários banidos/suspensos
-        const banned = await isBanned(twitchLogin);
-        if (banned) {
-          await addLog({ admin: "sistema", action: "acesso_negado", target: twitchLogin, detail: "Login bloqueado — conta banida ou suspensa" });
-          return false;
-        }
-
-        // Rastreia o login
-        await upsertUser({
-          twitchId:    (profile as Record<string, unknown>)?.sub as string ?? user.id ?? "",
-          twitchLogin,
-          displayName: user.name ?? twitchLogin,
-          image:       user.image ?? null,
-        });
-
-        // Log de login admin
-        if (isAdmin(twitchLogin)) {
-          await addLog({ admin: twitchLogin, action: "admin_login", detail: "Login no painel admin" });
-        }
-      } catch { /* best-effort — não bloqueia o login em caso de erro de DB */ }
-      return true;
-    },
-
-    async jwt({ token, account, profile }) {
-      if (account && profile) {
-        token.twitchLogin = (profile as Record<string, unknown>).preferred_username as string;
-        token.twitchId    = (profile as Record<string, unknown>).sub as string;
-      }
-      return token;
-    },
-
-    async session({ session, token }) {
-      session.user.id          = token.twitchId as string ?? token.sub ?? "";
-      session.user.twitchLogin = token.twitchLogin as string | undefined;
-      return session;
-    },
-  },
-
-  pages: {
-    signIn: "/login",
-    error:  "/login",
-  },
 });
