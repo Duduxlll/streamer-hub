@@ -24,6 +24,7 @@ export default function CorridaPage() {
   const [enviando, setEnviando] = useState<"" | "auto" | "fila">("");
   const [enviado, setEnviado] = useState(false);
   const [erroDados, setErroDados] = useState(false);
+  const [jogoPronto, setJogoPronto] = useState(false);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const raceDataRef = useRef<RaceData | null>(null);
@@ -53,6 +54,13 @@ export default function CorridaPage() {
     fetch("/api/config").then(r => r.ok ? r.json() : null).then(d => setGgpixOk(!!d?.ggpix?.ok)).catch(() => {});
   }, []);
 
+  // Fallback: se o jogo não emitir nenhum evento em 30s, esconde o loading mesmo assim
+  useEffect(() => {
+    if (!iframeReady) return;
+    const t = setTimeout(() => setJogoPronto(true), 30000);
+    return () => clearTimeout(t);
+  }, [iframeReady]);
+
   const findParticipant = useCallback((nome: string): Participant | undefined => {
     const data = raceDataRef.current; if (!data) return undefined;
     const n = nome.trim().toLowerCase();
@@ -79,7 +87,9 @@ export default function CorridaPage() {
     function onMsg(e: MessageEvent) {
       let data: { type?: string; payload?: { winners?: Array<{ place?: number; name: string }> } };
       try { data = typeof e.data === "string" ? JSON.parse(e.data) : e.data; } catch { return; }
-      if (!data || typeof data !== "object") return;
+      if (!data || typeof data !== "object" || typeof data.type !== "string" || !data.type.startsWith("marble:")) return;
+      // Qualquer evento do jogo significa que ele já carregou → esconde a tela de loading
+      setJogoPronto(true);
       if (data.type === "marble:ready") {
         // Reforço: manda os jogadores por postMessage também
         const rd = raceDataRef.current;
@@ -149,8 +159,16 @@ export default function CorridaPage() {
             allow="autoplay; fullscreen; gamepad"
             title="Corrida de Bolinhas" />
         )}
-        {!iframeReady && (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-500">Carregando...</div>
+        {/* Tela de carregamento — cobre o splash "Godot Engine" até o jogo ficar pronto */}
+        {(!iframeReady || !jogoPronto) && phase === "racing" && (
+          <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-5"
+            style={{ background: "linear-gradient(160deg,#071a0f,#04100a)" }}>
+            <div className="text-5xl" style={{ animation: "bob 1.4s ease-in-out infinite" }}>🏁</div>
+            <div className="w-12 h-12 rounded-full border-[3px] border-[#ffba00]/30 border-t-[#ffba00] animate-spin" />
+            <p className="text-sm font-black text-white">Carregando a corrida...</p>
+            <p className="text-[11px] text-gray-500">Preparando a pista e os participantes</p>
+            <style>{`@keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }`}</style>
+          </div>
         )}
 
         {/* Overlay de resultado/pagamento */}
