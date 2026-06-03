@@ -174,8 +174,8 @@ function SidebarContent({ status, onClose }: { status: StatusData; onClose?: () 
 
         {/* Sorteio */}
         <AccordionGroup icon="🎁" label="Sorteio" defaultPaths={["/admin/sorteio"]} onClose={onClose}>
-          <SideLink href="/admin/sorteio?view=criar" icon="✨" label="Criar Sorteio"  onClose={onClose} />
-          <SideLink href="/admin/sorteio"            icon="🟢" label="Sorteio Ativo" onClose={onClose} />
+          <SideLink href="/admin/sorteio/criar" icon="✨" label="Criar Sorteio"  onClose={onClose} />
+          <SideLink href="/admin/sorteio"       icon="🟢" label="Sorteio Ativo" onClose={onClose} />
         </AccordionGroup>
 
       </nav>
