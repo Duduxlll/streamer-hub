@@ -4,16 +4,18 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import type { ParticipanteSessao } from "@/lib/gorjeta-store";
 
 // ── Parâmetros do jogo (fáceis de ajustar) ──────────────────────────────────
-const MAX_MULT       = 4;       // teto do multiplicador
+const MAX_MULT       = 4;       // teto do multiplicador (chegar nele = ganho automático)
 const GROWTH_PER_SEC = 1.08;    // ~8%/s (composto) — BEM devagar, bastante suspense. 2x≈9s · 4x≈18s
+const HOUSE_POWER    = 2.0;     // > 1 dá vantagem à casa. ↑ = mais difícil (mais chance de estourar cedo)
 
-// Ponto de estouro — distribuição "justa" com teto em MAX_MULT: P(crash ≥ X) = 1/X.
-//  · ~9% de estourar abaixo de 1.1x  (o azar real existe!)
-//  · ~50% de chegar a 2x   ·  ~33% chega a 3x  ·  ~25% bate o teto de 4x
-// `streak` (rodadas encadeadas / jogar +1) deixa cada rodada mais difícil.
+// Ponto de estouro — com VANTAGEM DA CASA (HOUSE_POWER). Com 2.0:
+//  · ~30% de estourar abaixo de 1.1x  (muito comum estourar logo!)
+//  · ~29% de chegar a 2x   →  ~71% estoura antes de dobrar  (mais chance de perder)
+//  · ~13% bate o teto de 4x (ganho automático)
+// `streak` (rodadas encadeadas / jogar +1) deixa cada rodada AINDA mais difícil.
 function gerarCrashPoint(streak: number): number {
-  const u = Math.pow(Math.random(), 1 + streak * 0.6);
-  if (u >= 1 - 1 / MAX_MULT) return MAX_MULT;     // acima disso, bate o teto
+  const u = Math.pow(Math.random(), HOUSE_POWER + streak * 0.6);
+  if (u >= 1 - 1 / MAX_MULT) return MAX_MULT;     // não estourou até o teto → ganha no 4x
   return Math.round((1 / (1 - u)) * 100) / 100;
 }
 
@@ -29,11 +31,12 @@ function numColor(m: number, bust: boolean): string {
 interface Pt { t: number; m: number; }
 interface Star { x: number; y: number; z: number; }
 
-export function CrashGame({ participante, aposta, teto, saldoRestante, onEnviar, onClose }: {
+export function CrashGame({ participante, aposta, teto, saldoRestante, autoDisponivel, onEnviar, onClose }: {
   participante: ParticipanteSessao;
   aposta: number;
   teto?: number;
   saldoRestante: number;
+  autoDisponivel: boolean;
   onEnviar: (valor: number, modo: "auto" | "fila") => Promise<boolean>;
   onClose: () => void;
 }) {
@@ -202,10 +205,16 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, onEnviar,
       let m = multRef.current * Math.pow(GROWTH_PER_SEC, dt);
       const t = (now - startRef.current) / 1000;
       if (m >= crashRef.current) {
-        m = crashRef.current;
+        m = Math.min(m, crashRef.current);
         multRef.current = m; ptsRef.current.push({ t, m });
-        phaseRef.current = "bust"; bustAtRef.current = now;
-        setMult(m); setPhase("bust");
+        if (crashRef.current >= MAX_MULT) {
+          // bateu o teto sem estourar → GANHO AUTOMÁTICO no 4x
+          phaseRef.current = "win";
+          setMult(m); setGanho(ganhoPotencial(m, apostaRef.current)); setPhase("win");
+        } else {
+          phaseRef.current = "bust"; bustAtRef.current = now;
+          setMult(m); setPhase("bust");
+        }
       } else {
         multRef.current = m; ptsRef.current.push({ t, m });
         if (ptsRef.current.length > 1400) ptsRef.current.shift();
@@ -215,7 +224,7 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, onEnviar,
 
     draw(now);
     rafRef.current = requestAnimationFrame(loop);
-  }, [draw]);
+  }, [draw, ganhoPotencial]);
 
   const startRound = useCallback((apostaInicial: number, streakNum: number) => {
     crashRef.current = gerarCrashPoint(streakNum);
@@ -299,7 +308,9 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, onEnviar,
             )}
             {phase === "win" && (
               <div className="mt-2" style={{ animation: "crashPop 0.4s cubic-bezier(.34,1.56,.64,1)" }}>
-                <p className="text-sm font-black text-green-400 uppercase tracking-widest">Tirou em {mult.toFixed(2)}x</p>
+                <p className="text-sm font-black text-green-400 uppercase tracking-widest">
+                  {mult >= MAX_MULT - 0.01 ? "🎉 Bateu o teto! 4x" : `Tirou em ${mult.toFixed(2)}x`}
+                </p>
                 <p className="text-3xl sm:text-5xl font-black text-white mt-1">Ganhou <span className="text-green-400">R$ {fmtBRL(ganho)}</span></p>
               </div>
             )}
@@ -342,10 +353,13 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, onEnviar,
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  <button onClick={() => enviar("auto")} disabled={!!enviando}
-                    className="py-4 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] disabled:opacity-60"
-                    style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)", boxShadow: "0 4px 20px rgba(34,197,94,0.3)" }}>
-                    {enviando === "auto" ? "Enviando..." : `⚡ Enviar PIX — R$ ${fmtBRL(ganho)}`}
+                  <button onClick={() => enviar("auto")} disabled={!!enviando || !autoDisponivel}
+                    title={autoDisponivel ? "" : "Configure o GGPix em Configurações para enviar automático"}
+                    className="py-4 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] disabled:hover:scale-100 disabled:cursor-not-allowed"
+                    style={autoDisponivel
+                      ? { background: "linear-gradient(135deg, #4ade80, #22c55e)", boxShadow: "0 4px 20px rgba(34,197,94,0.3)", color: "#000" }
+                      : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#4b5563" }}>
+                    {!autoDisponivel ? "⚡ PIX automático (GGPix off)" : enviando === "auto" ? "Enviando..." : `⚡ Enviar PIX — R$ ${fmtBRL(ganho)}`}
                   </button>
                   <button onClick={() => enviar("fila")} disabled={!!enviando}
                     className="py-4 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] disabled:opacity-60"

@@ -488,6 +488,7 @@ export default function AdminGorjetaPage() {
   const [crashTeto, setCrashTeto] = useState("");
   const [crashBuscaSel, setCrashBuscaSel] = useState("");
   const [crashGame, setCrashGame] = useState<{ participante: ParticipanteSessao; aposta: number; teto?: number } | null>(null);
+  const [ggpixOk, setGgpixOk] = useState(false);
   const [cadastros, setCadastros] = useState<CadastroGorjeta[]>([]);
   const [sessao, setSessao] = useState<SessaoGorjeta | null>(null);
   const [historico, setHistorico] = useState<Array<{ id: string; saldoTotal: number; totalEnviado: number; transacoes: TransacaoGorjeta[]; abertaEm: number; fechadaEm: number }>>([]);
@@ -528,6 +529,12 @@ export default function AdminGorjetaPage() {
     const iv = setInterval(fetchAll, 4000);
     return () => clearInterval(iv);
   }, [status, fetchAll]);
+
+  // GGPix configurado? (controla o botão "PIX automático" do Crash)
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    fetch("/api/config").then(r => r.ok ? r.json() : null).then(d => setGgpixOk(!!d?.ggpix?.ok)).catch(() => {});
+  }, [status]);
 
   function flash(text: string, type: "ok" | "err") { setMsg({ text, type }); setTimeout(() => setMsg(null), 3500); }
 
@@ -670,6 +677,7 @@ export default function AdminGorjetaPage() {
           aposta={crashGame.aposta}
           teto={crashGame.teto}
           saldoRestante={sessao.saldoRestante}
+          autoDisponivel={ggpixOk}
           onEnviar={crashEnviar}
           onClose={() => setCrashGame(null)} />
       )}
