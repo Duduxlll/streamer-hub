@@ -5,18 +5,16 @@ import type { ParticipanteSessao } from "@/lib/gorjeta-store";
 
 // ── Parâmetros do jogo (fáceis de ajustar) ──────────────────────────────────
 const MAX_MULT       = 4;       // teto do multiplicador
-const GROWTH_PER_SEC = 1.14;    // ~14%/s (composto) — sobe devagar e acelera. 2x≈5.3s · 4x≈10.6s
+const GROWTH_PER_SEC = 1.08;    // ~8%/s (composto) — BEM devagar, bastante suspense. 2x≈9s · 4x≈18s
 
-// Ponto de estouro. streak = rodadas encadeadas (jogar +1 apostando o ganho).
-// Quanto maior o streak, mais chance de estourar cedo (protege o bolso).
+// Ponto de estouro — distribuição "justa" com teto em MAX_MULT: P(crash ≥ X) = 1/X.
+//  · ~9% de estourar abaixo de 1.1x  (o azar real existe!)
+//  · ~50% de chegar a 2x   ·  ~33% chega a 3x  ·  ~25% bate o teto de 4x
+// `streak` (rodadas encadeadas / jogar +1) deixa cada rodada mais difícil.
 function gerarCrashPoint(streak: number): number {
-  const azar = Math.min(0.62, 0.10 + streak * 0.16);
-  const r = Math.random();
-  if (r < azar) return Math.round((1 + Math.random() * 0.30) * 100) / 100;
-  const u   = (r - azar) / (1 - azar);
-  const exp = 1.1 + streak * 0.28;
-  const val = 1.30 + (MAX_MULT - 1.30) * Math.pow(u, exp);
-  return Math.min(MAX_MULT, Math.round(val * 100) / 100);
+  const u = Math.pow(Math.random(), 1 + streak * 0.6);
+  if (u >= 1 - 1 / MAX_MULT) return MAX_MULT;     // acima disso, bate o teto
+  return Math.round((1 / (1 - u)) * 100) / 100;
 }
 
 function fmtBRL(v: number) { return v.toLocaleString("pt-BR", { minimumFractionDigits: 2 }); }
@@ -283,8 +281,8 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, onEnviar,
         <div ref={wrapRef} className="relative flex-1 min-h-0">
           <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
-          {/* Multiplicador sobreposto */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4 text-center">
+          {/* Multiplicador sobreposto — posicionado mais para cima */}
+          <div className="absolute inset-0 flex flex-col items-center justify-start pt-[7%] sm:pt-[6%] pointer-events-none px-4 text-center">
             <p className="font-black tabular-nums leading-none"
               style={{ fontSize: "clamp(3.5rem, 12vw, 8.5rem)", color: cor, textShadow: `0 0 60px ${cor}77, 0 4px 30px rgba(0,0,0,0.5)`, transition: "color 0.15s" }}>
               {mult.toFixed(2)}x
