@@ -645,7 +645,9 @@ export default function AdminGorjetaPage() {
       numVencedores: nVenc,
       saldoRestante: sessao.saldoRestante,
     }));
-    router.push("/admin/corrida");
+    // Carregamento COMPLETO (não navegação interna) — necessário para ativar o
+    // cross-origin isolation (COOP/COEP) que estabiliza o jogo Godot.
+    window.location.assign("/admin/corrida");
   }
 
   async function fecharSessao() { const r = await apiCall({ action: "fechar-sessao" }); if (r) flash("Gorjeta encerrada", "ok"); }

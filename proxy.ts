@@ -104,6 +104,16 @@ export const proxy = auth(async (req) => {
       return NextResponse.redirect(new URL("/", req.url));
     }
   }
+
+  // ── Cross-origin isolation (COOP/COEP) para a corrida 3D em Godot ──────
+  // Garante o isolamento que estabiliza o WebAssembly, mesmo que o
+  // next.config não aplique os headers a tempo (reforço).
+  if (pathname === "/admin/corrida" || pathname.startsWith("/marble-web")) {
+    const res = NextResponse.next();
+    res.headers.set("Cross-Origin-Opener-Policy", "same-origin");
+    res.headers.set("Cross-Origin-Embedder-Policy", "credentialless");
+    return res;
+  }
 });
 
 export const config = {
