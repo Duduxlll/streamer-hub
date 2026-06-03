@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import type { CadastroGorjeta, SessaoGorjeta, ParticipanteSessao, TransacaoGorjeta, TipoChavePix } from "@/lib/gorjeta-store";
+import { CrashGame } from "@/components/CrashGame";
 
 function mascarChaveAdmin(_c: { cpf: string; tipoChave?: TipoChavePix }) { return `***.***.***-**`; }
 function formatCpfInput(value: string): string {
@@ -480,7 +481,13 @@ export default function AdminGorjetaPage() {
   // tab é derivado do URL — navegação feita pelo sidebar
   const tab = (searchParams.get("tab") as "sessao" | "cadastros" | "historico") ?? "sessao";
   const [cadastroFiltro, setCadastroFiltro] = useState<"pendente" | "aprovado" | "rejeitado">("pendente");
-  const [sessaoTab, setSessaoTab] = useState<"sortear" | "manual">("sortear");
+  const [sessaoTab, setSessaoTab] = useState<"sortear" | "manual" | "crash">("sortear");
+  // Crash
+  const [crashSel, setCrashSel] = useState<ParticipanteSessao | null>(null);
+  const [crashAposta, setCrashAposta] = useState("");
+  const [crashTeto, setCrashTeto] = useState("");
+  const [crashBuscaSel, setCrashBuscaSel] = useState("");
+  const [crashGame, setCrashGame] = useState<{ participante: ParticipanteSessao; aposta: number; teto?: number } | null>(null);
   const [cadastros, setCadastros] = useState<CadastroGorjeta[]>([]);
   const [sessao, setSessao] = useState<SessaoGorjeta | null>(null);
   const [historico, setHistorico] = useState<Array<{ id: string; saldoTotal: number; totalEnviado: number; transacoes: TransacaoGorjeta[]; abertaEm: number; fechadaEm: number }>>([]);
@@ -595,6 +602,33 @@ export default function AdminGorjetaPage() {
     }
   }
 
+  function iniciarCrash() {
+    if (!crashSel) { flash("Selecione um participante", "err"); return; }
+    const aposta = parseFloat(crashAposta.replace(",", "."));
+    if (isNaN(aposta) || aposta <= 0) { flash("Aposta inválida", "err"); return; }
+    const teto = crashTeto.trim() ? parseFloat(crashTeto.replace(",", ".")) : undefined;
+    const ganhoMax = teto && teto > 0 ? Math.min(aposta * 4, teto) : aposta * 4;
+    const saldo = sessao?.saldoRestante ?? 0;
+    if (ganhoMax > saldo) {
+      flash(`Saldo não cobre o ganho máximo possível (R$ ${ganhoMax.toFixed(2)}). Reduza a aposta.`, "err");
+      return;
+    }
+    setCrashGame({ participante: crashSel, aposta, teto: teto && teto > 0 ? teto : undefined });
+  }
+
+  async function crashEnviar(valor: number, modo: "auto" | "fila"): Promise<boolean> {
+    if (!crashGame) return false;
+    if (modo === "auto") {
+      const r = await apiCall({ action: "enviar-manual", username: crashGame.participante.username, valor });
+      if (!r) return false;
+      if (r.result?.status === "falhou") { flash(`Falha no PIX: ${r.result.erro ?? ""}`, "err"); return false; }
+      flash("PIX enviado! ⚡", "ok"); return true;
+    }
+    const r = await apiCall({ action: "enviar-manual-fila", username: crashGame.participante.username, valor });
+    if (r) { flash("Adicionado à fila de pagamentos! 💳", "ok"); return true; }
+    return false;
+  }
+
   async function fecharSessao() { const r = await apiCall({ action: "fechar-sessao" }); if (r) flash("Gorjeta encerrada", "ok"); }
   async function limparSessao() { const r = await apiCall({ action: "limpar-sessao" }); if (r) flash("Removida", "ok"); }
 
@@ -629,6 +663,15 @@ export default function AdminGorjetaPage() {
           vencedores={sortearVencedores}
           onPagarFila={pagarFila}
           onClose={() => setShowSortearModal(false)} />
+      )}
+      {crashGame && sessao && (
+        <CrashGame
+          participante={crashGame.participante}
+          aposta={crashGame.aposta}
+          teto={crashGame.teto}
+          saldoRestante={sessao.saldoRestante}
+          onEnviar={crashEnviar}
+          onClose={() => setCrashGame(null)} />
       )}
 
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-14 pb-24">
@@ -750,13 +793,13 @@ export default function AdminGorjetaPage() {
                 <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.9)", border: "1px solid rgba(255,255,255,0.07)" }}>
                   {/* Sub-tabs */}
                   <div className="flex border-b border-white/5">
-                    {(["sortear", "manual"] as const).map(t => (
+                    {(["sortear", "manual", "crash"] as const).map(t => (
                       <button key={t} onClick={() => setSessaoTab(t)}
                         className="flex-1 py-3.5 text-xs font-black transition-all"
                         style={sessaoTab === t
                           ? { color: "#ffba00", borderBottom: "2px solid #ffba00" }
                           : { color: "#4b5563", borderBottom: "2px solid transparent" }}>
-                        {t === "sortear" ? "🎲 Sortear" : "✍️ Envio manual"}
+                        {t === "sortear" ? "🎲 Sortear" : t === "manual" ? "✍️ Manual" : "🚀 Crash"}
                       </button>
                     ))}
                   </div>
@@ -855,6 +898,98 @@ export default function AdminGorjetaPage() {
                               className="w-full py-2 rounded-xl text-xs font-black text-black disabled:opacity-50 transition-all hover:scale-[1.02]"
                               style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
                               {busy ? "..." : "💳 Enviar para Pagamentos"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Crash */}
+                  {sessaoTab === "crash" && (
+                    <div className="px-5 py-5 space-y-3">
+                      <div className="rounded-xl px-3 py-2.5 text-[11px] text-gray-500 leading-relaxed"
+                        style={{ background: "rgba(255,186,0,0.04)", border: "1px solid rgba(255,186,0,0.1)" }}>
+                        🚀 O participante aposta um valor da gorjeta e tenta multiplicar (até <strong className="text-[#ffba00]">4x</strong>). Você tira quando ele pedir na live — se estourar antes, perde a vez.
+                      </div>
+
+                      <input type="text" placeholder="Buscar participante..." value={crashBuscaSel}
+                        onChange={e => setCrashBuscaSel(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none"
+                        style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
+
+                      {sessao.participantes.length === 0 && (
+                        <div className="text-center py-8 text-gray-600 text-sm">Nenhum inscrito ainda</div>
+                      )}
+
+                      <div className="space-y-1.5 max-h-44 overflow-y-auto pr-1">
+                        {sessao.participantes
+                          .filter(p => !crashBuscaSel || p.displayName.toLowerCase().includes(crashBuscaSel.toLowerCase()) || p.username.toLowerCase().includes(crashBuscaSel.toLowerCase()))
+                          .map(p => {
+                            const isSel = crashSel?.username === p.username;
+                            return (
+                              <button key={p.username} onClick={() => { setCrashSel(isSel ? null : p); }}
+                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-left"
+                                style={isSel
+                                  ? { background: "rgba(255,186,0,0.1)", border: "1px solid rgba(255,186,0,0.3)" }
+                                  : { background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                                <Avatar image={p.image} name={p.displayName} size={32} />
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-xs font-black text-white truncate">{p.displayName}</p>
+                                  <p className="text-[10px] text-gray-600">@{p.username}</p>
+                                </div>
+                                {isSel && <span className="text-[#ffba00] text-sm">✓</span>}
+                              </button>
+                            );
+                          })}
+                      </div>
+
+                      {crashSel && (
+                        <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(255,186,0,0.06)", border: "1px solid rgba(255,186,0,0.2)" }}>
+                          <div className="px-4 py-3 flex items-center gap-3 border-b border-[#ffba00]/10">
+                            <Avatar image={crashSel.image} name={crashSel.displayName} size={28} />
+                            <p className="text-xs font-black text-white flex-1">{crashSel.displayName}</p>
+                            <button onClick={() => setCrashSel(null)} className="text-gray-600 hover:text-gray-400 text-sm">✕</button>
+                          </div>
+                          <div className="px-4 py-3 space-y-2.5">
+                            <div>
+                              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1">Aposta (R$)</label>
+                              <div className="flex gap-2 items-center">
+                                <span className="text-sm font-black text-[#ffba00]">R$</span>
+                                <input type="text" inputMode="decimal" placeholder="0,00" value={crashAposta}
+                                  onChange={e => setCrashAposta(e.target.value)}
+                                  className="flex-1 px-3 py-2 rounded-xl text-sm font-bold text-white placeholder-gray-600 outline-none"
+                                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,186,0,0.25)" }} />
+                              </div>
+                            </div>
+                            <div>
+                              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1">Ganho máximo por pessoa (opcional)</label>
+                              <div className="flex gap-2 items-center">
+                                <span className="text-sm font-black text-gray-500">R$</span>
+                                <input type="text" inputMode="decimal" placeholder="sem limite" value={crashTeto}
+                                  onChange={e => setCrashTeto(e.target.value)}
+                                  className="flex-1 px-3 py-2 rounded-xl text-sm font-bold text-white placeholder-gray-600 outline-none"
+                                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
+                              </div>
+                            </div>
+                            {(() => {
+                              const a = parseFloat(crashAposta.replace(",", "."));
+                              if (isNaN(a) || a <= 0) return null;
+                              const t = crashTeto.trim() ? parseFloat(crashTeto.replace(",", ".")) : undefined;
+                              const ganhoMax = t && t > 0 ? Math.min(a * 4, t) : a * 4;
+                              const cobre = ganhoMax <= (sessao.saldoRestante);
+                              return (
+                                <div className="flex items-center justify-between px-3 py-2 rounded-xl text-[11px]"
+                                  style={{ background: cobre ? "rgba(255,186,0,0.04)" : "rgba(248,113,113,0.08)", border: `1px solid ${cobre ? "rgba(255,186,0,0.1)" : "rgba(248,113,113,0.25)"}` }}>
+                                  <span className="text-gray-500">Ganho máx. possível (4x)</span>
+                                  <span className="font-black" style={{ color: cobre ? "#ffba00" : "#f87171" }}>R$ {fmtBRL(ganhoMax)}</span>
+                                </div>
+                              );
+                            })()}
+                            <button onClick={iniciarCrash} disabled={busy || !crashAposta}
+                              className="w-full py-2.5 rounded-xl text-xs font-black text-black disabled:opacity-50 transition-all hover:scale-[1.02]"
+                              style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}>
+                              🚀 Iniciar Crash
                             </button>
                           </div>
                         </div>
