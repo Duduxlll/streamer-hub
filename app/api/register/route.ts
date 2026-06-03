@@ -3,19 +3,21 @@ import { createUser } from "@/lib/users-store";
 import { isAdmin } from "@/lib/admins";
 import { normalizarChave, cadastrar } from "@/lib/gorjeta-store";
 import { addLog } from "@/lib/security-log";
+import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 function getIp(req: NextRequest): string {
-  return (
-    req.headers.get("cf-connecting-ip") ??
-    req.headers.get("x-real-ip") ??
-    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    ""
-  );
+  return ipFromHeaders(req.headers) || "";
 }
 
 export async function POST(req: NextRequest) {
+  // Limita criação de contas por IP (anti-spam): 6 por hora.
+  const limite = rateLimit(`register:${getIp(req)}`, 6, 60 * 60 * 1000);
+  if (!limite.ok) {
+    return NextResponse.json({ error: "Muitas tentativas. Tente novamente mais tarde." }, { status: 429 });
+  }
+
   let body: Record<string, unknown>;
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
@@ -48,8 +50,8 @@ export async function POST(req: NextRequest) {
   if (!screenshot.startsWith("data:image/")) {
     return NextResponse.json({ error: "Envie o print do seu histórico de depósito na JonBet" }, { status: 400 });
   }
-  if (screenshot.length > 8_000_000) {
-    return NextResponse.json({ error: "Imagem muito grande (máx 5MB)" }, { status: 400 });
+  if (screenshot.length > 2_900_000) { // ~2MB em base64
+    return NextResponse.json({ error: "Imagem muito grande (máx 2MB)" }, { status: 400 });
   }
 
   const login = twitchLogin.toLowerCase();

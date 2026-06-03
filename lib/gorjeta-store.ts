@@ -1,4 +1,5 @@
 import { dbGet, dbSet } from "./store";
+import { encField, decField } from "./crypto-field";
 
 export type TipoChavePix = "cpf" | "telefone" | "email" | "aleatoria";
 
@@ -89,26 +90,48 @@ async function loadCadastros(): Promise<CadastroGorjeta[]> {
   try {
     const raw = await dbGet(KEY_CADASTROS);
     const parsed = raw ? JSON.parse(raw) : null;
-    return Array.isArray(parsed) ? parsed : (globalThis.__gorjetaCadastros ?? []);
+    const list = Array.isArray(parsed) ? parsed as CadastroGorjeta[] : (globalThis.__gorjetaCadastros ?? []);
+    // Decifra a chave PIX (cpf) e o titular (transparente em memória)
+    for (const c of list) {
+      if (c.cpf) c.cpf = decField(c.cpf);
+      if (c.cpfTitular) c.cpfTitular = decField(c.cpfTitular);
+    }
+    return list;
   } catch { return globalThis.__gorjetaCadastros ?? []; }
 }
 
 async function saveCadastros(list: CadastroGorjeta[]): Promise<void> {
-  globalThis.__gorjetaCadastros = list;
-  try { await dbSet(KEY_CADASTROS, JSON.stringify(list)); } catch {}
+  globalThis.__gorjetaCadastros = list; // memória: texto puro
+  const toSave = list.map(c => ({
+    ...c,
+    cpf: encField(c.cpf),
+    ...(c.cpfTitular ? { cpfTitular: encField(c.cpfTitular) } : {}),
+  }));
+  try { await dbSet(KEY_CADASTROS, JSON.stringify(toSave)); } catch {}
 }
 
 async function loadSessao(): Promise<SessaoGorjeta | null> {
   try {
     const raw = await dbGet(KEY_SESSAO);
     if (!raw) return globalThis.__gorjetaSessao ?? null;
-    return JSON.parse(raw) as SessaoGorjeta;
+    const s = JSON.parse(raw) as SessaoGorjeta;
+    for (const p of s.participantes ?? []) if (p.cpf) p.cpf = decField(p.cpf);
+    for (const v of s.vencedores ?? [])    if (v.cpf) v.cpf = decField(v.cpf);
+    return s;
   } catch { return globalThis.__gorjetaSessao ?? null; }
 }
 
 async function saveSessao(s: SessaoGorjeta | null): Promise<void> {
-  globalThis.__gorjetaSessao = s;
-  try { await dbSet(KEY_SESSAO, s ? JSON.stringify(s) : null); } catch {}
+  globalThis.__gorjetaSessao = s; // memória: texto puro
+  let toSave: SessaoGorjeta | null = s;
+  if (s) {
+    toSave = {
+      ...s,
+      participantes: s.participantes.map(p => ({ ...p, cpf: encField(p.cpf) })),
+      vencedores:    s.vencedores.map(v => ({ ...v, cpf: encField(v.cpf) })),
+    };
+  }
+  try { await dbSet(KEY_SESSAO, toSave ? JSON.stringify(toSave) : null); } catch {}
 }
 
 async function loadHistorico(): Promise<HistoricoItemGorjeta[]> {
@@ -476,10 +499,18 @@ export interface PagamentoPendente {
 
 const KEY_PAGAMENTOS = "gorjeta:pagamentos:v1";
 
+async function savePagamentos(list: PagamentoPendente[]): Promise<void> {
+  // Cifra a chave PIX apenas na persistência
+  const toSave = list.map(p => ({ ...p, pixKey: encField(p.pixKey) }));
+  await dbSet(KEY_PAGAMENTOS, JSON.stringify(toSave));
+}
+
 export async function getPagamentos(): Promise<PagamentoPendente[]> {
   try {
     const raw = await dbGet(KEY_PAGAMENTOS);
-    return raw ? (JSON.parse(raw) as PagamentoPendente[]) : [];
+    const list = raw ? (JSON.parse(raw) as PagamentoPendente[]) : [];
+    for (const p of list) if (p.pixKey) p.pixKey = decField(p.pixKey);
+    return list;
   } catch { return []; }
 }
 
@@ -494,7 +525,7 @@ export async function adicionarPagamentos(
     criadoEm: now,
     status: "pendente" as const,
   }));
-  await dbSet(KEY_PAGAMENTOS, JSON.stringify([...novos, ...existing]));
+  await savePagamentos([...novos, ...existing]);
   return novos;
 }
 
@@ -509,7 +540,7 @@ export async function atualizarStatusPagamento(
   list[idx].status = status;
   list[idx].atualizadoEm = Date.now();
   if (erro) list[idx].erro = erro;
-  await dbSet(KEY_PAGAMENTOS, JSON.stringify(list));
+  await savePagamentos(list);
   return true;
 }
 
@@ -517,13 +548,13 @@ export async function removerPagamento(id: string): Promise<boolean> {
   const list = await getPagamentos();
   const filtered = list.filter(p => p.id !== id);
   if (filtered.length === list.length) return false;
-  await dbSet(KEY_PAGAMENTOS, JSON.stringify(filtered));
+  await savePagamentos(filtered);
   return true;
 }
 
 export async function limparPagamentosFinalizados(): Promise<void> {
   const list = await getPagamentos();
-  await dbSet(KEY_PAGAMENTOS, JSON.stringify(list.filter(p => p.status === "pendente")));
+  await savePagamentos(list.filter(p => p.status === "pendente"));
 }
 
 // ─── Validação & Normalização ──────────────────────────────────────────────

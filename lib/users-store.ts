@@ -1,6 +1,7 @@
 import { dbGet, dbSet } from "./store";
 import { hashPassword, verifyPassword } from "./password";
 import { isAdmin } from "./admins";
+import { encField, decField } from "./crypto-field";
 import { randomUUID } from "node:crypto";
 
 export type UserStatus = "ativo" | "banido" | "suspenso";
@@ -39,12 +40,17 @@ async function loadUsers(): Promise<SiteUser[]> {
   try {
     const raw = await dbGet(KEY_USERS);
     if (!raw) return [];
-    return JSON.parse(raw) as SiteUser[];
+    const list = JSON.parse(raw) as SiteUser[];
+    // Decifra o CPF (transparente — em memória o resto do código vê o valor real)
+    for (const u of list) if (u.cpf) u.cpf = decField(u.cpf);
+    return list;
   } catch { return []; }
 }
 
 async function saveUsers(list: SiteUser[]): Promise<void> {
-  await dbSet(KEY_USERS, JSON.stringify(list));
+  // Cifra o CPF apenas na persistência, sem alterar a lista em memória
+  const toSave = list.map(u => (u.cpf ? { ...u, cpf: encField(u.cpf) } : u));
+  await dbSet(KEY_USERS, JSON.stringify(toSave));
 }
 
 // Reconstrói as listas de bloqueio: IPs (de banidos) e logins (banidos + suspensos ativos).

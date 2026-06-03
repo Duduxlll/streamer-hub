@@ -29,7 +29,7 @@ export default function TermosPage() {
               Termos de Uso
             </span>
           </h1>
-          <p className="text-gray-500 text-sm">Última atualização: 2 de junho de 2026</p>
+          <p className="text-gray-500 text-sm">Última atualização: 3 de junho de 2026</p>
         </div>
         <div className="space-y-8 text-gray-300 text-sm leading-relaxed">
 

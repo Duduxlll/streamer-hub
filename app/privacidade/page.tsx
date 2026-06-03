@@ -31,7 +31,7 @@ export default function PrivacidadePage() {
               Política de Privacidade
             </span>
           </h1>
-          <p className="text-gray-500 text-sm">Última atualização: 2 de junho de 2026</p>
+          <p className="text-gray-500 text-sm">Última atualização: 3 de junho de 2026</p>
         </div>
 
         <div className="rounded-2xl p-6 mb-8"
@@ -161,7 +161,9 @@ export default function PrivacidadePage() {
           <Section title="6. Segurança" color="#22c55e">
             <p>
               Adotamos medidas técnicas para proteger seus dados, incluindo comunicação via HTTPS/TLS,
-              tokens de sessão seguros e autenticação delegada à Twitch (não armazenamos senhas).
+              tokens de sessão seguros, cabeçalhos de segurança (HSTS, CSP) e proteção contra tentativas
+              automatizadas de acesso. Sua <strong className="text-white">senha é guardada apenas como hash
+              criptográfico</strong> (algoritmo scrypt) — nunca em texto puro, e não temos como visualizá-la.
             </p>
             <p className="mt-3 text-gray-400">
               No entanto, nenhum sistema é 100% seguro. Em caso de incidente de segurança que afete seus
@@ -173,7 +175,7 @@ export default function PrivacidadePage() {
             <p>Você tem os seguintes direitos em relação aos seus dados:</p>
             <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <RightCard icon="👁️" title="Acesso" description="Saber quais dados temos sobre você" />
-              <RightCard icon="✏️" title="Correção" description="Corrigir dados incorretos (via Twitch)" />
+              <RightCard icon="✏️" title="Correção" description="Corrigir dados incorretos da sua conta" />
               <RightCard icon="🗑️" title="Exclusão" description="Solicitar a remoção dos seus dados" />
               <RightCard icon="🚪" title="Portabilidade" description="Receber seus dados em formato legível" />
             </div>

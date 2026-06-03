@@ -32,7 +32,7 @@ export default function CadastroPage() {
 
   function handleFile(file: File) {
     if (!file.type.startsWith("image/")) { setErro("Envie uma imagem (PNG, JPG, etc.)"); return; }
-    if (file.size > 5 * 1024 * 1024) { setErro("Imagem muito grande (máx 5MB)"); return; }
+    if (file.size > 2 * 1024 * 1024) { setErro("Imagem muito grande (máx 2MB)"); return; }
     setErro("");
     setScreenshotName(file.name);
     const reader = new FileReader();

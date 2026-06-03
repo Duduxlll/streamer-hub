@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUserByEmail, setPassword } from "@/lib/users-store";
 import { verifyResetCode } from "@/lib/password-reset";
 import { addLog } from "@/lib/security-log";
+import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
+  // Anti-força-bruta do código: 30 tentativas por hora por IP.
+  const limite = rateLimit(`reset:${ipFromHeaders(req.headers)}`, 30, 60 * 60 * 1000);
+  if (!limite.ok) {
+    return NextResponse.json({ error: "Muitas tentativas. Tente novamente mais tarde." }, { status: 429 });
+  }
+
   let body: Record<string, unknown>;
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
