@@ -1,0 +1,57 @@
+Versão Web leve
+
+Objetivo:
+- reduzir RAM/CPU no navegador
+- evitar aba fechando sozinha
+- manter integração com o site funcionando
+
+Alterações principais:
+1. MAX_MARBLES reduzido de 300 para 180.
+2. O jogo NÃO cria mais 300 bolinhas no _ready().
+3. O pool de bolinhas agora é dinâmico:
+   cria só a quantidade real de jogadores recebida do site.
+4. A pista NÃO é mais gerada automaticamente no race.gd _ready().
+5. Na tela de espera, o mapa pesado é limpo/não gerado.
+6. A pista só é gerada quando a corrida inicia.
+7. Peças pesadas foram removidas da lista:
+   - hopper
+   - hopper2
+   - hopper3
+   - bumper
+   - turn_left_covered
+   - turn_right_covered
+8. Lista leve de peças:
+   - forward_down
+   - turn_left_2
+   - turn_left_3
+   - turn_right_2
+   - turn_right_3
+   - start_line
+   - finish_line
+9. Corrida mais curta:
+   - até 50 jogadores: 5 peças
+   - até 100 jogadores: 7 peças
+   - até 150 jogadores: 9 peças
+   - acima disso: 10 peças
+10. Escala do mapa reduzida.
+11. Sombras das peças desligadas por código.
+12. Visibility range reduzido.
+13. MSAA desligado, 3D scale 0.75, viewport 1280x720.
+14. Colisão bolinha-com-bolinha desligada na versão Web leve.
+    A bolinha ainda colide com o mapa/props.
+15. No Web, velocidade máxima fica 2x.
+    A tecla/botão 3x não passa de 2x no navegador.
+
+Como testar:
+1. Abra este projeto no Godot 4.4.
+2. Aperte F5 para ver se não aparece erro.
+3. Exporte Web como index.html.
+4. Thread Support desligado.
+5. Teste com 1 jogador.
+6. Teste com 50.
+7. Teste com 100.
+8. Abra o gerenciador de tarefas do Chrome e compare RAM/CPU.
+
+Se ficar estável:
+- dá para adicionar 1 obstáculo de volta depois.
+- recomendo adicionar primeiro bumper ou hopper, nunca todos de uma vez.

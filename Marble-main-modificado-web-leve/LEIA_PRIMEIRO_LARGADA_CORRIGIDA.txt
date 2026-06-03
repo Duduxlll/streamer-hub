@@ -1,0 +1,22 @@
+Versão: largada corrigida para 100+ bolinhas
+
+O que foi ajustado:
+1. Primeira peça/largada aumentada para escala 3.2.
+2. Restante da pista aumentado para escala 2.25.
+3. Mais partes no mapa: 22 blocos por corrida.
+4. Spawn das bolinhas ficou mais centralizado.
+5. Spawn das bolinhas ficou mais baixo para não cair em cima da borda.
+6. Grade de largada mais compacta e com pequenas camadas de altura.
+7. Sistema de resgate nos primeiros 24 segundos:
+   se uma bolinha ficar parada em cima da parede/topo da largada,
+   ela volta para o centro da largada automaticamente.
+8. Câmera inicial mais afastada.
+
+Como testar:
+1. Abra no Godot 4.4.
+2. Abra scenes/main.tscn.
+3. Aperte F5.
+4. No campo de participantes, coloque 100.
+5. Depois teste 150.
+
+Se ainda aparecer bolinha presa, mande print mostrando a posição exata.
