@@ -399,6 +399,26 @@ export default function GorjetaPage() {
     finally { setEnviando(false); }
   }
 
+  // Reenvia apenas o print quando o cadastro foi rejeitado (mantém nome e CPF).
+  async function reenviarPrint() {
+    setErro("");
+    if (!form.screenshot) return setErro("Envie o print do depósito");
+    setEnviando(true);
+    try {
+      const res = await fetch("/api/gorjeta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reenviar-print", screenshot: form.screenshot }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setErro(data.error ?? "Erro ao reenviar"); return; }
+      setCadastro(data.cadastro);
+      setForm(f => ({ ...f, screenshot: "" }));
+      setScreenshotName("");
+    } catch { setErro("Erro de conexão"); }
+    finally { setEnviando(false); }
+  }
+
   if (loading || status === "loading") {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
@@ -560,12 +580,32 @@ export default function GorjetaPage() {
                 <div className="space-y-3">
                   <div className="rounded-xl px-4 py-3 text-sm text-red-400"
                     style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.15)" }}>
-                    ❌ Rejeitado{cadastro.motivoRejeicao ? `: ${cadastro.motivoRejeicao}` : "."}
+                    ❌ Seu print foi rejeitado{cadastro.motivoRejeicao ? `: ${cadastro.motivoRejeicao}` : "."}
                   </div>
-                  <button onClick={() => { setCadastro(null); setErro(""); setForm({ nomeCompleto: "", cpf: "", screenshot: "" }); setScreenshotName(""); }}
-                    className="w-full py-2.5 rounded-xl font-black text-sm text-black transition-all hover:scale-[1.02]"
+                  <p className="text-xs text-gray-500">
+                    Seus dados continuam salvos — é só <strong className="text-gray-300">reenviar um novo print</strong> do seu histórico de depósito na JonBet.
+                  </p>
+                  <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+                  <button onClick={() => fileRef.current?.click()}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all hover:bg-white/[0.03]"
+                    style={{ background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,186,0,0.3)" }}>
+                    {form.screenshot
+                      ? <><span className="text-green-400 font-bold">✓</span><span className="text-white text-xs truncate flex-1 text-left">{screenshotName}</span></>
+                      : <><span className="text-xl">📎</span><span className="text-gray-500 text-sm">Clique para enviar o novo print</span></>
+                    }
+                  </button>
+                  {form.screenshot && (
+                    <div className="rounded-xl overflow-hidden border border-white/5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={form.screenshot} alt="preview" className="w-full max-h-44 object-cover" />
+                    </div>
+                  )}
+                  {erro && <p className="text-sm text-red-400 font-bold">{erro}</p>}
+                  <button onClick={reenviarPrint} disabled={enviando || !form.screenshot}
+                    className="w-full py-2.5 rounded-xl font-black text-sm text-black transition-all hover:scale-[1.02] disabled:opacity-50"
                     style={{ background: "linear-gradient(135deg,#ffe55a,#ffba00)" }}>
-                    Enviar novo cadastro
+                    {enviando ? "Reenviando..." : "Reenviar print"}
                   </button>
                 </div>
               )}

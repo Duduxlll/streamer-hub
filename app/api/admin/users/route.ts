@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import {
-  getUsers, banUser, desbanirUser, suspenderUser, dessuspenderUser, setPassword,
+  getUsers, banUser, desbanirUser, suspenderUser, dessuspenderUser, setPassword, removerContasSemSenha,
 } from "@/lib/users-store";
 import { addLog } from "@/lib/security-log";
 import { getHistoricoGorjeta } from "@/lib/gorjeta-store";
@@ -49,6 +49,12 @@ export async function POST(req: NextRequest) {
   const { action, twitchLogin, motivo, suspAte, novaSenha } = body as {
     action: string; twitchLogin: string; motivo?: string; suspAte?: number; novaSenha?: string;
   };
+
+  if (action === "limpar-antigos") {
+    const removidos = await removerContasSemSenha();
+    await addLog({ admin: adminLogin, action: "limpar_antigos", target: "—", detail: `${removidos} conta(s) antiga(s) removida(s)` });
+    return NextResponse.json({ ok: true, removidos }, { headers: NO_CACHE });
+  }
 
   if (!twitchLogin) return NextResponse.json({ error: "twitchLogin obrigatório" }, { status: 400 });
 

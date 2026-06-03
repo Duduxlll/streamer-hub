@@ -377,6 +377,20 @@ export default function UsuariosPage() {
     return false;
   }
 
+  async function limparAntigos() {
+    if (!confirm("Remover todas as contas antigas (login pela Twitch, sem senha)?\n\nIsso NÃO afeta as contas novas com e-mail e senha.")) return;
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "limpar-antigos" }),
+      });
+      const d = await res.json();
+      if (d.ok) { await fetchUsers(); flash(`${d.removidos} conta(s) antiga(s) removida(s).`, true); }
+      else flash("Erro ao limpar contas antigas", false);
+    } catch { flash("Erro de conexão", false); }
+  }
+
   const filtered = users.filter(u => {
     const q = busca.toLowerCase();
     const matchSearch = !q || u.twitchLogin.includes(q) || u.displayName.toLowerCase().includes(q);
@@ -420,9 +434,17 @@ export default function UsuariosPage() {
         }} />
       )}
 
-      <div className="mb-6">
-        <h1 className="text-3xl font-black text-white">Usuários</h1>
-        <p className="text-sm text-gray-600 mt-1">{stats.total} usuários registrados</p>
+      <div className="mb-6 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-black text-white">Usuários</h1>
+          <p className="text-sm text-gray-600 mt-1">{stats.total} usuários registrados</p>
+        </div>
+        <button onClick={limparAntigos}
+          className="flex-shrink-0 mt-1 px-3 py-2 rounded-xl text-[11px] font-black transition-all hover:bg-white/5"
+          style={{ color: "#9ca3af", border: "1px solid rgba(255,255,255,0.1)" }}
+          title="Remove as contas antigas que logavam pela Twitch (sem senha)">
+          🧹 Limpar contas antigas
+        </button>
       </div>
 
       {msg && (

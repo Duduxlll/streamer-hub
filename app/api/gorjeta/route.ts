@@ -96,6 +96,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, cadastro: result.cadastro }, { headers: NO_CACHE });
   }
 
+  // Reenvio apenas do print quando o cadastro foi REJEITADO — reaproveita nome/CPF já cadastrados.
+  if (action === "reenviar-print") {
+    const session = await auth();
+    if (!session?.user) return NextResponse.json({ error: "Login necessário" }, { status: 401 });
+    const login = (session.user.twitchLogin ?? session.user.name ?? "").toLowerCase();
+    const cad = await getCadastro(login);
+    if (!cad) return NextResponse.json({ error: "Você ainda não tem cadastro" }, { status: 400 });
+
+    const screenshot = String(body.screenshot ?? "");
+    if (!screenshot.startsWith("data:image/")) return NextResponse.json({ error: "Envie o print do depósito" }, { status: 400 });
+
+    const result = await cadastrar({
+      username: login,
+      displayName: cad.displayName,
+      tipoChave: cad.tipoChave ?? "cpf",
+      chave: cad.cpf,
+      cpfTitular: cad.cpfTitular ?? ((cad.tipoChave ?? "cpf") === "cpf" ? cad.cpf : undefined),
+      nomeCompleto: cad.nomeCompleto,
+      screenshot,
+    });
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+    return NextResponse.json({ ok: true, cadastro: result.cadastro }, { headers: NO_CACHE });
+  }
+
   if (action === "aprovar") {
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });

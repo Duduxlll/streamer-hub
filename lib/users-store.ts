@@ -311,3 +311,15 @@ export async function setPassword(login: string, novaSenha: string): Promise<boo
   return true;
 }
 
+/** Remove as contas antigas (login pela Twitch) — as que não têm senha própria. */
+export async function removerContasSemSenha(): Promise<number> {
+  const list = await loadUsers();
+  const restantes = list.filter(u => !!u.passwordHash);
+  const removidos = list.length - restantes.length;
+  if (removidos > 0) {
+    await saveUsers(restantes);
+    await rebuildBlocklists(restantes);
+  }
+  return removidos;
+}
+

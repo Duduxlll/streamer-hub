@@ -47,67 +47,6 @@ function TwitchIcon({ className }: { className?: string }) {
   );
 }
 
-function nameToColor(name: string): string {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
-  const hue = h % 360;
-  const s = 0.65, l = 0.58;
-  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-  const p = 2 * l - q;
-  const hue2rgb = (t: number) => {
-    if (t < 0) t += 1; if (t > 1) t -= 1;
-    if (t < 1 / 6) return p + (q - p) * 6 * t;
-    if (t < 1 / 2) return q;
-    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
-    return p;
-  };
-  const r = Math.round(hue2rgb(hue / 360 + 1 / 3) * 255);
-  const g = Math.round(hue2rgb(hue / 360) * 255);
-  const b = Math.round(hue2rgb(hue / 360 - 1 / 3) * 255);
-  return `${r},${g},${b}`;
-}
-
-function useImageColor(src: string | null | undefined, name: string): string {
-  const fallback = nameToColor(name);
-  const [color, setColor] = useState(fallback);
-
-  useEffect(() => {
-    setColor(nameToColor(name));
-  }, [name]);
-
-  useEffect(() => {
-    if (!src) return;
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => {
-      try {
-        const canvas = document.createElement("canvas");
-        canvas.width = 16; canvas.height = 16;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        ctx.drawImage(img, 0, 0, 16, 16);
-        const data = ctx.getImageData(0, 0, 16, 16).data;
-        let r = 0, g = 0, b = 0, count = 0;
-        for (let i = 0; i < data.length; i += 4) {
-          const pr = data[i], pg = data[i + 1], pb = data[i + 2], pa = data[i + 3];
-          if (pa < 128) continue;
-          const max = Math.max(pr, pg, pb);
-          const min = Math.min(pr, pg, pb);
-          if (max - min < 20) continue;
-          r += pr; g += pg; b += pb; count++;
-        }
-        if (count > 0) {
-          setColor(`${Math.round(r / count)},${Math.round(g / count)},${Math.round(b / count)}`);
-        }
-      } catch { }
-    };
-    img.onerror = () => setColor(nameToColor(name));
-    img.src = src;
-  }, [src, name]);
-
-  return color;
-}
-
 function useConfigAlert(admin: boolean) {
   const [alerta, setAlerta] = useState(false);
   useEffect(() => {
@@ -123,9 +62,9 @@ function useConfigAlert(admin: boolean) {
   return alerta;
 }
 
-function UserMenu({ name, image, admin }: { name: string; image?: string | null; admin: boolean }) {
+function UserMenu({ name, admin }: { name: string; admin: boolean }) {
   const [open, setOpen] = useState(false);
-  const color = useImageColor(image, name);
+  const color = "34,197,94"; // verde fixo (não depende mais de foto)
   const configAlerta = useConfigAlert(admin);
 
   return (
@@ -138,15 +77,11 @@ function UserMenu({ name, image, admin }: { name: string; image?: string | null;
           background: `rgba(${color},0.12)`,
         }}
       >
-        {image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={image} alt={name} className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
-        ) : (
-          <div className="w-6 h-6 rounded-full bg-[#22c55e]/50 flex items-center justify-center flex-shrink-0">
-            <span className="text-[10px] font-bold text-white uppercase">{name[0]}</span>
-          </div>
-        )}
-        <span className="text-sm font-semibold max-w-[100px] truncate" style={{ color: `rgb(${color})`, filter: "brightness(1.4) saturate(0.9)" }}>{name}</span>
+        <div className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+          style={{ background: "rgba(34,197,94,0.5)" }}>
+          <span className="text-[10px] font-bold text-white uppercase">{name[0]}</span>
+        </div>
+        <span className="text-sm font-semibold max-w-[100px] truncate" style={{ color: `rgb(${color})`, filter: "brightness(1.4)" }}>{name}</span>
 
         {admin && (
           <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-black tracking-wide"
@@ -262,7 +197,6 @@ export default function Navbar() {
             {!isLoading && isLoggedIn && session.user && (
               <UserMenu
                 name={session.user.twitchLogin ?? session.user.name ?? "Usuário"}
-                image={session.user.image}
                 admin={admin}
               />
             )}
@@ -321,10 +255,12 @@ export default function Navbar() {
               {isLoggedIn && session.user ? (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 px-2 py-1.5">
-                    {session.user.image && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={session.user.image} alt="" className="w-7 h-7 rounded-full" />
-                    )}
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: "rgba(34,197,94,0.5)" }}>
+                      <span className="text-[11px] font-bold text-white uppercase">
+                        {(session.user.twitchLogin ?? session.user.name ?? "U")[0]}
+                      </span>
+                    </div>
                     <span className="text-sm font-semibold text-white">
                       {session.user.twitchLogin ?? session.user.name}
                     </span>
