@@ -7,7 +7,6 @@ import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import type { CadastroGorjeta, SessaoGorjeta, ParticipanteSessao, TransacaoGorjeta, TipoChavePix } from "@/lib/gorjeta-store";
 import { CrashGame } from "@/components/CrashGame";
-import { MarbleRace } from "@/components/MarbleRace";
 
 function mascarChaveAdmin(_c: { cpf: string; tipoChave?: TipoChavePix }) { return `***.***.***-**`; }
 function formatCpfInput(value: string): string {
@@ -490,9 +489,8 @@ export default function AdminGorjetaPage() {
   const [crashBuscaSel, setCrashBuscaSel] = useState("");
   const [crashGame, setCrashGame] = useState<{ participante: ParticipanteSessao; aposta: number; teto?: number } | null>(null);
   const [ggpixOk, setGgpixOk] = useState(false);
-  // Corrida de bolinhas
+  // Corrida de bolinhas 3D
   const [corridaNum, setCorridaNum] = useState("5");
-  const [corridaOpen, setCorridaOpen] = useState(false);
   const [cadastros, setCadastros] = useState<CadastroGorjeta[]>([]);
   const [sessao, setSessao] = useState<SessaoGorjeta | null>(null);
   const [historico, setHistorico] = useState<Array<{ id: string; saldoTotal: number; totalEnviado: number; transacoes: TransacaoGorjeta[]; abertaEm: number; fechadaEm: number }>>([]);
@@ -640,24 +638,16 @@ export default function AdminGorjetaPage() {
     return false;
   }
 
-  async function corridaEnviarLote(itens: { username: string; displayName: string; valor: number }[], modo: "auto" | "fila"): Promise<boolean> {
-    const action = modo === "auto" ? "enviar-manual" : "enviar-manual-fila";
-    let allOk = true;
-    for (const it of itens) {
-      try {
-        const res = await fetch("/api/gorjeta", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action, username: it.username, valor: it.valor }),
-        });
-        const data = await res.json();
-        if (!res.ok || (modo === "auto" && data.result?.status === "falhou")) allOk = false;
-      } catch { allOk = false; }
-    }
-    await fetchAll();
-    flash(allOk
-      ? (modo === "auto" ? "PIX enviado aos vencedores! ⚡" : "Vencedores na fila de pagamentos! 💳")
-      : "Alguns pagamentos falharam — confira a fila/saldo", allOk ? "ok" : "err");
-    return allOk;
+  function iniciarCorrida3D() {
+    if (!sessao || sessao.participantes.length === 0) { flash("Sem inscritos na sessão", "err"); return; }
+    const nVenc = Math.max(1, parseInt(corridaNum) || 1);
+    const payload = {
+      participants: sessao.participantes.map(p => ({ username: p.username, displayName: p.displayName, image: p.image })),
+      numVencedores: nVenc,
+      saldoRestante: sessao.saldoRestante,
+    };
+    localStorage.setItem("corrida-race-data", JSON.stringify(payload));
+    router.push("/admin/corrida");
   }
 
   async function fecharSessao() { const r = await apiCall({ action: "fechar-sessao" }); if (r) flash("Gorjeta encerrada", "ok"); }
@@ -704,15 +694,6 @@ export default function AdminGorjetaPage() {
           autoDisponivel={ggpixOk}
           onEnviar={crashEnviar}
           onClose={() => setCrashGame(null)} />
-      )}
-      {corridaOpen && sessao && (
-        <MarbleRace
-          participantes={sessao.participantes}
-          numVencedores={Math.max(1, parseInt(corridaNum) || 1)}
-          saldoRestante={sessao.saldoRestante}
-          autoDisponivel={ggpixOk}
-          onEnviarLote={corridaEnviarLote}
-          onClose={() => setCorridaOpen(false)} />
       )}
 
       <div className="relative max-w-3xl mx-auto px-4 sm:px-6 pt-14 pb-24">
@@ -1054,11 +1035,11 @@ export default function AdminGorjetaPage() {
                         <p className="text-[10px] text-gray-600 mt-1">Os {Math.max(1, Math.min(parseInt(corridaNum) || 1, sessao.participantes.length))} primeiros a chegar recebem gorjeta. Você define os valores no final.</p>
                       </div>
                       <button
-                        onClick={() => { if (sessao.participantes.length === 0) { flash("Sem inscritos na sessão", "err"); return; } setCorridaOpen(true); }}
+                        onClick={iniciarCorrida3D}
                         disabled={sessao.participantes.length === 0}
                         className="w-full py-3 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
                         style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", boxShadow: "0 4px 20px rgba(255,186,0,0.2)" }}>
-                        {sessao.participantes.length === 0 ? "Aguardando inscritos..." : "🏁 Iniciar corrida"}
+                        {sessao.participantes.length === 0 ? "Aguardando inscritos..." : "🏁 Preparar corrida 3D →"}
                       </button>
                     </div>
                   )}
