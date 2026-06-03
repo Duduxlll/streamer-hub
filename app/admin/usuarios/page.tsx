@@ -13,15 +13,11 @@ function fmtDuration(ms: number): string {
 }
 
 function Avatar({ user }: { user: SiteUser }) {
-  if (user.image) return (
-    <img src={user.image} alt={user.displayName}
-      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
-      style={{ border: "2px solid rgba(255,255,255,0.1)" }} />
-  );
+  // Sempre a inicial do nome (não usamos mais foto de perfil da Twitch).
   return (
-    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-black text-sm"
-      style={{ background: "rgba(255,255,255,0.06)", border: "2px solid rgba(255,255,255,0.1)" }}>
-      {user.displayName[0]?.toUpperCase()}
+    <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-black text-sm text-white"
+      style={{ background: "rgba(34,197,94,0.4)", border: "2px solid rgba(34,197,94,0.35)" }}>
+      {(user.displayName || user.twitchLogin)[0]?.toUpperCase()}
     </div>
   );
 }
@@ -101,6 +97,7 @@ function HistoricoModal({ twitchLogin, onClose }: { twitchLogin: string; onClose
 }
 
 type ModalState =
+  | { type: "gerenciar"; user: SiteUser }
   | { type: "ban";     user: SiteUser }
   | { type: "suspend"; user: SiteUser }
   | { type: "history"; user: SiteUser }
@@ -232,11 +229,103 @@ function SuspendModal({ user, onClose, onSave }: { user: SiteUser; onClose: () =
   );
 }
 
-function UserCard({ user, onAction, busy = false }: {
-  user: SiteUser;
-  onAction: (type: "ban" | "unban" | "suspend" | "unsuspend" | "history" | "reset") => void;
-  busy?: boolean;
+type AcaoUser = "ban" | "unban" | "suspend" | "unsuspend" | "history" | "reset";
+
+function GerenciarModal({ user, onClose, onAction, busy = false }: {
+  user: SiteUser; onClose: () => void;
+  onAction: (type: AcaoUser) => void; busy?: boolean;
 }) {
+  const isBanned    = user.status === "banido";
+  const isSuspended = user.status === "suspenso";
+
+  const btnBase = "w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-black transition-all";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+      <div className="w-full max-w-sm rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}
+        style={{ background: "rgba(6,15,9,0.98)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
+        {/* Header */}
+        <div className="px-5 py-4 flex items-center gap-3 border-b border-white/5">
+          <Avatar user={user} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-black text-white truncate">{user.displayName}</p>
+              <StatusBadge status={user.status} suspAte={user.suspAte} />
+            </div>
+            <p className="text-[11px] text-gray-600">@{user.twitchLogin}</p>
+          </div>
+          <button onClick={onClose} className="text-gray-600 hover:text-white transition-colors text-lg flex-shrink-0">✕</button>
+        </div>
+
+        {/* Stats */}
+        <div className="px-5 py-3 grid grid-cols-3 gap-2 border-b border-white/[0.04]">
+          <div>
+            <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Logins</p>
+            <p className="text-xs font-black text-white">{user.totalLogins}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest">1º Login</p>
+            <p className="text-xs font-black text-white">{fmtDate(user.primeiroLogin)}</p>
+          </div>
+          <div>
+            <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Último</p>
+            <p className="text-xs font-black text-white">{fmtDate(user.ultimoLogin)}</p>
+          </div>
+        </div>
+
+        {/* Motivo de ban/suspensão */}
+        {(user.banMotivo || user.suspMotivo) && (
+          <div className="mx-5 mt-3 px-3 py-2 rounded-xl text-[11px]"
+            style={isBanned
+              ? { background: "rgba(239,68,68,0.08)", color: "#f87171", border: "1px solid rgba(239,68,68,0.15)" }
+              : { background: "rgba(234,179,8,0.07)", color: "#fbbf24", border: "1px solid rgba(234,179,8,0.15)" }}>
+            {isBanned ? `Banido por: ${user.banMotivo} (por @${user.banPor})` : `Suspenso: ${user.suspMotivo} (por @${user.suspPor})`}
+          </div>
+        )}
+
+        {/* Ações */}
+        <div className="px-5 py-4 space-y-2">
+          <button onClick={() => onAction("history")} className={`${btnBase} hover:bg-white/5`}
+            style={{ color: "#9ca3af", border: "1px solid rgba(255,255,255,0.08)" }}>
+            📊 <span>Ver histórico de ganhos</span>
+          </button>
+          <button onClick={() => onAction("reset")} className={`${btnBase} hover:bg-white/5`}
+            style={{ color: "#9ca3af", border: "1px solid rgba(255,255,255,0.08)" }}>
+            🔑 <span>Resetar senha</span>
+          </button>
+
+          {!isBanned && !isSuspended && (
+            <>
+              <button onClick={() => onAction("suspend")} className={`${btnBase} hover:scale-[1.02]`}
+                style={{ color: "#fbbf24", border: "1px solid rgba(234,179,8,0.25)", background: "rgba(234,179,8,0.06)" }}>
+                ⏸ <span>Suspender</span>
+              </button>
+              <button onClick={() => onAction("ban")} className={`${btnBase} hover:scale-[1.02]`}
+                style={{ color: "#f87171", border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.06)" }}>
+                🚫 <span>Banir</span>
+              </button>
+            </>
+          )}
+
+          {isSuspended && (
+            <button onClick={() => onAction("unsuspend")} disabled={busy} className={`${btnBase} hover:scale-[1.02] disabled:opacity-50`}
+              style={{ color: "#4ade80", border: "1px solid rgba(34,197,94,0.25)", background: "rgba(34,197,94,0.06)" }}>
+              ✓ <span>{busy ? "..." : "Levantar suspensão"}</span>
+            </button>
+          )}
+          {isBanned && (
+            <button onClick={() => onAction("unban")} disabled={busy} className={`${btnBase} hover:scale-[1.02] disabled:opacity-50`}
+              style={{ color: "#4ade80", border: "1px solid rgba(34,197,94,0.25)", background: "rgba(34,197,94,0.06)" }}>
+              ✓ <span>{busy ? "..." : "Desbanir"}</span>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UserCard({ user, onGerenciar }: { user: SiteUser; onGerenciar: () => void }) {
   const isBanned    = user.status === "banido";
   const isSuspended = user.status === "suspenso";
 
@@ -256,8 +345,8 @@ function UserCard({ user, onAction, busy = false }: {
         backdropFilter: "blur(20px)",
         boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
       }}>
-      {/* Header */}
-      <div className="px-4 pt-4 pb-3 flex items-center gap-3">
+      {/* Header com botão de gerenciar */}
+      <div className="px-4 py-4 flex items-center gap-3">
         <Avatar user={user} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -266,78 +355,12 @@ function UserCard({ user, onAction, busy = false }: {
           </div>
           <p className="text-[11px] text-gray-600">@{user.twitchLogin}</p>
         </div>
-      </div>
-
-      {/* Stats */}
-      <div className="px-4 pb-3 grid grid-cols-3 gap-2 border-t border-white/[0.04] pt-3">
-        <div>
-          <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Logins</p>
-          <p className="text-xs font-black text-white">{user.totalLogins}</p>
-        </div>
-        <div>
-          <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest">1º Login</p>
-          <p className="text-xs font-black text-white">{fmtDate(user.primeiroLogin)}</p>
-        </div>
-        <div>
-          <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Último</p>
-          <p className="text-xs font-black text-white">{fmtDate(user.ultimoLogin)}</p>
-        </div>
-      </div>
-
-      {/* Motivo de ban/suspensão */}
-      {(user.banMotivo || user.suspMotivo) && (
-        <div className="mx-4 mb-3 px-3 py-2 rounded-xl text-[11px]"
-          style={isBanned
-            ? { background: "rgba(239,68,68,0.08)", color: "#f87171", border: "1px solid rgba(239,68,68,0.15)" }
-            : { background: "rgba(234,179,8,0.07)", color: "#fbbf24", border: "1px solid rgba(234,179,8,0.15)" }}>
-          {isBanned ? `Banido por: ${user.banMotivo} (por @${user.banPor})` : `Suspenso: ${user.suspMotivo} (por @${user.suspPor})`}
-        </div>
-      )}
-
-      {/* Ações */}
-      <div className="px-4 pb-4 flex gap-2 flex-wrap border-t border-white/[0.04] pt-3">
-        <button onClick={() => onAction("history")}
-          className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:bg-white/5"
-          style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.07)" }}>
-          📊 Histórico
+        <button onClick={onGerenciar}
+          className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center text-base transition-all hover:bg-white/5 hover:rotate-45"
+          style={{ border: "1px solid rgba(255,255,255,0.1)", color: "#9ca3af" }}
+          title="Gerenciar usuário">
+          ⚙️
         </button>
-
-        <button onClick={() => onAction("reset")}
-          className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:bg-white/5"
-          style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.07)" }}>
-          🔑 Senha
-        </button>
-
-        {!isBanned && !isSuspended && (
-          <>
-            <button onClick={() => onAction("suspend")}
-              className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02]"
-              style={{ color: "#fbbf24", border: "1px solid rgba(234,179,8,0.25)", background: "rgba(234,179,8,0.06)" }}>
-              ⏸ Suspender
-            </button>
-            <button onClick={() => onAction("ban")}
-              className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02]"
-              style={{ color: "#f87171", border: "1px solid rgba(239,68,68,0.25)", background: "rgba(239,68,68,0.06)" }}>
-              🚫 Banir
-            </button>
-          </>
-        )}
-
-        {isSuspended && (
-          <button onClick={() => onAction("unsuspend")} disabled={busy}
-            className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02] disabled:opacity-50 disabled:scale-100"
-            style={{ color: "#4ade80", border: "1px solid rgba(34,197,94,0.25)", background: "rgba(34,197,94,0.06)" }}>
-            {busy ? "..." : "✓ Levantar suspensão"}
-          </button>
-        )}
-
-        {isBanned && (
-          <button onClick={() => onAction("unban")} disabled={busy}
-            className="flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02] disabled:opacity-50 disabled:scale-100"
-            style={{ color: "#4ade80", border: "1px solid rgba(34,197,94,0.25)", background: "rgba(34,197,94,0.06)" }}>
-            {busy ? "..." : "✓ Desbanir"}
-          </button>
-        )}
       </div>
     </div>
   );
@@ -377,18 +400,23 @@ export default function UsuariosPage() {
     return false;
   }
 
-  async function limparAntigos() {
-    if (!confirm("Remover todas as contas antigas (login pela Twitch, sem senha)?\n\nIsso NÃO afeta as contas novas com e-mail e senha.")) return;
-    try {
-      const res = await fetch("/api/admin/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "limpar-antigos" }),
-      });
-      const d = await res.json();
-      if (d.ok) { await fetchUsers(); flash(`${d.removidos} conta(s) antiga(s) removida(s).`, true); }
-      else flash("Erro ao limpar contas antigas", false);
-    } catch { flash("Erro de conexão", false); }
+  function acaoUsuario(type: AcaoUser, u: SiteUser) {
+    if (type === "history") { setModal({ type: "history", user: u }); return; }
+    if (type === "reset")   { setModal({ type: "reset",   user: u }); return; }
+    if (type === "ban")     { setModal({ type: "ban",     user: u }); return; }
+    if (type === "suspend") { setModal({ type: "suspend", user: u }); return; }
+    if (type === "unban") {
+      setBusyUser(u.twitchId);
+      apiAction("unban", u.twitchLogin)
+        .then(ok => flash(ok ? `@${u.twitchLogin} desbanido.` : "Erro ao desbanir", ok))
+        .finally(() => { setBusyUser(null); setModal(null); });
+    }
+    if (type === "unsuspend") {
+      setBusyUser(u.twitchId);
+      apiAction("unsuspend", u.twitchLogin)
+        .then(ok => flash(ok ? `Suspensão de @${u.twitchLogin} levantada.` : "Erro", ok))
+        .finally(() => { setBusyUser(null); setModal(null); });
+    }
   }
 
   const filtered = users.filter(u => {
@@ -408,6 +436,11 @@ export default function UsuariosPage() {
   return (
     <div className="page-enter max-w-4xl mx-auto px-4 sm:px-6 pt-10 pb-24">
       {/* Modais */}
+      {modal?.type === "gerenciar" && (
+        <GerenciarModal user={modal.user} busy={busyUser === modal.user.twitchId}
+          onClose={() => setModal(null)}
+          onAction={(type) => acaoUsuario(type, modal.user)} />
+      )}
       {modal?.type === "history" && (
         <HistoricoModal twitchLogin={modal.user.twitchLogin} onClose={() => setModal(null)} />
       )}
@@ -434,17 +467,9 @@ export default function UsuariosPage() {
         }} />
       )}
 
-      <div className="mb-6 flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-black text-white">Usuários</h1>
-          <p className="text-sm text-gray-600 mt-1">{stats.total} usuários registrados</p>
-        </div>
-        <button onClick={limparAntigos}
-          className="flex-shrink-0 mt-1 px-3 py-2 rounded-xl text-[11px] font-black transition-all hover:bg-white/5"
-          style={{ color: "#9ca3af", border: "1px solid rgba(255,255,255,0.1)" }}
-          title="Remove as contas antigas que logavam pela Twitch (sem senha)">
-          🧹 Limpar contas antigas
-        </button>
+      <div className="mb-6">
+        <h1 className="text-3xl font-black text-white">Usuários</h1>
+        <p className="text-sm text-gray-600 mt-1">{stats.total} usuários registrados</p>
       </div>
 
       {msg && (
@@ -505,24 +530,7 @@ export default function UsuariosPage() {
         style={{ maxHeight: "calc(100vh - 340px)", scrollbarWidth: "thin", scrollbarColor: "rgba(255,186,0,0.2) transparent" }}>
         <div className="grid gap-3 sm:grid-cols-2">
         {filtered.map(u => (
-          <UserCard key={u.twitchId} user={u} onAction={(type) => {
-            if (type === "history") { setModal({ type: "history", user: u }); return; }
-            if (type === "reset")   { setModal({ type: "reset",   user: u }); return; }
-            if (type === "ban")     { setModal({ type: "ban",     user: u }); return; }
-            if (type === "suspend") { setModal({ type: "suspend", user: u }); return; }
-            if (type === "unban") {
-              setBusyUser(u.twitchId);
-              apiAction("unban", u.twitchLogin)
-                .then(ok => flash(ok ? `@${u.twitchLogin} desbanido.` : "Erro ao desbanir", ok))
-                .finally(() => setBusyUser(null));
-            }
-            if (type === "unsuspend") {
-              setBusyUser(u.twitchId);
-              apiAction("unsuspend", u.twitchLogin)
-                .then(ok => flash(ok ? `Suspensão de @${u.twitchLogin} levantada.` : "Erro", ok))
-                .finally(() => setBusyUser(null));
-            }
-          }} busy={busyUser === u.twitchId} />
+          <UserCard key={u.twitchId} user={u} onGerenciar={() => setModal({ type: "gerenciar", user: u })} />
         ))}
         </div>
       </div>
