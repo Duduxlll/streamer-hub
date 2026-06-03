@@ -23,12 +23,28 @@ const securityHeaders = [
   },
 ];
 
+// Cross-Origin Isolation — exigido pelo jogo Godot (WebAssembly) na corrida 3D.
+// COEP "credentialless" mantém o isolamento sem bloquear imagens públicas (ex.: avatares da Twitch).
+const crossOriginIsolation = [
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  { key: "Cross-Origin-Embedder-Policy", value: "credentialless" },
+];
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
       {
         source: "/(.*)",
         headers: securityHeaders,
+      },
+      // A corrida 3D (página + arquivos do jogo) precisa de cross-origin isolation
+      {
+        source: "/admin/corrida",
+        headers: crossOriginIsolation,
+      },
+      {
+        source: "/marble-web/:path*",
+        headers: crossOriginIsolation,
       },
     ];
   },
