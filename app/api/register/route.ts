@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createUser } from "@/lib/users-store";
 import { isAdmin } from "@/lib/admins";
-import { normalizarChave } from "@/lib/gorjeta-store";
+import { normalizarChave, cadastrar } from "@/lib/gorjeta-store";
 import { addLog } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const cpfRaw       = String(body.cpf ?? "");
   const email        = String(body.email ?? "").trim();
   const senha        = String(body.senha ?? "");
-  const adminCode    = String(body.adminCode ?? "");
+  const screenshot   = String(body.screenshot ?? "");
 
   if (!twitchLogin || !nomeCompleto || !cpfRaw || !email || !senha) {
     return NextResponse.json({ error: "Preencha todos os campos" }, { status: 400 });
@@ -44,19 +44,15 @@ export async function POST(req: NextRequest) {
   if (senha.length < 6) {
     return NextResponse.json({ error: "A senha precisa ter no mínimo 6 caracteres" }, { status: 400 });
   }
-
-  const login        = twitchLogin.toLowerCase();
-  const reservedAdmin = isAdmin(login);
-  const codeOk        = !!process.env.ADMIN_SIGNUP_CODE && adminCode === process.env.ADMIN_SIGNUP_CODE;
-
-  // Nome reservado a admin: só pode ser cadastrado com o código correto.
-  if (reservedAdmin && !codeOk) {
-    return NextResponse.json({ error: "Esse nome é reservado. É necessário o código de administrador." }, { status: 403 });
+  // Print do depósito (JonBet) é obrigatório para aprovação
+  if (!screenshot.startsWith("data:image/")) {
+    return NextResponse.json({ error: "Envie o print do seu histórico de depósito na JonBet" }, { status: 400 });
   }
-  // Código informado mas inválido
-  if (adminCode && !codeOk) {
-    return NextResponse.json({ error: "Código de administrador inválido" }, { status: 403 });
+  if (screenshot.length > 8_000_000) {
+    return NextResponse.json({ error: "Imagem muito grande (máx 5MB)" }, { status: 400 });
   }
+
+  const login = twitchLogin.toLowerCase();
 
   const result = await createUser({
     twitchLogin: login,
@@ -64,16 +60,31 @@ export async function POST(req: NextRequest) {
     cpf,
     email,
     senha,
-    isAdmin: reservedAdmin || codeOk,
     ip: getIp(req) || undefined,
   });
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+
+  // Cria o cadastro de gorjeta (pendente) com o print, reaproveitando o fluxo de aprovação.
+  const cad = await cadastrar({
+    username: login,
+    displayName: result.user.displayName,
+    tipoChave: "cpf",
+    chave: cpf,
+    cpfTitular: cpf,
+    nomeCompleto,
+    screenshot,
+  });
+  if (!cad.ok) {
+    // Conta criada, mas o print não pôde ser registrado — informa para reenviar na página de Gorjeta.
+    await addLog({ admin: "sistema", action: "cadastro", target: login, detail: `Conta criada (print pendente: ${cad.error})` });
+    return NextResponse.json({ ok: true, avisoPrint: cad.error });
+  }
 
   await addLog({
     admin: "sistema",
     action: "cadastro",
     target: login,
-    detail: result.user.isAdmin ? "Nova conta de administrador" : "Nova conta criada",
+    detail: isAdmin(login) ? "Nova conta de administrador" : "Nova conta criada (com print)",
   });
 
   return NextResponse.json({ ok: true });

@@ -27,7 +27,7 @@ function LoginForm() {
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") || "/";
 
-  const [usuario, setUsuario] = useState("");
+  const [email, setEmail]     = useState("");
   const [senha, setSenha]     = useState("");
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -40,16 +40,16 @@ function LoginForm() {
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setErro("");
-    if (!usuario.trim() || !senha) { setErro("Preencha usuário e senha"); return; }
+    if (!email.trim() || !senha) { setErro("Preencha e-mail e senha"); return; }
     setLoading(true);
     try {
       const res = await signIn("credentials", {
-        username: usuario.trim(),
+        email: email.trim(),
         password: senha,
         redirect: false,
       });
       if (res?.error) {
-        setErro("Nome da Twitch ou senha incorretos");
+        setErro("E-mail ou senha incorretos");
         setLoading(false);
         return;
       }
@@ -81,15 +81,15 @@ function LoginForm() {
                 </svg>
               </div>
               <h1 className="text-2xl font-black text-white">Entrar na plataforma</h1>
-              <p className="text-gray-500 text-sm mt-1.5">Acesse com seu nome da Twitch e senha</p>
+              <p className="text-gray-500 text-sm mt-1.5">Acesse com seu e-mail e senha</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Nome da Twitch</label>
-                <input type="text" autoCapitalize="none" autoCorrect="off" placeholder="seu_nome_na_twitch"
-                  value={usuario}
-                  onChange={e => setUsuario(e.target.value)}
+                <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">E-mail</label>
+                <input type="email" autoCapitalize="none" autoCorrect="off" placeholder="voce@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
                   className="w-full px-4 py-2.5 rounded-xl text-sm text-white placeholder-gray-600 outline-none transition-all focus:border-[#22c55e]/50"
                   style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
               </div>

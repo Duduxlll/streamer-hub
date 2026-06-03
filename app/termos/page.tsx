@@ -97,7 +97,9 @@ export default function TermosPage() {
             <p>
               O acesso às funcionalidades interativas requer a criação de uma conta própria, informando seu{" "}
               <strong className="text-white">nome da Twitch</strong> (que deve ser o mesmo usado no chat), nome completo,
-              CPF, e-mail e uma senha. Os dados são tratados conforme nossa Política de Privacidade.
+              CPF, e-mail, uma senha e o <strong className="text-white">print do histórico de depósito na JonBet</strong>{" "}
+              (obrigatório para aprovação). O <strong className="text-white">login é feito pelo e-mail e senha</strong>.
+              Cada e-mail e cada CPF só podem ser usados em uma conta. Os dados são tratados conforme nossa Política de Privacidade.
             </p>
             <p className="mt-3">
               Sua senha é armazenada de forma criptografada (hash) e nunca é exibida a terceiros. Você é responsável

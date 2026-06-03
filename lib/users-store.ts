@@ -1,5 +1,6 @@
 import { dbGet, dbSet } from "./store";
 import { hashPassword, verifyPassword } from "./password";
+import { isAdmin } from "./admins";
 import { randomUUID } from "node:crypto";
 
 export type UserStatus = "ativo" | "banido" | "suspenso";
@@ -193,13 +194,21 @@ export async function getUserByLogin(login: string): Promise<SiteUser | null> {
   return list.find(u => u.twitchLogin === login.toLowerCase()) ?? null;
 }
 
+export async function getUserByEmail(email: string): Promise<SiteUser | null> {
+  const e = email.trim().toLowerCase();
+  if (!e) return null;
+  const list = await loadUsers();
+  return list.find(u => u.email === e && !!u.passwordHash) ?? null;
+}
+
 export type CreateUserResult =
   | { ok: true; user: SiteUser }
   | { ok: false; error: string };
 
 /**
  * Cria uma nova conta com login próprio.
- * `twitchLogin` é o nome da Twitch (usuário de login) e também casa com o chat do bot.
+ * `twitchLogin` é o nome da Twitch (casa com o chat do bot e define se é admin).
+ * O acesso (login) é feito pelo e-mail. E-mail e CPF são únicos.
  */
 export async function createUser(params: {
   twitchLogin: string;
@@ -207,7 +216,6 @@ export async function createUser(params: {
   cpf: string;
   email: string;
   senha: string;
-  isAdmin?: boolean;
   ip?: string;
 }): Promise<CreateUserResult> {
   const login = params.twitchLogin.trim().toLowerCase();
@@ -221,25 +229,33 @@ export async function createUser(params: {
   const list = await loadUsers();
   const existing = list.find(u => u.twitchLogin === login);
   if (existing && existing.passwordHash) {
-    return { ok: false, error: "Esse nome da Twitch já está cadastrado" };
+    return { ok: false, error: "Esse nome da Twitch já tem uma conta" };
   }
-  // E-mail único (entre contas que têm senha)
+
   const emailNorm = params.email.trim().toLowerCase();
-  if (emailNorm && list.some(u => u.email === emailNorm && u.twitchLogin !== login)) {
+  const cpfNorm   = params.cpf.replace(/\D/g, "");
+
+  // E-mail único
+  if (emailNorm && list.some(u => u.email === emailNorm && u.twitchLogin !== login && !!u.passwordHash)) {
     return { ok: false, error: "Esse e-mail já está cadastrado" };
+  }
+  // CPF único
+  if (cpfNorm && list.some(u => u.cpf === cpfNorm && u.twitchLogin !== login && !!u.passwordHash)) {
+    return { ok: false, error: "Esse CPF já está cadastrado em outra conta" };
   }
 
   const now = Date.now();
   const passwordHash = hashPassword(params.senha);
+  const ehAdmin = isAdmin(login);
 
   if (existing) {
     // Conta já existia (ex.: criada por um login antigo) — anexa as credenciais.
     existing.passwordHash = passwordHash;
     existing.nomeCompleto = params.nomeCompleto.trim();
-    existing.cpf          = params.cpf.replace(/\D/g, "");
+    existing.cpf          = cpfNorm;
     existing.email        = emailNorm;
     existing.displayName  = existing.displayName || params.twitchLogin;
-    if (params.isAdmin) existing.isAdmin = true;
+    existing.isAdmin      = ehAdmin ? true : undefined;
     if (params.ip && !existing.ips.includes(params.ip)) existing.ips = [params.ip, ...existing.ips].slice(0, 10);
     await saveUsers(list);
     return { ok: true, user: existing };
@@ -253,9 +269,9 @@ export async function createUser(params: {
     status:        "ativo",
     passwordHash,
     nomeCompleto:  params.nomeCompleto.trim(),
-    cpf:           params.cpf.replace(/\D/g, ""),
+    cpf:           cpfNorm,
     email:         emailNorm,
-    isAdmin:       params.isAdmin ? true : undefined,
+    isAdmin:       ehAdmin ? true : undefined,
     ips:           params.ip ? [params.ip] : [],
     primeiroLogin: now,
     ultimoLogin:   now,
@@ -265,9 +281,9 @@ export async function createUser(params: {
   return { ok: true, user };
 }
 
-/** Valida usuário + senha. Retorna o usuário se as credenciais conferem. */
-export async function verifyCredentials(login: string, senha: string): Promise<SiteUser | null> {
-  const u = await getUserByLogin(login);
+/** Valida e-mail + senha. Retorna o usuário se as credenciais conferem. */
+export async function verifyCredentials(email: string, senha: string): Promise<SiteUser | null> {
+  const u = await getUserByEmail(email);
   if (!u || !u.passwordHash) return null;
   if (!verifyPassword(senha, u.passwordHash)) return null;
   return u;

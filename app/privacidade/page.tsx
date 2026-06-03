@@ -108,8 +108,8 @@ export default function PrivacidadePage() {
             </p>
             <p className="mt-3">
               Dados sensíveis — como <strong className="text-white">chave PIX, credenciais de integração e tokens</strong> —
-              são armazenados de forma <strong className="text-white">criptografada</strong>. O login é feito via
-              Twitch (OAuth) e <strong className="text-white">não armazenamos sua senha</strong>.
+              são armazenados de forma <strong className="text-white">criptografada</strong>. Sua senha é guardada
+              apenas como <strong className="text-white">hash criptográfico</strong>, nunca em texto puro.
             </p>
             <p className="mt-3 text-gray-400">
               Os dados são mantidos enquanto forem necessários para as finalidades descritas. Você pode solicitar
@@ -135,8 +135,10 @@ export default function PrivacidadePage() {
             </p>
             <div className="mt-4 rounded-xl p-4" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
               <p className="text-xs text-gray-400">
-                <strong className="text-gray-300">Sobre a Twitch:</strong> O login é processado diretamente pela
-                Twitch via OAuth 2.0. Ao fazer login, você também está sujeito à{" "}
+                <strong className="text-gray-300">Sobre a Twitch:</strong> A plataforma utiliza a API pública da
+                Twitch apenas para exibir sua <strong className="text-gray-300">foto de perfil</strong> (avatar) e o
+                status da live, com base no nome da Twitch que você informa. O login é feito por conta própria
+                (usuário e senha), não pela Twitch. Ainda assim, ao utilizar conteúdos da Twitch você está sujeito à{" "}
                 <a href="https://www.twitch.tv/p/pt-br/legal/privacy-notice/" target="_blank" rel="noopener noreferrer"
                   className="text-green-400 hover:text-green-300 underline underline-offset-2">
                   Política de Privacidade da Twitch

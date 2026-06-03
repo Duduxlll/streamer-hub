@@ -14,27 +14,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       name: "credentials",
       credentials: {
-        username: { label: "Nome da Twitch", type: "text" },
+        email:    { label: "E-mail", type: "email" },
         password: { label: "Senha", type: "password" },
       },
       async authorize(creds) {
-        const username = String(creds?.username ?? "").trim().toLowerCase();
+        const email    = String(creds?.email ?? "").trim().toLowerCase();
         const password = String(creds?.password ?? "");
-        if (!username || !password) return null;
+        if (!email || !password) return null;
 
-        // Valida usuário + senha
-        const user = await verifyCredentials(username, password);
+        // Valida e-mail + senha
+        const user = await verifyCredentials(email, password);
         if (!user) return null;
 
+        const login = user.twitchLogin;
+
         // Bloqueia banidos/suspensos
-        if (await isBanned(username)) {
-          await addLog({ admin: "sistema", action: "acesso_negado", target: username, detail: "Login bloqueado — conta banida ou suspensa" });
+        if (await isBanned(login)) {
+          await addLog({ admin: "sistema", action: "acesso_negado", target: login, detail: "Login bloqueado — conta banida ou suspensa" });
           return null;
         }
 
-        await touchLogin(username);
-        if (isAdmin(username)) {
-          await addLog({ admin: username, action: "admin_login", detail: "Login no painel admin" });
+        await touchLogin(login);
+        if (isAdmin(login)) {
+          await addLog({ admin: login, action: "admin_login", detail: "Login no painel admin" });
         }
 
         return {

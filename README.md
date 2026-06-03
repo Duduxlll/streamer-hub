@@ -54,10 +54,14 @@ Sem as variáveis do Turso configuradas, o projeto usa um arquivo local em `.dat
 Crie um `.env.local` com:
 
 ```env
-# Twitch - OAuth do site (login dos usuarios)
+# Twitch - API pública (fotos dos viewers + status da live). NÃO é mais usado para login.
 TWITCH_CLIENT_ID=
 TWITCH_CLIENT_SECRET=
+
+# Login próprio (e-mail + senha) — assina a sessão JWT
 AUTH_SECRET=
+# Admins: nicks da Twitch (separados por vírgula). Quem criar a conta com esse nick vira admin.
+NEXT_PUBLIC_ADMIN_LOGINS=dudufpss,stainzincs
 
 # URL de produção
 NEXTAUTH_URL=https://seudominio.com
@@ -117,7 +121,9 @@ O bot precisa de acesso ao `SITE_URL` pra funcionar, então coloca a URL do site
 
 ## Autenticação
 
-Login é via Twitch OAuth. Só o admin (configurado em `lib/admins.ts`) acessa as rotas `/admin/*`. Quem não é admin e tenta acessar essas rotas é redirecionado.
+Login é por conta própria (**e-mail + senha**), via NextAuth com provider Credentials. No cadastro a pessoa informa o **nome da Twitch** (precisa ser o mesmo do chat, para casar com o bot), nome completo, CPF, e-mail, senha e o **print do depósito na JonBet** (obrigatório). E-mail e CPF são únicos. Senhas são guardadas como hash scrypt (`lib/password.ts`).
+
+Os admins são definidos pelos nicks da Twitch em `NEXT_PUBLIC_ADMIN_LOGINS` (fallback em `lib/admins.ts`). Quem cria a conta com um nick admin vira admin automaticamente. Só o admin acessa as rotas `/admin/*`; quem não é admin é redirecionado.
 
 O webhook do LivePix valida a assinatura com `crypto.timingSafeEqual` e tem idempotência por `messageId`, então requisições duplicadas são ignoradas sem problema.
 

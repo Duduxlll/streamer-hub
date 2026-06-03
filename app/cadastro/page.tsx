@@ -2,7 +2,7 @@
 
 import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 function formatCpf(value: string): string {
@@ -33,11 +33,12 @@ export default function CadastroPage() {
   const [form, setForm] = useState({
     twitchLogin: "", nomeCompleto: "", cpf: "", email: "", senha: "", confirmar: "",
   });
-  const [showAdmin, setShowAdmin] = useState(false);
-  const [adminCode, setAdminCode] = useState("");
+  const [screenshot, setScreenshot] = useState("");
+  const [screenshotName, setScreenshotName] = useState("");
   const [aceito, setAceito] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (status === "authenticated") router.replace("/");
@@ -45,6 +46,16 @@ export default function CadastroPage() {
 
   function set<K extends keyof typeof form>(k: K, v: string) {
     setForm(f => ({ ...f, [k]: v }));
+  }
+
+  function handleFile(file: File) {
+    if (!file.type.startsWith("image/")) { setErro("Envie uma imagem (PNG, JPG, etc.)"); return; }
+    if (file.size > 5 * 1024 * 1024) { setErro("Imagem muito grande (máx 5MB)"); return; }
+    setErro("");
+    setScreenshotName(file.name);
+    const reader = new FileReader();
+    reader.onload = e => setScreenshot(e.target?.result as string ?? "");
+    reader.readAsDataURL(file);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -57,6 +68,7 @@ export default function CadastroPage() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) return setErro("E-mail inválido");
     if (form.senha.length < 6) return setErro("A senha precisa ter no mínimo 6 caracteres");
     if (form.senha !== form.confirmar) return setErro("As senhas não coincidem");
+    if (!screenshot) return setErro("Envie o print do seu histórico de depósito na JonBet");
     if (!aceito) return setErro("É preciso aceitar os Termos de Uso");
 
     setLoading(true);
@@ -70,20 +82,19 @@ export default function CadastroPage() {
           cpf: form.cpf,
           email: form.email.trim(),
           senha: form.senha,
-          adminCode: showAdmin ? adminCode.trim() : "",
+          screenshot,
         }),
       });
       const data = await res.json();
       if (!res.ok) { setErro(data.error ?? "Erro ao cadastrar"); setLoading(false); return; }
 
-      // Loga automaticamente após o cadastro
+      // Loga automaticamente após o cadastro (pelo e-mail)
       const login = await signIn("credentials", {
-        username: form.twitchLogin.trim(),
+        email: form.email.trim(),
         password: form.senha,
         redirect: false,
       });
       if (login?.error) {
-        // Cadastro funcionou, mas o login automático falhou — manda para a tela de login
         router.replace("/login");
         return;
       }
@@ -116,7 +127,7 @@ export default function CadastroPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Field label="Nome da Twitch" hint="Será seu usuário de login e precisa ser o mesmo do chat.">
+              <Field label="Nome da Twitch" hint="Precisa ser o mesmo do chat. Identifica você e não pode ser repetido.">
                 <input type="text" autoCapitalize="none" autoCorrect="off" placeholder="seu_nome_na_twitch"
                   value={form.twitchLogin} onChange={e => set("twitchLogin", e.target.value)}
                   className={inputCls} style={inputStyle} />
@@ -134,7 +145,7 @@ export default function CadastroPage() {
                   className={inputCls} style={inputStyle} />
               </Field>
 
-              <Field label="E-mail">
+              <Field label="E-mail" hint="Será seu login de acesso à plataforma.">
                 <input type="email" autoCapitalize="none" placeholder="voce@email.com"
                   value={form.email} onChange={e => set("email", e.target.value)}
                   className={inputCls} style={inputStyle} />
@@ -153,19 +164,25 @@ export default function CadastroPage() {
                 </Field>
               </div>
 
-              {/* Código de administrador (opcional) */}
-              {!showAdmin ? (
-                <button type="button" onClick={() => setShowAdmin(true)}
-                  className="text-[11px] text-gray-600 hover:text-gray-400 transition-colors">
-                  Tenho um código de administrador
+              {/* Print do depósito — obrigatório */}
+              <Field label="Print do depósito na JonBet" hint="Obrigatório para aprovação. Envie o print do seu histórico de depósito.">
+                <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+                <button type="button" onClick={() => fileRef.current?.click()}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all hover:bg-white/[0.03]"
+                  style={{ background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(34,197,94,0.3)" }}>
+                  {screenshot
+                    ? <><span className="text-green-400 font-bold">✓</span><span className="text-white text-xs truncate flex-1 text-left">{screenshotName}</span></>
+                    : <><span className="text-xl">📎</span><span className="text-gray-500 text-sm">Clique para enviar o print</span></>
+                  }
                 </button>
-              ) : (
-                <Field label="Código de administrador">
-                  <input type="password" placeholder="código secreto"
-                    value={adminCode} onChange={e => setAdminCode(e.target.value)}
-                    className={inputCls} style={inputStyle} />
-                </Field>
-              )}
+                {screenshot && (
+                  <div className="mt-2 rounded-xl overflow-hidden border border-white/5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={screenshot} alt="preview" className="w-full max-h-44 object-cover" />
+                  </div>
+                )}
+              </Field>
 
               <label className="flex items-start gap-2.5 cursor-pointer select-none">
                 <input type="checkbox" checked={aceito} onChange={e => setAceito(e.target.checked)}
