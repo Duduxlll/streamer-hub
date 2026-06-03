@@ -1,0 +1,90 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Marble
+Upstream-Contact: Florian Vazelle <florian.vazelle@vivaldi.net>
+Source: https://github.com/MechanicalFlower/Marble
+
+Files: *
+Copyright: 2022-present Florian Vazelle
+License: MIT
+
+# Addons
+
+Files: addons/gd-plug/*
+Copyright: 2021 Tan Jian Ping
+License: MIT
+Source: https://github.com/imjp94/gd-plug
+
+Files: addons/debug_menu/*
+Copyright: 2023-present Hugo Locurcio and contributors
+License: MIT
+Source: https://github.com/godot-extended-libraries/godot-debug-menu
+
+Files: addons/UniversalFade/*
+Copyright: 2019 Tomek
+License: MIT
+Source: https://github.com/KoBeWi/Godot-Universal-Fade
+
+Files: addons/coi_serviceworker/*
+Copyright: 2023 nisovin
+License: MIT
+Source: https://github.com/nisovin/godot-coi-serviceworker
+
+# Models
+
+Files: assets/blocks/*
+Copyright: 2019 Zylann
+License: MIT
+Source: https://github.com/Zylann/marbles
+
+# Textures
+
+Files: assets/icons/*
+Copyright: 2023 Icons8
+License: LicenseRef-linksware
+Source: https://icons8.com/
+
+Files: assets/textures/marble/*
+Copyright: 2017-2023 Lennart Demes
+License: CC0-1.0
+Source: https://ambientcg.com/view?id=Ground037
+
+Files: assets/textures/wood.jpg
+Copyright: 2019 Zylann
+License: MIT
+Source: https://github.com/Zylann/marbles
+
+# Sounds
+
+Files: assets/sounds/countdown/*
+Copyright: 2011 Destructavator
+License: CC-BY-3.0
+Source: https://opengameart.org/content/countdown
+
+Files: assets/sounds/sfx/*
+Copyright: 2019 Zylann
+License: CC-BY-NC-ND-1.0
+Source: https://github.com/Zylann/marbles
+
+Files: assets/sounds/boost.ogg
+Copyright: 2018 rubberduck
+License: CC0-1.0
+Source: https://opengameart.org/content/50-cc0-retro-synth-sfx
+
+# Fonts
+
+Files: assets/fonts/box_pixies.ttf
+Copyright: 2020 Heaven Castro
+License: CC0-1.0
+Source: https://www.fontspace.com/boxpixies-font-f27657
+
+# Shaders
+
+Files: shaders/sky.gdshader
+Copyright: 2023 krzmig
+License: MIT
+Source: https://godotshaders.com/shader/stylized-sky-with-procedural-sun-and-moon/
+
+Files: shaders/ernergy_shield.gdshader
+Copyright: 2023 Daniel Bologna
+License: MIT
+Source: https://godotshaders.com/shader/energy-shield-with-impact-effect/

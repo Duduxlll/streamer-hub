@@ -481,7 +481,8 @@ export default function AdminGorjetaPage() {
   // tab é derivado do URL — navegação feita pelo sidebar
   const tab = (searchParams.get("tab") as "sessao" | "cadastros" | "historico") ?? "sessao";
   const [cadastroFiltro, setCadastroFiltro] = useState<"pendente" | "aprovado" | "rejeitado">("pendente");
-  const [sessaoTab, setSessaoTab] = useState<"sortear" | "manual" | "crash">("sortear");
+  const [sessaoTab, setSessaoTab] = useState<"sortear" | "manual" | "crash" | "corrida">("sortear");
+  const [corridaNum, setCorridaNum] = useState("5");
   // Crash
   const [crashSel, setCrashSel] = useState<ParticipanteSessao | null>(null);
   const [crashAposta, setCrashAposta] = useState("");
@@ -634,6 +635,17 @@ export default function AdminGorjetaPage() {
     const r = await apiCall({ action: "enviar-manual-fila", username: crashGame.participante.username, valor });
     if (r) { flash("Adicionado à fila de pagamentos! 💳", "ok"); return true; }
     return false;
+  }
+
+  function iniciarCorrida() {
+    if (!sessao || sessao.participantes.length === 0) { flash("Sem inscritos na sessão", "err"); return; }
+    const nVenc = Math.max(1, Math.min(parseInt(corridaNum) || 1, sessao.participantes.length));
+    localStorage.setItem("corrida-race-data", JSON.stringify({
+      participants: sessao.participantes.map(p => ({ username: p.username, displayName: p.displayName, image: p.image })),
+      numVencedores: nVenc,
+      saldoRestante: sessao.saldoRestante,
+    }));
+    router.push("/admin/corrida");
   }
 
   async function fecharSessao() { const r = await apiCall({ action: "fechar-sessao" }); if (r) flash("Gorjeta encerrada", "ok"); }
@@ -801,13 +813,13 @@ export default function AdminGorjetaPage() {
                 <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.9)", border: "1px solid rgba(255,255,255,0.07)" }}>
                   {/* Sub-tabs */}
                   <div className="flex border-b border-white/5">
-                    {(["sortear", "manual", "crash"] as const).map(t => (
+                    {(["sortear", "manual", "crash", "corrida"] as const).map(t => (
                       <button key={t} onClick={() => setSessaoTab(t)}
-                        className="flex-1 py-3.5 text-xs font-black transition-all"
+                        className="flex-1 py-3.5 text-[11px] sm:text-xs font-black transition-all"
                         style={sessaoTab === t
                           ? { color: "#ffba00", borderBottom: "2px solid #ffba00" }
                           : { color: "#4b5563", borderBottom: "2px solid transparent" }}>
-                        {t === "sortear" ? "🎲 Sortear" : t === "manual" ? "✍️ Manual" : "🚀 Crash"}
+                        {t === "sortear" ? "🎲 Sortear" : t === "manual" ? "✍️ Manual" : t === "crash" ? "🚀 Crash" : "🏁 Corrida"}
                       </button>
                     ))}
                   </div>
@@ -1002,6 +1014,29 @@ export default function AdminGorjetaPage() {
                           </div>
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* Corrida de Bolinhas 3D */}
+                  {sessaoTab === "corrida" && (
+                    <div className="px-5 py-5 space-y-3">
+                      <div className="rounded-xl px-3 py-2.5 text-[11px] text-gray-500 leading-relaxed"
+                        style={{ background: "rgba(255,186,0,0.04)", border: "1px solid rgba(255,186,0,0.1)" }}>
+                        🏁 Os <strong className="text-[#ffba00]">{sessao.participantes.length}</strong> inscritos viram bolinhas numa corrida 3D. Abre em tela cheia (ótimo pra mostrar na live). Os primeiros a chegar ganham!
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Quantos ganham (top N)</label>
+                        <input type="number" min="1" max={Math.max(1, sessao.participantes.length)} value={corridaNum}
+                          onChange={e => setCorridaNum(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl text-sm font-bold text-white outline-none"
+                          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
+                        <p className="text-[10px] text-gray-600 mt-1">Você define os valores no final, antes de pagar.</p>
+                      </div>
+                      <button onClick={iniciarCorrida} disabled={sessao.participantes.length === 0}
+                        className="w-full py-3 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+                        style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", boxShadow: "0 4px 20px rgba(255,186,0,0.2)" }}>
+                        {sessao.participantes.length === 0 ? "Aguardando inscritos..." : "🏁 Abrir corrida 3D →"}
+                      </button>
                     </div>
                   )}
                 </div>

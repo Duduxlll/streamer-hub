@@ -1,0 +1,21 @@
+Correção aplicada:
+
+O Godot acusou:
+The variable type is being inferred from a Variant value, so it will be typed as Variant. (Warning treated as error)
+
+Correções feitas:
+- var limit := min(count, 120)
+  virou:
+  var limit: int = mini(count, 120)
+
+Também deixei outras variáveis novas da integração com tipo explícito para evitar esse erro de novo.
+
+Como testar:
+1. Feche o Godot.
+2. Extraia este ZIP novo.
+3. Abra o project.godot desta pasta nova.
+4. Abra scenes/main.tscn.
+5. Aperte F5.
+
+Se abrir a tela "Aguardando jogadores", está certo.
+Depois exporte para Web como index.html.

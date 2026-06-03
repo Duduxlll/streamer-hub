@@ -1,0 +1,21 @@
+Correção aplicada:
+
+O Godot 4.4 acusou:
+Cannot infer the type of "basis" variable because the value doesn't have a set type.
+
+Correção:
+- main.gd agora usa tipagem explícita:
+  var basis: Basis
+  var spawn_origin: Vector3
+  var safe_right: Vector3
+  var safe_forward: Vector3
+  var safe_up: Vector3
+
+Como testar:
+1. Feche o Godot.
+2. Extraia este ZIP novo.
+3. Abra o project.godot desta pasta nova.
+4. Abra scenes/main.tscn.
+5. Aperte F5.
+
+Se aparecer outro erro vermelho, mande print do Console de novo.

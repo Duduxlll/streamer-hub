@@ -17,7 +17,8 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https://static-cdn.jtvnw.net https://cdn.twitch.tv",
       "connect-src 'self' https://id.twitch.tv https://api.twitch.tv",
-      "frame-ancestors 'none'",
+      "frame-src 'self'",
+      "frame-ancestors 'self'",
     ].join("; "),
   },
 ];
