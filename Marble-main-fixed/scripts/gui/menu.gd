@@ -86,7 +86,7 @@ func configure_for_gorgita(names: PackedStringArray, top_n: int) -> void:
 	_external_names = names
 	_top_n = maxi(1, top_n)
 	_input.set_text(",".join(_external_names))
-	SettingsManager.set_value(&"marbles", &"collision_enabled", true)
+	SettingsManager.set_value(&"marbles", &"collision_enabled", false)
 	SettingsManager.set_value(&"marbles", &"explosion_enabled", false)
 	_apply_gorgita_ui()
 
@@ -94,7 +94,7 @@ func configure_for_gorgita(names: PackedStringArray, top_n: int) -> void:
 func _apply_gorgita_ui() -> void:
 	if not is_node_ready():
 		return
-	_title_label.set_text("Corrida Gorgita")
+	_title_label.set_text("Corrida do stainzin")
 	_start_action_button.set_text("Iniciar corrida")
 	_input.hide()
 	_collision_toggle.hide()

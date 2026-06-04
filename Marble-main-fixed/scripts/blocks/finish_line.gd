@@ -14,3 +14,6 @@ func _on_Area_body_entered(body: PhysicsBody3D) -> void:
 		_player.play()
 
 		body.finish()
+		var main = get_tree().get_first_node_in_group(&"race_main")
+		if main != null and main.has_method(&"register_finish"):
+			main.register_finish(body as Marble)

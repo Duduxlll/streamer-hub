@@ -16,6 +16,14 @@ func snap_to_camera(camera: Camera3D) -> void:
 		_camera.sync_from_current_rotation()
 
 
+func snap_to_transform(camera_transform: Transform3D) -> void:
+	global_position = camera_transform.origin
+	_camera.global_transform = camera_transform
+	_camera.position = Vector3.ZERO
+	if _camera.has_method(&"sync_from_current_rotation"):
+		_camera.sync_from_current_rotation()
+
+
 func place_at(position: Vector3, target: Vector3) -> void:
 	global_position = position
 	_camera.look_at(target, Vector3.UP)

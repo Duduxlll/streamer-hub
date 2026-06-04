@@ -155,8 +155,8 @@ export default function CorridaPage() {
     return (
       <div className="fixed inset-0 z-[100] bg-[#060e0a] flex items-center justify-center">
         <div className="text-center space-y-3">
-          <p className="text-gray-400">Nenhum inscrito carregado. Abra pela <strong className="text-white">Gorjeta → aba Corrida</strong>.</p>
-          <button onClick={() => router.push("/admin/gorjeta")} className="px-5 py-2.5 rounded-xl font-black text-sm text-black" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>← Voltar à Gorjeta</button>
+          <p className="text-gray-400">Nenhum inscrito carregado. Abra pela <strong className="text-white">Gorgita → aba Corrida</strong>.</p>
+          <button onClick={() => router.push("/admin/gorjeta")} className="px-5 py-2.5 rounded-xl font-black text-sm text-black" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>← Voltar à Gorgita</button>
         </div>
       </div>
     );
@@ -166,8 +166,8 @@ export default function CorridaPage() {
     <div className="fixed inset-0 z-[100] bg-[#050d08] flex flex-col">
       {/* Barra superior */}
       <div className="flex-shrink-0 px-4 py-2.5 flex items-center gap-3 border-b border-white/10" style={{ background: "rgba(5,13,8,0.98)" }}>
-        <button onClick={() => router.push("/admin/gorjeta")} className="text-gray-400 hover:text-white text-sm font-bold transition-colors">← Gorgita / Gorjeta</button>
-        <span className="text-white font-black flex-1 truncate text-sm">🏁 Corrida de Bolinhas 3D</span>
+        <button onClick={() => router.push("/admin/gorjeta")} className="text-gray-400 hover:text-white text-sm font-bold transition-colors">← Gorgita</button>
+        <span className="text-white font-black flex-1 truncate text-sm">🏁 Corrida do stainzin</span>
         {raceData && <span className="text-[11px] text-gray-500">{raceData.participants.length} na pista · Top {raceData.numVencedores}</span>}
       </div>
 
@@ -179,7 +179,7 @@ export default function CorridaPage() {
             src="/marble-web/index.html"
             className="absolute inset-0 w-full h-full border-0"
             allow="autoplay; fullscreen; gamepad"
-            title="Corrida de Bolinhas" />
+            title="Corrida do stainzin" />
         )}
         {/* Tela de carregamento — cobre o splash "Godot Engine" até o jogo ficar pronto */}
         {(!iframeReady || !jogoPronto) && phase === "racing" && (
@@ -210,6 +210,12 @@ export default function CorridaPage() {
               </div>
 
               <div className="space-y-2">
+                {winners.length === 0 && (
+                  <div className="rounded-2xl px-4 py-5 text-center" style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.22)" }}>
+                    <p className="text-sm font-black text-red-300">A corrida terminou sem enviar vencedores.</p>
+                    <p className="text-xs text-gray-500 mt-1">Reexporte o Godot com este fix e rode a corrida novamente.</p>
+                  </div>
+                )}
                 {winners.map((w, i) => (
                   <div key={w.username + i} className="flex items-center gap-3 rounded-2xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", animation: `popIn .4s ease-out ${i * 0.05}s both` }}>
                     <span className="text-base w-9 text-center flex-shrink-0">{medal(i)}</span>
@@ -239,20 +245,20 @@ export default function CorridaPage() {
               {enviado ? (
                 <div className="text-center space-y-3 py-2">
                   <p className="text-lg font-black text-green-400">✓ Pagamentos registrados!</p>
-                  <button onClick={() => router.push("/admin/gorjeta")} className="w-full py-3.5 rounded-2xl font-black text-sm text-black" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>← Voltar para Gorjeta</button>
+                  <button onClick={() => router.push("/admin/gorjeta")} className="w-full py-3.5 rounded-2xl font-black text-sm text-black" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>← Voltar para Gorgita</button>
                 </div>
               ) : (
                 <div className="space-y-2.5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <button onClick={() => enviar("auto")} disabled={!!enviando || !cobre || !ggpixOk} className="py-4 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] disabled:cursor-not-allowed"
-                      style={(ggpixOk && cobre) ? { background: "linear-gradient(135deg,#4ade80,#22c55e)", color: "#000" } : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#4b5563" }}>
+                    <button onClick={() => enviar("auto")} disabled={!!enviando || !cobre || !ggpixOk || winners.length === 0} className="py-4 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] disabled:cursor-not-allowed"
+                      style={(ggpixOk && cobre && winners.length > 0) ? { background: "linear-gradient(135deg,#4ade80,#22c55e)", color: "#000" } : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#4b5563" }}>
                       {!ggpixOk ? "⚡ PIX automático (GGPix off)" : enviando === "auto" ? "Enviando..." : "⚡ Enviar PIX a todos"}
                     </button>
-                    <button onClick={() => enviar("fila")} disabled={!!enviando || !cobre} className="py-4 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] disabled:opacity-60" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>
+                    <button onClick={() => enviar("fila")} disabled={!!enviando || !cobre || winners.length === 0} className="py-4 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] disabled:opacity-60" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>
                       {enviando === "fila" ? "..." : "💳 Pagamento manual"}
                     </button>
                   </div>
-                  <button onClick={() => router.push("/admin/gorjeta")} className="w-full py-2.5 rounded-2xl font-black text-xs hover:bg-white/5 transition-colors" style={{ color: "#6b7280" }}>← Voltar para Gorjeta (sem pagar agora)</button>
+                  <button onClick={() => router.push("/admin/gorjeta")} className="w-full py-2.5 rounded-2xl font-black text-xs hover:bg-white/5 transition-colors" style={{ color: "#6b7280" }}>← Voltar para Gorgita (sem pagar agora)</button>
                 </div>
               )}
             </div>

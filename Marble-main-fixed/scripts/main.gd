@@ -11,12 +11,23 @@ const Group := preload("res://scripts/constants/groups.gd")
 const NameGenerator := preload("res://scripts/utils/name_generator.gd")
 
 const TIME_PERIOD := 5  # 500ms
+const STUCK_SPEED_THRESHOLD := 0.08
+const STUCK_MOVE_THRESHOLD := 0.08
+const STUCK_NUDGE_AFTER := 3.0
+const STUCK_OUT_AFTER := 8.0
+const SLOW_SPEED_THRESHOLD := 0.7
+const SLOW_PROGRESS_AFTER := 1.15
+const SLOW_ASSIST_COOLDOWN := 0.75
+const SLOW_ASSIST_SPEED := 1.85
+const NO_PROGRESS_NUDGE_AFTER := 5.0
+const NO_PROGRESS_OUT_AFTER := 12.0
+const NO_PROGRESS_RADIUS := 2.4
 
 var _rotation_camera = null
 var _marble_camera = null
 var _spectator_camera = null
 var _mode: int = State.MODE_START
-var _current_marble_index := 0
+var _current_marble_index := -1
 var _time := 0.0
 var _explosion_enabled := false
 var _race_has_started := false
@@ -26,6 +37,10 @@ var _winner_limit := 5
 var _active_race_count := 0
 var _finish_order := []
 var _external_names := PackedStringArray()
+var _speed_scale := 1.0
+var _speed_buttons := []
+var _speed_panel: PanelContainer = null
+var _stuck_tracker := {}
 
 # Variables used in explosion mode to check
 # if we need to generate another chunk of the race
@@ -56,12 +71,15 @@ func _ready() -> void:
 	_marble_camera = MarbleCameraScene.instantiate()
 	_spectator_camera = SpectatorCameraScene.instantiate()
 	_load_web_race_data()
+	build_speed_controls()
+	set_speed_scale(1.0)
 	reset_position(maxi(14, len(_pause_menu.get_names())))
 	set_mode(_mode)
 	_post_web_event(&"marble:ready")
 
 
 func _exit_tree():
+	Engine.time_scale = 1.0
 	if not _rotation_camera.is_inside_tree():
 		_rotation_camera.free()
 	if not _marble_camera.is_inside_tree():
@@ -82,25 +100,22 @@ func _unhandled_input(event):
 	if event is InputEventKey:
 		if event.pressed:
 			match event.keycode:
+				KEY_1:
+					set_speed_scale(1.0)
+
+				KEY_2:
+					set_speed_scale(2.0)
+
+				KEY_3:
+					set_speed_scale(3.0)
+
 				KEY_TAB:
 					if _mode == State.MODE_MARBLE:
-						var visible_marbles := []
-						for marble in _marbles:
-							if marble.visible:
-								visible_marbles.append(marble)
+						focus_next_ranked_marble()
 
-						var marble_count = len(visible_marbles)
-						if marble_count != 0:
-							if _current_marble_index >= marble_count:
-								_current_marble_index = 0
-							else:
-								_current_marble_index += 1
-							_marble_camera.set_target(
-								visible_marbles[_current_marble_index % marble_count]
-							)
-
-						else:
-							printerr("No marble to focus on!")
+				KEY_W, KEY_A, KEY_S, KEY_D:
+					if _mode == State.MODE_MARBLE and _marble_camera.is_inside_tree():
+						activate_free_camera()
 
 				KEY_ESCAPE:
 					if _mode != State.MODE_START and _mode != State.MODE_PAUSE:
@@ -190,8 +205,8 @@ func try_place_start_marble() -> Marble:
 	new_marble.position = (
 		piece.position
 		+ Vector3.UP * 5
-		+ Vector3.FORWARD * float(position[0]) * 0.85
-		+ Vector3.RIGHT * float(position[1]) * 1.15
+		+ Vector3.FORWARD * float(position[0]) * 0.5
+		+ Vector3.RIGHT * float(position[1]) * 0.64
 	)
 	new_marble.roll()
 	return new_marble
@@ -246,6 +261,53 @@ func replace_camera(new_camera, _old_cameras = []) -> void:
 		add_child(new_camera)
 
 
+func build_speed_controls() -> void:
+	if _speed_panel != null:
+		return
+
+	_speed_panel = PanelContainer.new()
+	_speed_panel.name = "SpeedControls"
+	_speed_panel.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	_speed_panel.offset_left = -178.0
+	_speed_panel.offset_top = 20.0
+	_speed_panel.offset_right = -20.0
+	_speed_panel.offset_bottom = 62.0
+	_speed_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	var box = HBoxContainer.new()
+	box.add_theme_constant_override(&"separation", 6)
+	_speed_panel.add_child(box)
+
+	for speed in [1, 2, 3]:
+		var button = Button.new()
+		button.text = "%dx" % speed
+		button.toggle_mode = true
+		button.focus_mode = Control.FOCUS_NONE
+		button.custom_minimum_size = Vector2(48, 32)
+		button.set_meta(&"speed", speed)
+		button.pressed.connect(_on_speed_button_pressed.bind(float(speed)))
+		box.add_child(button)
+		_speed_buttons.append(button)
+
+	add_child(_speed_panel)
+
+
+func _on_speed_button_pressed(speed: float) -> void:
+	set_speed_scale(speed)
+
+
+func set_speed_scale(speed: float) -> void:
+	_speed_scale = clampf(speed, 1.0, 3.0)
+	Engine.time_scale = _speed_scale
+	update_speed_buttons()
+
+
+func update_speed_buttons() -> void:
+	for button in _speed_buttons:
+		var speed = float(button.get_meta(&"speed", 1))
+		button.button_pressed = is_equal_approx(speed, _speed_scale)
+
+
 func focus_marble(marble: Marble) -> void:
 	if marble == null or not is_instance_valid(marble):
 		return
@@ -253,10 +315,39 @@ func focus_marble(marble: Marble) -> void:
 	replace_camera(_marble_camera)
 
 
+func focus_next_ranked_marble() -> void:
+	var ranked_marbles := []
+	if _ranking.has_method(&"get_ranked_marbles"):
+		ranked_marbles = _ranking.get_ranked_marbles()
+	else:
+		ranked_marbles = _marbles
+
+	var visible_marbles := []
+	for marble in ranked_marbles:
+		if marble is Marble and marble.visible:
+			visible_marbles.append(marble)
+
+	var marble_count = len(visible_marbles)
+	if marble_count == 0:
+		printerr("No marble to focus on!")
+		return
+
+	_current_marble_index = (_current_marble_index + 1) % marble_count
+	focus_marble(visible_marbles[_current_marble_index] as Marble)
+
+
 func activate_free_camera() -> void:
 	var current_camera = get_viewport().get_camera_3d()
+	var current_transform := Transform3D.IDENTITY
+	var has_current_transform := false
+	if current_camera != null:
+		current_transform = current_camera.global_transform
+		has_current_transform = true
+
 	replace_camera(_spectator_camera)
-	if current_camera != null and _spectator_camera.has_method(&"snap_to_camera"):
+	if has_current_transform and _spectator_camera.has_method(&"snap_to_transform"):
+		_spectator_camera.snap_to_transform(current_transform)
+	elif current_camera != null and _spectator_camera.has_method(&"snap_to_camera"):
 		_spectator_camera.snap_to_camera(current_camera)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
@@ -341,9 +432,11 @@ func set_mode(mode):
 			ensure_marble_capacity(len(names))
 			reset_position(len(names))
 			_finish_order = []
+			_stuck_tracker.clear()
 			_race_completed = false
 			_active_race_count = len(names)
 			_winner_limit = mini(maxi(1, _winner_limit), maxi(1, _active_race_count))
+			_current_marble_index = -1
 
 			# Show HUD
 			_overlay.show()
@@ -466,6 +559,7 @@ func _process(delta):
 
 	if _race_has_started and not _race_completed:
 		update_finish_order()
+		update_stuck_marbles(delta)
 
 	# Check if some marbles are out of bound
 	if _race_has_started and _lower_boundary != null:
@@ -473,15 +567,187 @@ func _process(delta):
 			if (
 				marble.visible
 				and marble._state == Marble.State.ROLL
-				and marble.global_transform.origin.y + 100 < _lower_boundary
+				and marble.global_transform.origin.y + 18 < _lower_boundary
 			):
 				marble.out_of_bound()
+				_stuck_tracker.erase(marble.get_instance_id())
 
 
-func update_finish_order() -> void:
+func register_finish(marble: Marble) -> void:
+	if _race_completed or marble == null:
+		return
+	_stuck_tracker.erase(marble.get_instance_id())
+	if not _finish_order.has(marble):
+		_finish_order.append(marble)
+
+	var required_winners = mini(maxi(1, _winner_limit), maxi(1, _active_race_count))
+	if _race_has_started and len(_finish_order) >= required_winners:
+		complete_race()
+
+
+func update_stuck_marbles(delta: float) -> void:
+	for marble in _marbles:
+		if not marble is Marble:
+			continue
+
+		var id = marble.get_instance_id()
+		if not marble.visible or not marble.in_race():
+			_stuck_tracker.erase(id)
+			continue
+
+		var pos = marble.global_position
+		var checkpoint = marble.get_checkpoint_count()
+		var data = _stuck_tracker.get(id, {
+			"position": pos,
+			"checkpoint_position": pos,
+			"time": 0.0,
+			"checkpoint_time": 0.0,
+			"slow_time": 0.0,
+			"slow_cooldown": 0.0,
+			"nudged": false,
+			"progress_nudged": false,
+			"checkpoint": checkpoint,
+		})
+
+		if int(data.get("checkpoint", -1)) != checkpoint:
+			data["position"] = pos
+			data["checkpoint_position"] = pos
+			data["time"] = 0.0
+			data["checkpoint_time"] = 0.0
+			data["slow_time"] = 0.0
+			data["slow_cooldown"] = 0.0
+			data["nudged"] = false
+			data["progress_nudged"] = false
+			data["checkpoint"] = checkpoint
+			_stuck_tracker[id] = data
+			continue
+
+		var old_position = data.get("position", pos) as Vector3
+		var checkpoint_position = data.get("checkpoint_position", pos) as Vector3
+		var moved = pos.distance_to(old_position)
+		var checkpoint_distance = pos.distance_to(checkpoint_position)
+		var speed = marble.linear_velocity.length()
+		data["checkpoint_time"] = float(data.get("checkpoint_time", 0.0)) + delta
+		data["slow_cooldown"] = maxf(0.0, float(data.get("slow_cooldown", 0.0)) - delta)
+
+		if checkpoint_distance >= NO_PROGRESS_RADIUS:
+			data["checkpoint_position"] = pos
+			data["checkpoint_time"] = 0.0
+			data["slow_time"] = 0.0
+			data["progress_nudged"] = false
+			checkpoint_distance = 0.0
+
+		if moved < STUCK_MOVE_THRESHOLD and speed < STUCK_SPEED_THRESHOLD:
+			data["time"] = float(data.get("time", 0.0)) + delta
+		else:
+			data["position"] = pos
+			data["time"] = 0.0
+			data["nudged"] = false
+
+		if speed < SLOW_SPEED_THRESHOLD and checkpoint_distance < NO_PROGRESS_RADIUS:
+			data["slow_time"] = float(data.get("slow_time", 0.0)) + delta
+		else:
+			data["slow_time"] = 0.0
+
+		data["checkpoint"] = checkpoint
+
+		var stuck_time = float(data.get("time", 0.0))
+		if stuck_time >= STUCK_OUT_AFTER:
+			marble.out_of_bound()
+			_stuck_tracker.erase(id)
+			continue
+
+		if stuck_time >= STUCK_NUDGE_AFTER and not bool(data.get("nudged", false)):
+			nudge_stuck_marble(marble)
+			data["nudged"] = true
+			data["time"] = STUCK_NUDGE_AFTER
+
+		if (
+			float(data.get("slow_time", 0.0)) >= SLOW_PROGRESS_AFTER
+			and float(data.get("slow_cooldown", 0.0)) <= 0.0
+		):
+			assist_slow_marble(marble)
+			data["slow_time"] = 0.0
+			data["slow_cooldown"] = SLOW_ASSIST_COOLDOWN
+
+		var no_progress_time = float(data.get("checkpoint_time", 0.0))
+		if no_progress_time >= NO_PROGRESS_OUT_AFTER and checkpoint_distance < NO_PROGRESS_RADIUS:
+			marble.out_of_bound()
+			_stuck_tracker.erase(id)
+			continue
+
+		if (
+			no_progress_time >= NO_PROGRESS_NUDGE_AFTER
+			and checkpoint_distance < NO_PROGRESS_RADIUS
+			and not bool(data.get("progress_nudged", false))
+		):
+			nudge_stuck_marble(marble)
+			data["progress_nudged"] = true
+
+		_stuck_tracker[id] = data
+
+
+func assist_slow_marble(marble: Marble) -> void:
+	var direction = get_race_flow_direction(marble.global_position)
+	var spread = Vector3(randf_range(-0.18, 0.18), 0.0, randf_range(-0.18, 0.18))
+	var push = (direction + spread + Vector3.DOWN * 0.2).normalized()
+	marble.set_sleeping(false)
+	if marble.linear_velocity.length() < SLOW_ASSIST_SPEED:
+		marble.set_linear_velocity(push * SLOW_ASSIST_SPEED)
+	else:
+		marble.set_linear_velocity(marble.linear_velocity + push * 0.65)
+	marble.angular_velocity += Vector3(randf_range(-1.2, 1.2), 0.0, randf_range(-1.2, 1.2))
+
+
+func nudge_stuck_marble(marble: Marble) -> void:
+	var direction = get_race_flow_direction(marble.global_position)
+	var spread = Vector3(randf_range(-0.35, 0.35), 0.0, randf_range(-0.35, 0.35))
+	var push = (direction + spread + Vector3.DOWN * 0.15).normalized()
+	marble.global_position = marble.global_position + Vector3.UP * 0.45 + spread
+	marble.set_sleeping(false)
+	marble.set_linear_velocity(push * 4.5)
+
+
+func get_race_flow_direction(position: Vector3) -> Vector3:
+	if _race == null or _race.curve == null or _race.path == null:
+		return Vector3.DOWN
+
+	var curve = _race.curve
+	var point_count = curve.get_point_count()
+	if point_count < 2:
+		return Vector3.DOWN
+
+	var path_transform = _race.path.global_transform
+	var best_index := 0
+	var best_distance := 999999999.0
+	for i in range(point_count):
+		var curve_point = curve.get_point_position(i)
+		var global_point = path_transform.origin + path_transform.basis * curve_point
+		var distance = position.distance_squared_to(global_point)
+		if distance < best_distance:
+			best_distance = distance
+			best_index = i
+
+	var target_index = mini(best_index + 1, point_count - 1)
+	var target_point = curve.get_point_position(target_index)
+	var target = path_transform.origin + path_transform.basis * target_point
+	var direction = target - position
+	if direction.length_squared() < 0.01:
+		direction = Vector3.DOWN
+
+	if direction.y > -0.15:
+		direction.y = -0.15
+	return direction.normalized()
+
+
+func collect_finished_marbles() -> void:
 	for marble in _marbles:
 		if marble is Marble and marble.has_finish() and not _finish_order.has(marble):
 			_finish_order.append(marble)
+
+
+func update_finish_order() -> void:
+	collect_finished_marbles()
 
 	var required_winners = mini(maxi(1, _winner_limit), maxi(1, _active_race_count))
 	if len(_finish_order) >= required_winners:
@@ -491,6 +757,7 @@ func update_finish_order() -> void:
 func complete_race() -> void:
 	if _race_completed:
 		return
+	collect_finished_marbles()
 	_race_completed = true
 	_race_has_started = false
 
@@ -507,6 +774,11 @@ func complete_race() -> void:
 
 func get_winner_payload() -> Array:
 	var winners := []
+	if len(_finish_order) == 0 and _ranking.has_method(&"get_ranked_marbles"):
+		for marble in _ranking.get_ranked_marbles():
+			if marble is Marble and not _finish_order.has(marble):
+				_finish_order.append(marble)
+
 	var max_count = mini(len(_finish_order), maxi(1, _winner_limit))
 	for i in range(max_count):
 		var marble = _finish_order[i] as Marble
@@ -523,6 +795,20 @@ func _load_web_race_data() -> void:
 	try {
 		var data = window.GORGITA_RACE_DATA || window.CORRIDA_DADOS_JSON;
 		if (!data && window.parent) data = window.parent.GORGITA_RACE_DATA || window.parent.CORRIDA_DADOS_JSON;
+		if (!data && window.localStorage) {
+			var stored = window.localStorage.getItem('corrida-race-data');
+			if (stored) {
+				var race = JSON.parse(stored);
+				var participants = Array.isArray(race.participants) ? race.participants : [];
+				data = {
+					jogadores: participants.map(function(player) {
+						return player.displayName || player.username || '';
+					}).filter(Boolean),
+					players: participants,
+					topN: race.numVencedores || race.topN || race.top || 5
+				};
+			}
+		}
 		return typeof data === 'string' ? data : JSON.stringify(data || null);
 	} catch (e) {
 		return '';
@@ -542,6 +828,12 @@ func _load_web_race_data() -> void:
 			var clean_name = String(name).strip_edges()
 			if clean_name != "":
 				names.push_back(clean_name)
+	elif parsed.has("participants") and parsed["participants"] is Array:
+		for player in parsed["participants"]:
+			if player is Dictionary:
+				var clean_name = String(player.get("displayName", player.get("username", ""))).strip_edges()
+				if clean_name != "":
+					names.push_back(clean_name)
 	elif parsed.has("players") and parsed["players"] is Array:
 		for player in parsed["players"]:
 			if player is Dictionary:
@@ -551,6 +843,10 @@ func _load_web_race_data() -> void:
 
 	if parsed.has("topN"):
 		_winner_limit = maxi(1, int(parsed["topN"]))
+	elif parsed.has("numVencedores"):
+		_winner_limit = maxi(1, int(parsed["numVencedores"]))
+	elif parsed.has("top"):
+		_winner_limit = maxi(1, int(parsed["top"]))
 
 	if len(names) > 0:
 		_external_names = names

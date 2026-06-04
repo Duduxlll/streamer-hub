@@ -66,6 +66,20 @@ func more_checkpoint(a: Participant, b: Participant) -> bool:
 	return out
 
 
+func get_ranked_marbles() -> Array:
+	var arr := []
+	for child in get_children():
+		if child is Participant:
+			arr.append(child)
+
+	arr.sort_custom(more_checkpoint)
+
+	var marbles := []
+	for participant in arr:
+		marbles.append(participant.get_marble())
+	return marbles
+
+
 func reset() -> void:
 	for child in get_children():
 		child.call_deferred(&"queue_free")
