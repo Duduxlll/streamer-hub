@@ -1,0 +1,49 @@
+Versão um mapa + integração site final
+
+O que foi feito:
+1. Deixei apenas 1 mapa/peça principal ATIVO na corrida:
+   - forward_down
+
+2. Mantive necessários:
+   - start_line
+   - finish_line
+
+3. Os outros arquivos de peças continuam no projeto para não quebrar UID/import do Godot,
+   mas não entram mais na rotação da corrida.
+
+4. Não desliguei colisão entre bolinhas.
+5. Não limitei velocidade 3x.
+6. Não encurtei para 2/3 peças.
+   A pista usa 10 peças, que é o padrão original do projeto.
+
+7. Removi/desativei o fluxo de explosão:
+   - Explosion node saiu da main.tscn
+   - _explosion não é mais buscado por get_node
+   - explosion_enabled fica false
+   - bloco de explosão no _process fica inativo
+   - toggle de explosão do menu fica escondido/no-op
+
+8. Câmera:
+   - o mouse não gira mais o mapa/câmera.
+   - cursor fica visível.
+   - W/A/S/D ou setas ativa câmera livre caso você esteja seguindo uma bolinha.
+
+9. Classificação:
+   - painel maior e mais alinhado.
+   - scroll na lista.
+   - nomes mais encaixados.
+   - clicar em participante na classificação segue a bolinha dele.
+
+10. Gráfico/desempenho:
+   - render scale 3D = 0.7
+   - MSAA/TAA/FXAA desligados
+   - HiDPI desligado
+   - sombras mais leves/desligadas onde possível
+   - glow/bloom/fog desligados onde encontrado em arquivos textuais
+
+Como testar:
+1. Abra project.godot no Godot.
+2. Aperte F5.
+3. Exporte Web como index.html.
+4. Thread Support desativado.
+5. Teste com o EXEMPLO_CONTRATO_SITE.html ou pelo seu site.

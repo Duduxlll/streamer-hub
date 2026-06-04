@@ -1,0 +1,50 @@
+Versão mapa fixo completo
+
+O que foi corrigido:
+1. Não é mais linha reta repetida.
+2. A pista usa uma sequência fixa de peças já existentes no projeto.
+3. Não sorteia mapas aleatórios.
+4. O mapa fica sempre igual.
+5. Mantive start_line e finish_line.
+6. Usei peças com curva e obstáculos leves:
+   - forward_down
+   - turn_left_2
+   - turn_right_2
+   - hopper
+   - bumper
+   - turn_left_3
+   - turn_right_3
+7. Não deletei fisicamente os outros arquivos para não quebrar import/UID do Godot.
+   Eles só não entram na corrida.
+8. Mantém a integração com o site.
+9. Mantém a colisão entre bolinhas como estava no arquivo base.
+10. Mantém 3x como estava no arquivo base.
+11. Mantém melhorias anteriores:
+   - explosão desativada
+   - mouse não gira câmera
+   - cursor visível
+   - ranking com scroll
+   - clique no ranking para seguir bolinha
+   - render scale 0.7 e anti-aliasing desligado
+
+Sequência fixa do mapa:
+largada
+forward_down
+turn_left_2
+forward_down
+bumper
+turn_right_2
+forward_down
+hopper
+turn_left_3
+forward_down
+turn_right_3
+forward_down
+chegada
+
+Como testar:
+1. Abra project.godot.
+2. Aperte F5.
+3. Se abrir sem erro, exporte Web como index.html.
+4. Thread Support desativado.
+5. Teste pelo seu site ou EXEMPLO_CONTRATO_SITE.html.
