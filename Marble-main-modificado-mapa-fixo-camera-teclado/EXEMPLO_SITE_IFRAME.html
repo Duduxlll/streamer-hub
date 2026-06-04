@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teste Corrida de Bolinhas</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #050a07; color: #ecfff4; font-family: Arial, sans-serif; }
+    .page { display: grid; grid-template-columns: 360px 1fr; width: 100vw; height: 100vh; }
+    aside { padding: 16px; background: #07130c; border-right: 1px solid rgba(124,255,179,.18); overflow: auto; }
+    iframe { width: 100%; height: 100%; border: 0; display: block; background: #050a07; }
+    textarea, select, button { width: 100%; border: 0; border-radius: 12px; padding: 12px; margin: 8px 0; font: inherit; }
+    textarea { height: 260px; background: #031008; color: #ecfff4; border: 1px solid rgba(124,255,179,.18); }
+    select { background: #031008; color: #ecfff4; border: 1px solid rgba(124,255,179,.18); }
+    button { cursor: pointer; font-weight: 900; background: #22e07a; color: #031008; }
+    button.secondary { background: rgba(255,255,255,.10); color: #ecfff4; }
+    .result { white-space: pre-line; color: #7cffb3; margin-top: 12px; line-height: 1.35; }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <aside>
+      <h2>Painel do site</h2>
+      <label>Top ganhadores</label>
+      <select id="top">
+        <option value="3">Top 3</option>
+        <option value="5" selected>Top 5</option>
+        <option value="10">Top 10</option>
+      </select>
+
+      <label>Jogadores</label>
+      <textarea id="players"></textarea>
+
+      <button onclick="sendPlayers()">Enviar jogadores para o jogo</button>
+      <button onclick="startRace()" class="secondary">Iniciar pelo site</button>
+      <div id="result" class="result">Aguardando resultado...</div>
+    </aside>
+
+    <iframe id="game" src="./index.html" allow="fullscreen; autoplay" allowfullscreen></iframe>
+  </main>
+
+  <script>
+    const iframe = document.getElementById("game");
+    const playersEl = document.getElementById("players");
+    const resultEl = document.getElementById("result");
+
+    function demo100() {
+      playersEl.value = Array.from({ length: 100 }, (_, i) => `Jogador ${String(i + 1).padStart(3, "0")}`).join("\n");
+      sendPlayers();
+    }
+
+    function sendPlayers() {
+      const players = playersEl.value.split(/\n|,/).map(v => v.trim()).filter(Boolean);
+      const top = Number(document.getElementById("top").value);
+
+      iframe.contentWindow.postMessage(JSON.stringify({
+        type: "marble:init",
+        payload: { players, top }
+      }), "*");
+    }
+
+    function startRace() {
+      iframe.contentWindow.postMessage(JSON.stringify({
+        type: "marble:start",
+        payload: {}
+      }), "*");
+    }
+
+    window.addEventListener("message", (event) => {
+      let msg;
+      try { msg = JSON.parse(event.data); } catch { return; }
+
+      if (msg.type === "marble:finish") {
+        const winners = msg.payload.winners || [];
+        resultEl.textContent = "Ganhadores:\n" + winners.map(w => `#${w.place} ${w.name}`).join("\n");
+      }
+
+      if (msg.type === "marble:ready") {
+        resultEl.textContent = "Jogo carregado. Pode enviar jogadores.";
+      }
+
+      if (msg.type === "marble:backToTip") {
+        resultEl.textContent += "\n\nVoltar para gorjeta clicado no jogo.";
+      }
+    });
+
+  </script>
+</body>
+</html>
