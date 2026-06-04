@@ -40,7 +40,7 @@ export default function HomePage() {
               <div className="glow-card w-52 h-52 lg:w-64 lg:h-64 rounded-full border-2 border-[#16a34a]/40 overflow-hidden relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="https://static-cdn.jtvnw.net/jtv_user_pictures/8c7083c8-3b8e-4f5e-abe2-d681f5b6df8b-profile_image-300x300.png"
+                  src="/stain-icon.jpg"
                   alt="stainzincs"
                   className="w-full h-full object-cover"
                 />
