@@ -7,7 +7,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { isAdmin } from "@/lib/admins";
 
-const STREAMER_IMG = "https://static-cdn.jtvnw.net/jtv_user_pictures/8c7083c8-3b8e-4f5e-abe2-d681f5b6df8b-profile_image-300x300.png";
+const STREAMER_IMG = "/stain-icon.jpg";
 
 interface StatusData { cadastrosPendentes: number }
 
