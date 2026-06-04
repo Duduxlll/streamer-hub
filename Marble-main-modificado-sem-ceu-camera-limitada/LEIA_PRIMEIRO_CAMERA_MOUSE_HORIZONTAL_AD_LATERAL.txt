@@ -1,0 +1,29 @@
+Versão câmera ajustada
+
+Alterações:
+1. A/D agora movimenta a câmera para esquerda/direita.
+2. A/D não gira mais a câmera.
+3. W/S continua indo para frente/trás.
+4. E/Espaço sobe.
+5. Ctrl/Shift desce.
+6. Alt acelera.
+7. Mouse com botão esquerdo ou direito pressionado gira a câmera só na horizontal.
+8. Movimento vertical do mouse é ignorado.
+9. Isso evita diagonal, câmera torta ou ficar de cabeça para baixo.
+
+Controles:
+- W = frente
+- S = trás
+- A = esquerda
+- D = direita
+- E ou Espaço = subir
+- Ctrl ou Shift = descer
+- Alt = acelerar
+- Botão esquerdo/direito segurado + mover mouse para os lados = girar câmera horizontalmente
+
+Base:
+- mapa fixo completo
+- pool dinâmica
+- não cria 300 bolinhas no início
+- ranking com scroll
+- integração com site

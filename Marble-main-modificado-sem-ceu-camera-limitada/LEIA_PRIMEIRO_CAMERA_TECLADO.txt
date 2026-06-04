@@ -1,0 +1,30 @@
+Versão câmera por teclado
+
+Mudança principal:
+- Removido giro de câmera pelo mouse.
+- Agora a câmera livre gira pelo teclado.
+
+Controles:
+- A ou seta esquerda ou Q = girar câmera para esquerda
+- D ou seta direita = girar câmera para direita
+- W ou seta cima = mover para frente
+- S ou seta baixo = mover para trás
+- E ou Espaço = subir
+- Ctrl ou Shift = descer
+- Alt = acelerar movimento
+
+Também corrigido:
+- Ao clicar num participante do ranking, segue a bolinha.
+- Ao apertar W/A/S/D/setas/E/Ctrl/Shift enquanto segue uma bolinha:
+  a câmera livre começa exatamente da visão atual.
+- Não volta olhando para cima.
+- Não reseta para outro ponto da pista.
+- Mouse solto não mexe câmera.
+- Mouse pressionado também não gira mais câmera.
+
+Base mantida:
+- mapa fixo completo
+- pool dinâmica
+- não cria 300 bolinhas no início
+- integração com site
+- ranking com scroll
