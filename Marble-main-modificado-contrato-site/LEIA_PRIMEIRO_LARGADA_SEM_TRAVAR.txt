@@ -1,0 +1,27 @@
+Versão: live + largada sem travar
+
+O que foi corrigido:
+1. As bolinhas continuam alinhadas, não espalhadas.
+2. A grade da largada ficou mais estreita nas laterais e mais comprida no fundo.
+3. Isso evita que a pontinha da bolinha nasça/caia dentro da parede.
+4. A altura da largada agora usa a escala do mapa:
+   spawn_height = max(4.2, escala * 1.38)
+5. As bolinhas começam com velocidade zerada.
+6. Foi ativado continuous_cd nas bolinhas para reduzir atravessar parede.
+7. O resgate agora corrige bolinha presa na parede lateral/frontal da largada.
+8. Mantém corrida curta e velocidade 1x/2x/3x.
+
+Como testar:
+1. Feche o Godot.
+2. Extraia este ZIP.
+3. Abra project.godot.
+4. Abra scenes/main.tscn.
+5. Aperte F5.
+6. Teste com 100.
+7. Se ainda travar alguma bolinha, mande print bem aproximado da parede onde travou.
+
+Atalhos:
+1 = 1x
+2 = 2x
+3 = 3x
+X = alternar velocidade

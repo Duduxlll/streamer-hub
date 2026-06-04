@@ -1,0 +1,35 @@
+Versão: site pronto / integração limpa
+
+Ajustes feitos:
+1. ESC não abre mais menu de pausa/sair/reiniciar.
+2. Teclas de debug R e T foram bloqueadas no modo integração.
+3. Cursor do mouse fica sempre visível.
+4. Câmera livre não captura mais o mouse.
+5. Removido botão "Demo 100" da tela do Godot.
+6. No final aparece botão "Voltar para gorjeta".
+7. Ao clicar em "Voltar para gorjeta", o Godot manda para o site:
+   marble:backToTip
+   com winners e top.
+8. O ranking lateral ficou com ScrollContainer.
+9. Nomes no ranking ficam mais encaixados e cortam com reticências.
+10. Mantém postMessage para:
+   marble:init
+   marble:start
+   marble:reset
+   marble:speed
+
+Fluxo recomendado:
+1. Seu site recebe nomes do chat.
+2. Seu site manda marble:init para o iframe.
+3. No Godot aparece a tela aguardando/carregados.
+4. Você clica "Iniciar corrida".
+5. Quando completar o Top escolhido, o Godot termina.
+6. Godot manda marble:finish para o site.
+7. Você clica "Voltar para gorjeta".
+8. Godot manda marble:backToTip para o site.
+
+Exportação:
+1. Abra o project.godot deste ZIP.
+2. Aperte F5 para testar.
+3. Exporte Web como index.html.
+4. Thread Support desativado.
