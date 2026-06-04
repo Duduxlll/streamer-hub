@@ -8,6 +8,12 @@ import { isAdmin } from "@/lib/admins";
 interface Participant { username: string; displayName: string; image: string | null; }
 interface RaceData { participants: Participant[]; numVencedores: number; saldoRestante: number; }
 interface Winner { place: number; username: string; displayName: string; image: string | null; }
+interface RacePayload {
+  jogadores: string[];
+  players: Participant[];
+  topN: number;
+  backUrl: string;
+}
 
 function fmtBRL(v: number) { return v.toLocaleString("pt-BR", { minimumFractionDigits: 2 }); }
 function medal(i: number) { return i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}º`; }
@@ -45,10 +51,17 @@ export default function CorridaPage() {
       if (!data.participants?.length) { setErroDados(true); return; }
       raceDataRef.current = data;
       setRaceData(data);
-      // Disponibiliza pro Godot ler (Bridge.gd lê window.parent.CORRIDA_DADOS_JSON)
+      // Disponibiliza pro Godot exportado ler pela página pai.
       const jogadores = data.participants.map(p => p.displayName || p.username);
-      (window as Window & { CORRIDA_DADOS_JSON?: string }).CORRIDA_DADOS_JSON =
-        JSON.stringify({ jogadores, topN: data.numVencedores });
+      const payload: RacePayload = {
+        jogadores,
+        players: data.participants,
+        topN: data.numVencedores,
+        backUrl: "/admin/gorjeta",
+      };
+      const w = window as Window & { CORRIDA_DADOS_JSON?: string; GORGITA_RACE_DATA?: RacePayload };
+      w.GORGITA_RACE_DATA = payload;
+      w.CORRIDA_DADOS_JSON = JSON.stringify(payload);
       setIframeReady(true);
     } catch { setErroDados(true); }
     fetch("/api/config").then(r => r.ok ? r.json() : null).then(d => setGgpixOk(!!d?.ggpix?.ok)).catch(() => {});
@@ -95,10 +108,15 @@ export default function CorridaPage() {
         const rd = raceDataRef.current;
         if (rd && iframeRef.current?.contentWindow) {
           const jogadores = rd.participants.map(p => p.displayName || p.username);
-          iframeRef.current.contentWindow.postMessage(JSON.stringify({ type: "marble:init", payload: { players: jogadores, top: rd.numVencedores } }), "*");
+          iframeRef.current.contentWindow.postMessage(JSON.stringify({
+            type: "marble:init",
+            payload: { players: jogadores, top: rd.numVencedores },
+          }), "*");
         }
-      } else if (data.type === "marble:finish" || data.type === "marble:backToTip") {
+      } else if (data.type === "marble:finish") {
         handleWinners(data.payload?.winners ?? []);
+      } else if (data.type === "marble:backToTip") {
+        router.push("/admin/gorjeta");
       }
     }
     window.addEventListener("message", onMsg);
@@ -108,7 +126,7 @@ export default function CorridaPage() {
       window.removeEventListener("message", onMsg);
       delete (window as Window & { corridaResultado?: unknown }).corridaResultado;
     };
-  }, [handleWinners]);
+  }, [handleWinners, router]);
 
   async function enviar(modo: "auto" | "fila") {
     if (enviado || enviando) return;
@@ -122,7 +140,11 @@ export default function CorridaPage() {
         if (!r.ok) allOk = false;
       } catch { allOk = false; }
     }
-    setEnviando(""); if (allOk) setEnviado(true);
+    setEnviando("");
+    if (allOk) {
+      setEnviado(true);
+      if (modo === "fila") router.push("/admin/gorjeta/pagamentos");
+    }
   }
 
   const total = valores.reduce((s, v) => s + (v || 0), 0);
@@ -144,7 +166,7 @@ export default function CorridaPage() {
     <div className="fixed inset-0 z-[100] bg-[#050d08] flex flex-col">
       {/* Barra superior */}
       <div className="flex-shrink-0 px-4 py-2.5 flex items-center gap-3 border-b border-white/10" style={{ background: "rgba(5,13,8,0.98)" }}>
-        <button onClick={() => router.push("/admin/gorjeta")} className="text-gray-400 hover:text-white text-sm font-bold transition-colors">← Gorjeta</button>
+        <button onClick={() => router.push("/admin/gorjeta")} className="text-gray-400 hover:text-white text-sm font-bold transition-colors">← Gorgita / Gorjeta</button>
         <span className="text-white font-black flex-1 truncate text-sm">🏁 Corrida de Bolinhas 3D</span>
         {raceData && <span className="text-[11px] text-gray-500">{raceData.participants.length} na pista · Top {raceData.numVencedores}</span>}
       </div>

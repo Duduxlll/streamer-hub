@@ -645,9 +645,9 @@ export default function AdminGorjetaPage() {
       numVencedores: nVenc,
       saldoRestante: sessao.saldoRestante,
     }));
-    // Carregamento COMPLETO (não navegação interna) — necessário para ativar o
-    // cross-origin isolation (COOP/COEP) que estabiliza o jogo Godot.
-    window.location.assign("/admin/corrida");
+    // Abre em uma guia separada para o minigame ficar limpo na tela da live.
+    const popup = window.open("/admin/corrida", "_blank");
+    if (!popup) window.location.assign("/admin/corrida");
   }
 
   async function fecharSessao() { const r = await apiCall({ action: "fechar-sessao" }); if (r) flash("Gorjeta encerrada", "ok"); }
@@ -1037,7 +1037,7 @@ export default function AdminGorjetaPage() {
                       <button onClick={iniciarCorrida} disabled={sessao.participantes.length === 0}
                         className="w-full py-3 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
                         style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", boxShadow: "0 4px 20px rgba(255,186,0,0.2)" }}>
-                        {sessao.participantes.length === 0 ? "Aguardando inscritos..." : "🏁 Abrir corrida 3D →"}
+                        {sessao.participantes.length === 0 ? "Aguardando inscritos..." : "🏁 Abrir corrida 3D em nova guia →"}
                       </button>
                     </div>
                   )}
