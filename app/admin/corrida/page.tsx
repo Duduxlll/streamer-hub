@@ -6,17 +6,25 @@ import { useSession } from "next-auth/react";
 import { isAdmin } from "@/lib/admins";
 
 interface Participant { username: string; displayName: string; image: string | null; }
-interface RaceData { participants: Participant[]; numVencedores: number; saldoRestante: number; }
+interface RaceData { participants: Participant[]; numVencedores: number; topN?: number; top?: number; maxVencedores?: number; saldoRestante: number; }
 interface Winner { place: number; username: string; displayName: string; image: string | null; }
 interface RacePayload {
   jogadores: string[];
+  participants: Participant[];
   players: Participant[];
   topN: number;
+  numVencedores: number;
+  top: number;
+  maxVencedores: number;
   backUrl: string;
 }
 
 function fmtBRL(v: number) { return v.toLocaleString("pt-BR", { minimumFractionDigits: 2 }); }
 function medal(i: number) { return i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}º`; }
+function normalizarTop(data: RaceData) {
+  const raw = Number(data.numVencedores || data.topN || data.top || data.maxVencedores || 1);
+  return Math.max(1, Math.min(Number.isFinite(raw) ? Math.floor(raw) : 1, Math.max(1, data.participants.length)));
+}
 
 export default function CorridaPage() {
   const { data: session, status } = useSession();
@@ -49,17 +57,24 @@ export default function CorridaPage() {
     try {
       const data = JSON.parse(raw) as RaceData;
       if (!data.participants?.length) { setErroDados(true); return; }
-      raceDataRef.current = data;
-      setRaceData(data);
+      const top = normalizarTop(data);
+      const normalizedData: RaceData = { ...data, numVencedores: top, topN: top, top, maxVencedores: top };
+      raceDataRef.current = normalizedData;
+      setRaceData(normalizedData);
       // Disponibiliza pro Godot exportado ler pela página pai.
-      const jogadores = data.participants.map(p => p.displayName || p.username);
+      const jogadores = normalizedData.participants.map(p => p.displayName || p.username);
       const payload: RacePayload = {
         jogadores,
-        players: data.participants,
-        topN: data.numVencedores,
+        participants: normalizedData.participants,
+        players: normalizedData.participants,
+        topN: top,
+        numVencedores: top,
+        top,
+        maxVencedores: top,
         backUrl: "/admin/gorjeta",
       };
-      const w = window as Window & { CORRIDA_DADOS_JSON?: string; GORGITA_RACE_DATA?: RacePayload };
+      const w = window as Window & { CORRIDA_DADOS_JSON?: string; GORGITA_RACE_DATA?: RacePayload; GORJETA_RACE_DATA?: RacePayload };
+      w.GORJETA_RACE_DATA = payload;
       w.GORGITA_RACE_DATA = payload;
       w.CORRIDA_DADOS_JSON = JSON.stringify(payload);
       setIframeReady(true);
@@ -110,7 +125,15 @@ export default function CorridaPage() {
           const jogadores = rd.participants.map(p => p.displayName || p.username);
           iframeRef.current.contentWindow.postMessage(JSON.stringify({
             type: "marble:init",
-            payload: { players: jogadores, top: rd.numVencedores },
+            payload: {
+              jogadores,
+              players: rd.participants,
+              participants: rd.participants,
+              topN: rd.numVencedores,
+              numVencedores: rd.numVencedores,
+              top: rd.numVencedores,
+              maxVencedores: rd.numVencedores,
+            },
           }), "*");
         }
       } else if (data.type === "marble:finish") {
@@ -155,8 +178,8 @@ export default function CorridaPage() {
     return (
       <div className="fixed inset-0 z-[100] bg-[#060e0a] flex items-center justify-center">
         <div className="text-center space-y-3">
-          <p className="text-gray-400">Nenhum inscrito carregado. Abra pela <strong className="text-white">Gorgita → aba Corrida</strong>.</p>
-          <button onClick={() => router.push("/admin/gorjeta")} className="px-5 py-2.5 rounded-xl font-black text-sm text-black" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>← Voltar à Gorgita</button>
+          <p className="text-gray-400">Nenhum inscrito carregado. Abra pela <strong className="text-white">Gorjeta → aba Corrida</strong>.</p>
+          <button onClick={() => router.push("/admin/gorjeta")} className="px-5 py-2.5 rounded-xl font-black text-sm text-black" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>← Voltar para Gorjeta</button>
         </div>
       </div>
     );
@@ -166,7 +189,7 @@ export default function CorridaPage() {
     <div className="fixed inset-0 z-[100] bg-[#050d08] flex flex-col">
       {/* Barra superior */}
       <div className="flex-shrink-0 px-4 py-2.5 flex items-center gap-3 border-b border-white/10" style={{ background: "rgba(5,13,8,0.98)" }}>
-        <button onClick={() => router.push("/admin/gorjeta")} className="text-gray-400 hover:text-white text-sm font-bold transition-colors">← Gorgita</button>
+        <button onClick={() => router.push("/admin/gorjeta")} className="text-gray-400 hover:text-white text-sm font-bold transition-colors">← Voltar para Gorjeta</button>
         <span className="text-white font-black flex-1 truncate text-sm">🏁 Corrida do stainzin</span>
         {raceData && <span className="text-[11px] text-gray-500">{raceData.participants.length} na pista · Top {raceData.numVencedores}</span>}
       </div>
@@ -245,7 +268,7 @@ export default function CorridaPage() {
               {enviado ? (
                 <div className="text-center space-y-3 py-2">
                   <p className="text-lg font-black text-green-400">✓ Pagamentos registrados!</p>
-                  <button onClick={() => router.push("/admin/gorjeta")} className="w-full py-3.5 rounded-2xl font-black text-sm text-black" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>← Voltar para Gorgita</button>
+                  <button onClick={() => router.push("/admin/gorjeta")} className="w-full py-3.5 rounded-2xl font-black text-sm text-black" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>← Voltar para Gorjeta</button>
                 </div>
               ) : (
                 <div className="space-y-2.5">
@@ -258,7 +281,7 @@ export default function CorridaPage() {
                       {enviando === "fila" ? "..." : "💳 Pagamento manual"}
                     </button>
                   </div>
-                  <button onClick={() => router.push("/admin/gorjeta")} className="w-full py-2.5 rounded-2xl font-black text-xs hover:bg-white/5 transition-colors" style={{ color: "#6b7280" }}>← Voltar para Gorgita (sem pagar agora)</button>
+                  <button onClick={() => router.push("/admin/gorjeta")} className="w-full py-2.5 rounded-2xl font-black text-xs hover:bg-white/5 transition-colors" style={{ color: "#6b7280" }}>← Voltar para Gorjeta (sem pagar agora)</button>
                 </div>
               )}
             </div>

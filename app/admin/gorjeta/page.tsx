@@ -482,7 +482,8 @@ export default function AdminGorjetaPage() {
   const tab = (searchParams.get("tab") as "sessao" | "cadastros" | "historico") ?? "sessao";
   const [cadastroFiltro, setCadastroFiltro] = useState<"pendente" | "aprovado" | "rejeitado">("pendente");
   const [sessaoTab, setSessaoTab] = useState<"sortear" | "manual" | "crash" | "corrida">("sortear");
-  const [corridaNum, setCorridaNum] = useState("5");
+  const [corridaNum, setCorridaNum] = useState("");
+  const corridaSessaoIdRef = useRef<string | null>(null);
   // Crash
   const [crashSel, setCrashSel] = useState<ParticipanteSessao | null>(null);
   const [crashAposta, setCrashAposta] = useState("");
@@ -530,6 +531,20 @@ export default function AdminGorjetaPage() {
     const iv = setInterval(fetchAll, 4000);
     return () => clearInterval(iv);
   }, [status, fetchAll]);
+
+  useEffect(() => {
+    if (!sessao) {
+      corridaSessaoIdRef.current = null;
+      return;
+    }
+    const participantes = Math.max(1, sessao.participantes.length);
+    const topSessao = sessao.maxVencedores > 0 ? sessao.maxVencedores : Math.min(5, participantes);
+    const top = Math.max(1, Math.min(topSessao, participantes));
+    if (corridaSessaoIdRef.current !== sessao.id || corridaNum.trim() === "") {
+      corridaSessaoIdRef.current = sessao.id;
+      setCorridaNum(String(top));
+    }
+  }, [sessao, corridaNum]);
 
   // GGPix configurado? (controla o botão "PIX automático" do Crash)
   useEffect(() => {
@@ -639,10 +654,13 @@ export default function AdminGorjetaPage() {
 
   function iniciarCorrida() {
     if (!sessao || sessao.participantes.length === 0) { flash("Sem inscritos na sessão", "err"); return; }
-    const nVenc = Math.max(1, Math.min(parseInt(corridaNum) || 1, sessao.participantes.length));
+    const nVenc = Math.max(1, Math.min(parseInt(corridaNum) || sessao.maxVencedores || 1, sessao.participantes.length));
     localStorage.setItem("corrida-race-data", JSON.stringify({
       participants: sessao.participantes.map(p => ({ username: p.username, displayName: p.displayName, image: p.image })),
       numVencedores: nVenc,
+      topN: nVenc,
+      top: nVenc,
+      maxVencedores: nVenc,
       saldoRestante: sessao.saldoRestante,
     }));
     // Abre em uma guia separada para o minigame ficar limpo na tela da live.
