@@ -1,0 +1,15 @@
+Correção aplicada:
+
+Erro corrigido:
+Function "clear_previous_pieces()" not found in base self.
+
+O que fiz:
+- Adicionei a função clear_previous_pieces() em scripts/race.gd.
+- Ela remove as peças antigas da pista antes de gerar uma nova corrida.
+- Ela mantém o Path3D e limpa o curve.
+- Ela reseta _previous_piece, _previous_piece_orientation e _previous_rotation_index.
+
+Como testar:
+1. Abra este projeto no Godot.
+2. Aperte F5.
+3. Se abrir sem erro, exporte Web novamente como index.html.
