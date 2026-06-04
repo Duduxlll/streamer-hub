@@ -21,8 +21,19 @@ interface RacePayload {
 
 function fmtBRL(v: number) { return v.toLocaleString("pt-BR", { minimumFractionDigits: 2 }); }
 function medal(i: number) { return i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i + 1}º`; }
-function normalizarTop(data: RaceData) {
-  const raw = Number(data.numVencedores || data.topN || data.top || data.maxVencedores || 1);
+function topValido(value: unknown) {
+  const n = Number(value || 0);
+  return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+}
+function normalizarTop(data: RaceData, urlTop?: number) {
+  const fromUrl = topValido(urlTop);
+  const raw = fromUrl || Math.max(
+    topValido(data.numVencedores),
+    topValido(data.topN),
+    topValido(data.top),
+    topValido(data.maxVencedores),
+    1,
+  );
   return Math.max(1, Math.min(Number.isFinite(raw) ? Math.floor(raw) : 1, Math.max(1, data.participants.length)));
 }
 
@@ -57,7 +68,8 @@ export default function CorridaPage() {
     try {
       const data = JSON.parse(raw) as RaceData;
       if (!data.participants?.length) { setErroDados(true); return; }
-      const top = normalizarTop(data);
+      const urlTop = Number(new URLSearchParams(window.location.search).get("top") || 0);
+      const top = normalizarTop(data, urlTop);
       const normalizedData: RaceData = { ...data, numVencedores: top, topN: top, top, maxVencedores: top };
       raceDataRef.current = normalizedData;
       setRaceData(normalizedData);
@@ -199,7 +211,7 @@ export default function CorridaPage() {
         {iframeReady && (
           <iframe
             ref={iframeRef}
-            src="/marble-web/index.html"
+            src={`/marble-web/index.html?top=${raceData?.numVencedores ?? 1}`}
             className="absolute inset-0 w-full h-full border-0"
             allow="autoplay; fullscreen; gamepad"
             title="Corrida do stainzin" />

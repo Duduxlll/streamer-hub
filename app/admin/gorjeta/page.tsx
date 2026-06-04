@@ -664,8 +664,9 @@ export default function AdminGorjetaPage() {
       saldoRestante: sessao.saldoRestante,
     }));
     // Abre em uma guia separada para o minigame ficar limpo na tela da live.
-    const popup = window.open("/admin/corrida", "_blank");
-    if (!popup) window.location.assign("/admin/corrida");
+    const corridaUrl = `/admin/corrida?top=${nVenc}`;
+    const popup = window.open(corridaUrl, "_blank");
+    if (!popup) window.location.assign(corridaUrl);
   }
 
   async function fecharSessao() { const r = await apiCall({ action: "fechar-sessao" }); if (r) flash("Gorjeta encerrada", "ok"); }

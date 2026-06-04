@@ -793,14 +793,43 @@ func _load_web_race_data() -> void:
 	var raw = _eval_js("""
 (function() {
 	try {
+		function readTopFromSearch(search) {
+			try {
+				var value = new URLSearchParams(search || '').get('top');
+				var top = Number(value || 0);
+				return Number.isFinite(top) && top > 0 ? Math.floor(top) : 0;
+			} catch (e) {
+				return 0;
+			}
+		}
+
+		function biggestTop(data, fallback) {
+			var out = Number(fallback || 0);
+			['numVencedores', 'topN', 'top', 'maxVencedores'].forEach(function(key) {
+				var value = Number(data && data[key] || 0);
+				if (Number.isFinite(value) && value > out) out = value;
+			});
+			return Math.floor(out);
+		}
+
+		var urlTop = readTopFromSearch(window.location.search);
+		try {
+			if (!urlTop && window.parent) urlTop = readTopFromSearch(window.parent.location.search);
+		} catch (e) {}
+
 		var data = window.GORJETA_RACE_DATA || window.GORGITA_RACE_DATA || window.CORRIDA_DADOS_JSON;
 		if (!data && window.parent) data = window.parent.GORJETA_RACE_DATA || window.parent.GORGITA_RACE_DATA || window.parent.CORRIDA_DADOS_JSON;
+		if (typeof data === 'string') {
+			try {
+				data = JSON.parse(data);
+			} catch (e) {}
+		}
 		if (!data && window.localStorage) {
 			var stored = window.localStorage.getItem('corrida-race-data');
 			if (stored) {
 				var race = JSON.parse(stored);
 				var participants = Array.isArray(race.participants) ? race.participants : [];
-				var top = Number(race.numVencedores || race.topN || race.top || race.maxVencedores || 5);
+				var top = urlTop || biggestTop(race, 5);
 				data = {
 					jogadores: participants.map(function(player) {
 						return player.displayName || player.username || '';
@@ -812,6 +841,15 @@ func _load_web_race_data() -> void:
 					top: top,
 					maxVencedores: top
 				};
+			}
+		}
+		if (data && typeof data === 'object') {
+			var normalizedTop = urlTop || biggestTop(data, 0);
+			if (normalizedTop > 0) {
+				data.topN = normalizedTop;
+				data.numVencedores = normalizedTop;
+				data.top = normalizedTop;
+				data.maxVencedores = normalizedTop;
 			}
 		}
 		return typeof data === 'string' ? data : JSON.stringify(data || null);
@@ -846,10 +884,12 @@ func _load_web_race_data() -> void:
 				if clean_name != "":
 					names.push_back(clean_name)
 
-	for key in ["topN", "numVencedores", "top", "maxVencedores"]:
+	var parsed_winner_limit := 0
+	for key in ["numVencedores", "topN", "top", "maxVencedores"]:
 		if parsed.has(key):
-			_winner_limit = maxi(1, int(parsed[key]))
-			break
+			parsed_winner_limit = maxi(parsed_winner_limit, int(parsed[key]))
+	if parsed_winner_limit > 0:
+		_winner_limit = maxi(1, parsed_winner_limit)
 
 	if len(names) > 0:
 		_external_names = names
