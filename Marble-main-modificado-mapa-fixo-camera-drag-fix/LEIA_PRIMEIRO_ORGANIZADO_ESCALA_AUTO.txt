@@ -1,0 +1,25 @@
+Versão: organizado + escala automática
+
+O que foi corrigido nesta versão:
+1. As bolinhas NÃO ficam mais espalhadas no ar.
+2. A largada usa grade organizada, em linha/coluna, dentro da caixa.
+3. As bolinhas nascem mais baixas, perto do chão da largada.
+4. A pista inteira usa a mesma escala.
+5. Não tem mais primeira peça gigante e o resto menor.
+6. O tamanho do mapa aumenta automaticamente pela quantidade de bolinhas:
+   - até 80: escala 2.6
+   - até 120: escala 3.0
+   - até 180: escala 3.45
+   - acima disso: escala 3.9
+7. A quantidade de blocos do mapa também aumenta.
+8. O resgate da largada não joga as bolinhas no ar; ele recoloca em grade baixa.
+
+Como testar:
+1. Abra no Godot 4.4.
+2. Abra scenes/main.tscn.
+3. Aperte F5.
+4. Teste primeiro com 100.
+5. Depois teste com 150 ou 200.
+
+Observação:
+Se 200 ficar pesado, é normal. Para live, 100 a 150 deve ficar mais bonito e mais estável.

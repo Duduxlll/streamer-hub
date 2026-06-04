@@ -1,0 +1,85 @@
+[gd_scene load_steps=8 format=3 uid="uid://bxmtpk5gebd06"]
+
+[ext_resource type="Script" uid="uid://b5efwlfhv53v5" path="res://scripts/main.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://1ni00kklpf4b" path="res://scenes/gui/overlay.tscn" id="2"]
+[ext_resource type="PackedScene" uid="uid://b8obdevmnmamd" path="res://scenes/race.tscn" id="3"]
+[ext_resource type="PackedScene" uid="uid://4g5aorgnd1hu" path="res://scenes/marble.tscn" id="5"]
+[ext_resource type="PackedScene" uid="uid://bh0nd3c40wf75" path="res://scenes/gui/menu.tscn" id="7"]
+[ext_resource type="PackedScene" uid="uid://butiacoqyc0um" path="res://scenes/podium.tscn" id="8_q3udf"]
+[ext_resource type="PackedScene" uid="uid://cr0ipqbbhw6fv" path="res://scenes/gui/countdown.tscn" id="9"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1")
+
+[node name="DirectionalLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.803353, 0.52654, 0.27817, -0.327201, -3.15539e-08, 0.944955, 0.497557, -0.85015, 0.172285, 5.23546, 1.26289, 0)
+
+[node name="Overlay" parent="." instance=ExtResource("2")]
+unique_name_in_owner = true
+visible = false
+mouse_filter = 2
+
+[node name="Menu" parent="." instance=ExtResource("7")]
+unique_name_in_owner = true
+
+[node name="Countdown" parent="." instance=ExtResource("9")]
+unique_name_in_owner = true
+visible = false
+
+[node name="Race" parent="." instance=ExtResource("3")]
+unique_name_in_owner = true
+
+[node name="MarblePool" type="Node3D" parent="." groups=["marble_pool"]]
+unique_name_in_owner = true
+
+[node name="Marble1" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble2" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble3" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble4" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble5" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble6" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble7" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble8" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble9" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble10" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble11" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble12" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble13" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Marble14" parent="MarblePool" instance=ExtResource("5")]
+visible = false
+
+[node name="Podium" parent="." instance=ExtResource("8_q3udf")]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 30, 0)
+visible = false
+
+[node name="Timer" type="Timer" parent="."]
+unique_name_in_owner = true
+wait_time = 10.0
+one_shot = true

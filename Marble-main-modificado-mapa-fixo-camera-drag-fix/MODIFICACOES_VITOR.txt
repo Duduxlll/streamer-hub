@@ -1,0 +1,37 @@
+MODIFICAÇÕES FEITAS
+
+1. Câmera livre adicionada
+- Durante a corrida, a câmera livre fica ativada por padrão.
+- Mouse: olhar para qualquer lado.
+- W/A/S/D ou setas: movimentar.
+- E ou Espaço: subir.
+- Shift ou Ctrl: descer.
+- Alt: acelerar movimento.
+- Tecla C: alternar entre câmera livre e câmera da bolinha.
+- Tecla Tab: trocar a bolinha focada e entrar na câmera da bolinha.
+- Esc: pausa.
+
+2. Menus em português
+- Botões principais traduzidos.
+- Textos do menu traduzidos.
+- Ranking virou Classificação.
+- Nome do projeto virou Corrida de Bolinhas.
+
+3. Mais bolinhas
+- O projeto agora cria uma piscina de até 200 bolinhas automaticamente.
+- No campo de nomes, você pode digitar:
+  - nomes separados por vírgula
+  - nomes separados por linha
+  - ou apenas um número, exemplo: 100
+- Se digitar 100, o jogo gera Jogador 001 até Jogador 100.
+- Limite atual: 200 bolinhas.
+
+4. Melhorias técnicas
+- Posições iniciais viraram uma grade maior para caber mais bolinhas.
+- Cada bolinha duplica o material para manter cores próprias.
+- A câmera livre usa script próprio, mais direto e fácil de controlar.
+
+IMPORTANTE
+
+Eu não exportei o jogo final porque isso precisa do Godot no PC.
+Abra a pasta no Godot 4.4, rode com F5 e teste.
