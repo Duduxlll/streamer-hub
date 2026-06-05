@@ -33,7 +33,7 @@ export interface TransacaoGorjeta {
   displayName: string;
   valor: number;
   status: "enviado" | "falhou";
-  tipo: "sorteio" | "manual";
+  tipo: "sorteio" | "manual" | "automatico";
   timestamp: number;
   txid?: string;
   e2eid?: string;
@@ -384,6 +384,15 @@ export async function salvarPagamentos(
   return sessao;
 }
 
+export async function liberarVencedoresSorteio(): Promise<SessaoGorjeta | null> {
+  const sessao = await loadSessao();
+  if (!sessao) return null;
+  sessao.status = "aberta";
+  sessao.vencedores = [];
+  await saveSessao(sessao);
+  return sessao;
+}
+
 export async function adicionarParticipanteTeste(
   username: string,
   displayName: string,
@@ -406,6 +415,7 @@ export async function adicionarParticipanteTeste(
 export async function registrarManual(
   username: string, displayName: string, valor: number,
   result: { status: "enviado" | "falhou"; txid?: string; e2eid?: string; erro?: string },
+  tipo: TransacaoGorjeta["tipo"] = "manual",
 ): Promise<SessaoGorjeta | null> {
   const sessao = await loadSessao();
   if (!sessao) return null;
@@ -413,7 +423,7 @@ export async function registrarManual(
   const t: TransacaoGorjeta = {
     id: `m_${Date.now()}_${Math.random().toString(36).slice(2)}_${username}`,
     username, displayName, valor,
-    status: result.status, tipo: "manual",
+    status: result.status, tipo,
     timestamp: Date.now(),
     txid: result.txid, e2eid: result.e2eid, erro: result.erro,
   };

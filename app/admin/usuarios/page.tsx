@@ -12,6 +12,12 @@ function fmtDuration(ms: number): string {
   return `${h}h`;
 }
 
+function tipoGanhoMeta(tipo: string) {
+  if (tipo === "sorteio") return { label: "Sorteio", bg: "rgba(255,186,0,0.1)", color: "#ffba00" };
+  if (tipo === "automatico") return { label: "GGPix", bg: "rgba(34,197,94,0.12)", color: "#4ade80" };
+  return { label: "Manual", bg: "rgba(139,92,246,0.15)", color: "#c4b5fd" };
+}
+
 function Avatar({ user }: { user: SiteUser }) {
 
   return (
@@ -77,8 +83,8 @@ function HistoricoModal({ twitchLogin, onClose }: { twitchLogin: string; onClose
               <div>
                 <p className="text-xs text-gray-500">{fmtDate(g.abertaEm)}</p>
                 <span className="text-[10px] font-black px-1.5 py-0.5 rounded"
-                  style={{ background: g.tipo === "sorteio" ? "rgba(255,186,0,0.1)" : "rgba(139,92,246,0.15)", color: g.tipo === "sorteio" ? "#ffba00" : "#4ade80" }}>
-                  {g.tipo}
+                  style={{ background: tipoGanhoMeta(g.tipo).bg, color: tipoGanhoMeta(g.tipo).color }}>
+                  {tipoGanhoMeta(g.tipo).label}
                 </span>
               </div>
               <span className="text-sm font-black text-green-400">R$ {g.valor.toFixed(2)}</span>

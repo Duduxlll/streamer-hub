@@ -4,7 +4,7 @@ import { isAdmin } from "@/lib/admins";
 import {
   getCadastros, getCadastro, cadastrar, aprovarCadastro, rejeitarCadastro, editarCpfCadastro, editarChaveCadastro, deletarCadastro,
   getScreenshot, getSessao, abrirSessao, entrarSessao, sortearGorjeta,
-  salvarPagamentos, registrarManual, adicionarParticipanteTeste, fecharSessaoSemPagar, limparSessao, limparInscritosSessao,
+  salvarPagamentos, liberarVencedoresSorteio, registrarManual, adicionarParticipanteTeste, fecharSessaoSemPagar, limparSessao, limparInscritosSessao,
   getHistoricoGorjeta, limparHistorico, mascarCpf, normalizarChave,
   getPagamentos, adicionarPagamentos, atualizarStatusPagamento, removerPagamento, limparPagamentosFinalizados,
   type ResultadoPagamento, type TipoChavePix,
@@ -256,11 +256,11 @@ export async function POST(req: NextRequest) {
       result = { status: "enviado", txid: externalId };
     } catch (err) {
       const erroMsg = err instanceof Error ? err.message : "Erro";
-      console.error("[gorjeta/manual] Falha PIX para", username, "—", erroMsg);
+      console.error("[gorjeta/automatico] Falha PIX para", username, "—", erroMsg);
       result = { status: "falhou", erro: erroMsg };
     }
 
-    const sessaoAtualizada = await registrarManual(participante.username, participante.displayName, valorNum, result);
+    const sessaoAtualizada = await registrarManual(participante.username, participante.displayName, valorNum, result, "automatico");
     return NextResponse.json({ ok: true, result, sessao: sessaoAtualizada }, { headers: NO_CACHE });
   }
 
@@ -299,16 +299,7 @@ export async function POST(req: NextRequest) {
       tipo:        "sorteio" as const,
     })));
 
-
-    const committed: ResultadoPagamento[] = sessao.vencedores.map(v => ({
-      username:    v.username,
-      displayName: v.displayName,
-      cpf:         v.cpf,
-      nomeCompleto: v.nomeCompleto,
-      status:      "enviado" as const,
-      txid:        `fila-${v.username}-${Date.now()}`,
-    }));
-    const sessaoFinal = await salvarPagamentos(committed, sessao.valorUnitario);
+    const sessaoFinal = await liberarVencedoresSorteio();
     return NextResponse.json({ ok: true, sessao: sessaoFinal }, { headers: NO_CACHE });
   }
 
@@ -331,7 +322,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Saldo insuficiente (disponível: R$ ${sessao.saldoRestante.toFixed(2)})` }, { status: 400 });
     }
 
-    await adicionarPagamentos([{
+    const pagamentos = await adicionarPagamentos([{
       username:    participante.username,
       displayName: participante.displayName,
       pixKey:      participante.cpf,
@@ -339,13 +330,7 @@ export async function POST(req: NextRequest) {
       valor:       valorNum,
       tipo:        "manual" as const,
     }]);
-
-
-    const sessaoAtualizada = await registrarManual(
-      participante.username, participante.displayName, valorNum,
-      { status: "enviado", txid: `fila-${participante.username}-${Date.now()}` },
-    );
-    return NextResponse.json({ ok: true, sessao: sessaoAtualizada }, { headers: NO_CACHE });
+    return NextResponse.json({ ok: true, pagamento: pagamentos[0], sessao }, { headers: NO_CACHE });
   }
 
   if (action === "fila-enviar") {
@@ -364,7 +349,8 @@ export async function POST(req: NextRequest) {
     try {
       await enviarPix(pag.pixKey, pag.tipoChave, pag.valor, externalId);
       await atualizarStatusPagamento(id, "enviado");
-      return NextResponse.json({ ok: true, status: "enviado" }, { headers: NO_CACHE });
+      const sessaoAtualizada = await registrarManual(pag.username, pag.displayName, pag.valor, { status: "enviado", txid: externalId }, "automatico");
+      return NextResponse.json({ ok: true, status: "enviado", sessao: sessaoAtualizada }, { headers: NO_CACHE });
     } catch (err) {
       const erroMsg = err instanceof Error ? err.message : "Erro desconhecido";
       await atualizarStatusPagamento(id, "falhou", erroMsg);
@@ -375,8 +361,16 @@ export async function POST(req: NextRequest) {
   if (action === "fila-marcar-pago") {
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const ok = await atualizarStatusPagamento(String(body.id ?? ""), "enviado");
-    return NextResponse.json({ ok }, { headers: NO_CACHE });
+    const id = String(body.id ?? "");
+    const lista = await getPagamentos();
+    const pag = lista.find(p => p.id === id);
+    if (!pag) return NextResponse.json({ error: "Pagamento não encontrado" }, { status: 404 });
+    if (pag.status === "enviado") return NextResponse.json({ ok: true }, { headers: NO_CACHE });
+    const ok = await atualizarStatusPagamento(id, "enviado");
+    const sessaoAtualizada = ok
+      ? await registrarManual(pag.username, pag.displayName, pag.valor, { status: "enviado", txid: `manual-${id}` }, "manual")
+      : null;
+    return NextResponse.json({ ok, sessao: sessaoAtualizada }, { headers: NO_CACHE });
   }
 
   if (action === "fila-remover") {

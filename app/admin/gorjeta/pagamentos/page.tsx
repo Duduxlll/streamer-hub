@@ -10,6 +10,11 @@ function fmtDate(ts: number) {
   return new Date(ts).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
 }
 
+function tipoPagamentoMeta(tipo: PagamentoPendente["tipo"]) {
+  if (tipo === "sorteio") return { label: "Sorteio manual", bg: "rgba(255,186,0,0.1)", color: "#ffba00" };
+  return { label: "Pagamento manual", bg: "rgba(139,92,246,0.15)", color: "#c4b5fd" };
+}
+
 function StatusBadge({ status }: { status: PagamentoPendente["status"] }) {
   const map = {
     pendente: { label: "Pendente", color: "#ffba00", bg: "rgba(255,186,0,0.12)",  border: "rgba(255,186,0,0.3)"  },
@@ -207,8 +212,8 @@ function PagamentoCard({ p, onEnviar, onRemover, busy }: {
             <span className="text-sm font-black text-white">{p.displayName}</span>
             <StatusBadge status={p.status} />
             <span className="text-[10px] px-1.5 py-0.5 rounded font-black"
-              style={{ background: p.tipo === "sorteio" ? "rgba(255,186,0,0.1)" : "rgba(139,92,246,0.15)", color: p.tipo === "sorteio" ? "#ffba00" : "#4ade80" }}>
-              {p.tipo}
+              style={{ background: tipoPagamentoMeta(p.tipo).bg, color: tipoPagamentoMeta(p.tipo).color }}>
+              {tipoPagamentoMeta(p.tipo).label}
             </span>
           </div>
           <p className="text-[11px] text-gray-600">@{p.username} · {fmtDate(p.criadoEm)}</p>
@@ -226,7 +231,7 @@ function PagamentoCard({ p, onEnviar, onRemover, busy }: {
             onClick={onEnviar}
             className="flex-1 py-2 rounded-lg text-xs font-black text-black transition-all hover:scale-[1.02] disabled:opacity-50 disabled:scale-100"
             style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
-            {busy ? "..." : "💸 Enviar PIX"}
+            {busy ? "..." : "💳 Abrir PIX manual"}
           </button>
           <button
             disabled={busy}
@@ -362,7 +367,7 @@ export default function PagamentosPage() {
           style={{ background: "rgba(6,15,9,0.7)", border: "1px solid rgba(255,255,255,0.06)" }}>
           <p className="text-3xl mb-3">💳</p>
           <p className="text-sm font-black text-white mb-1">Nenhum pagamento na fila</p>
-          <p className="text-xs text-gray-600">Pagamentos aparecem aqui quando você usa &quot;Enviar para Pagamentos&quot; no sorteio ou envio manual.</p>
+          <p className="text-xs text-gray-600">Pagamentos aparecem aqui quando você escolhe Pagamento manual no sorteio, Crash, corrida ou envio manual.</p>
         </div>
       )}
 

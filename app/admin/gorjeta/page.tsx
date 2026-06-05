@@ -76,6 +76,12 @@ function PayBadge({ status, erro }: { status: string; erro?: string }) {
   );
 }
 
+function tipoTransacaoMeta(tipo: TransacaoGorjeta["tipo"]) {
+  if (tipo === "manual") return { label: "Manual", bg: "rgba(139,92,246,0.15)", color: "#c4b5fd" };
+  if (tipo === "automatico") return { label: "GGPix", bg: "rgba(34,197,94,0.12)", color: "#4ade80" };
+  return { label: "Sorteio", bg: "rgba(255,186,0,0.1)", color: "#ffba00" };
+}
+
 type HistoricoItem = { id: string; saldoTotal: number; totalEnviado: number; transacoes: TransacaoGorjeta[]; abertaEm: number; fechadaEm: number };
 
 function HistoricoCard({ h, num }: { h: HistoricoItem; num: number }) {
@@ -104,8 +110,8 @@ function HistoricoCard({ h, num }: { h: HistoricoItem; num: number }) {
           {h.transacoes.map((t, i) => (
             <div key={`${t.id}-${i}`} className="flex items-center gap-2.5 py-1 border-b border-white/[0.03] last:border-0">
               <span className="text-[10px] px-1.5 py-0.5 rounded font-black flex-shrink-0"
-                style={{ background: t.tipo === "manual" ? "rgba(139,92,246,0.15)" : "rgba(255,186,0,0.1)", color: t.tipo === "manual" ? "#4ade80" : "#ffba00" }}>
-                {t.tipo}
+                style={{ background: tipoTransacaoMeta(t.tipo).bg, color: tipoTransacaoMeta(t.tipo).color }}>
+                {tipoTransacaoMeta(t.tipo).label}
               </span>
               <span className="text-xs font-black text-white flex-1 truncate">{t.displayName}</span>
               <span className="text-xs text-gray-500 flex-shrink-0">R$ {fmtBRL(t.valor)}</span>
@@ -168,16 +174,18 @@ function ScreenshotModal({ id, onClose }: { id: string; onClose: () => void }) {
 
 
 
-function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
+function SortearModal({ participantes, vencedores, autoDisponivel, onPagarAuto, onPagarFila, onClose }: {
   participantes: ParticipanteSessao[];
   vencedores: ParticipanteSessao[];
-  onPagarFila: () => Promise<void>;
+  autoDisponivel: boolean;
+  onPagarAuto: () => Promise<boolean>;
+  onPagarFila: () => Promise<boolean>;
   onClose: () => void;
 }) {
   const [spinDisplay, setSpinDisplay] = useState<ParticipanteSessao>(participantes[0] ?? vencedores[0]);
   const [revealedWinners, setRevealedWinners] = useState<ParticipanteSessao[]>([]);
   const [done, setDone] = useState(false);
-  const [paying, setPaying] = useState(false);
+  const [paying, setPaying] = useState<"auto" | "fila" | null>(null);
   const cancelRef = useRef(false);
 
   useEffect(() => {
@@ -217,6 +225,11 @@ function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
   }, []);
 
   const unrevealed = vencedores.length - revealedWinners.length;
+  async function handlePay(modo: "auto" | "fila") {
+    setPaying(modo);
+    const ok = modo === "auto" ? await onPagarAuto() : await onPagarFila();
+    if (!ok) setPaying(null);
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-lg">
@@ -292,13 +305,22 @@ function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
 
         <div className="px-5 pb-6 space-y-2 border-t border-white/5 pt-4">
           {done && (
-            <button
-              disabled={paying}
-              onClick={async () => { setPaying(true); await onPagarFila(); setPaying(false); }}
-              className="w-full py-3.5 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:scale-100"
-              style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", boxShadow: "0 4px 20px rgba(255,186,0,0.3)" }}>
-              {paying ? "..." : "💳 Enviar para Pagamentos"}
-            </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <button
+                disabled={!!paying || !autoDisponivel}
+                onClick={() => handlePay("auto")}
+                className="w-full py-3.5 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100"
+                style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)", boxShadow: "0 4px 20px rgba(34,197,94,0.22)" }}>
+                {!autoDisponivel ? "⚡ GGPix off" : paying === "auto" ? "..." : "⚡ PIX automático"}
+              </button>
+              <button
+                disabled={!!paying}
+                onClick={() => handlePay("fila")}
+                className="w-full py-3.5 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-60 disabled:scale-100"
+                style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", boxShadow: "0 4px 20px rgba(255,186,0,0.3)" }}>
+                {paying === "fila" ? "..." : "💳 Pagamento manual"}
+              </button>
+            </div>
           )}
           <button onClick={onClose}
             className="w-full py-2.5 rounded-2xl font-black text-xs transition-all hover:bg-white/5"
@@ -623,12 +645,28 @@ export default function AdminGorjetaPage() {
     }
   }
 
-  async function pagarFila(): Promise<void> {
+  async function pagarAutomaticoSorteio(): Promise<boolean> {
+    const r = await apiCall({ action: "pagar" });
+    if (!r) return false;
+    const pagamentos = Array.isArray(r.pagamentos) ? r.pagamentos : [];
+    const falhas = pagamentos.filter((p: { status?: string }) => p.status === "falhou");
+    setShowSortearModal(false);
+    if (falhas.length > 0) {
+      flash(`${falhas.length} PIX falhou. Confira o histórico e tente manual se precisar.`, "err");
+    } else {
+      flash("PIX automático enviado pelo GGPix! ⚡", "ok");
+    }
+    return true;
+  }
+
+  async function pagarFila(): Promise<boolean> {
     const r = await apiCall({ action: "pagar-fila" });
     if (r) {
       setShowSortearModal(false);
       flash("Vencedores adicionados à fila de pagamentos! 💳", "ok");
+      return true;
     }
+    return false;
   }
 
   async function enviarManualFila() {
@@ -712,6 +750,8 @@ export default function AdminGorjetaPage() {
         <SortearModal
           participantes={sessao.participantes}
           vencedores={sortearVencedores}
+          autoDisponivel={ggpixOk}
+          onPagarAuto={pagarAutomaticoSorteio}
           onPagarFila={pagarFila}
           onClose={() => setShowSortearModal(false)} />
       )}
@@ -951,7 +991,7 @@ export default function AdminGorjetaPage() {
                             <button onClick={enviarManualFila} disabled={busy || !manualValor}
                               className="w-full py-2 rounded-xl text-xs font-black text-black disabled:opacity-50 transition-all hover:scale-[1.02]"
                               style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
-                              {busy ? "..." : "💳 Enviar para Pagamentos"}
+                              {busy ? "..." : "💳 Pagamento manual"}
                             </button>
                           </div>
                         </div>
@@ -1073,7 +1113,7 @@ export default function AdminGorjetaPage() {
                     <div className="px-5 py-3 space-y-2 max-h-48 overflow-y-auto">
                       {[...sessao.transacoes].reverse().map(t => (
                         <div key={t.id} className="flex items-center gap-2.5 py-1">
-                          <span className="text-[10px] px-1.5 py-0.5 rounded font-black" style={{ background: t.tipo === "manual" ? "rgba(139,92,246,0.15)" : "rgba(255,186,0,0.1)", color: t.tipo === "manual" ? "#4ade80" : "#ffba00" }}>{t.tipo}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded font-black" style={{ background: tipoTransacaoMeta(t.tipo).bg, color: tipoTransacaoMeta(t.tipo).color }}>{tipoTransacaoMeta(t.tipo).label}</span>
                           <span className="text-xs font-bold text-white flex-1 truncate">{t.displayName}</span>
                           <span className="text-xs font-black text-white">R$ {fmtBRL(t.valor)}</span>
                           <PayBadge status={t.status} erro={t.erro} />
