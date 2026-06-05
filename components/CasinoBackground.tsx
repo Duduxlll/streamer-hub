@@ -7,11 +7,11 @@ const VALUES = ["A", "K", "Q", "J", "10", "9", "7", "2"] as const;
 const IS_RED: Record<string, boolean> = { "♥": true, "♦": true, "♠": false, "♣": false };
 
 const CHIP_PAL = [
-  { ring: "34,197,94",   edge: "134,239,172", body: "4,40,18"   },
-  { ring: "16,185,129",  edge: "110,231,183", body: "3,38,28"   },
-  { ring: "239,68,68",   edge: "252,165,165", body: "60,10,10"  },
-  { ring: "240,178,28",  edge: "255,218,80",  body: "48,33,3"   },
-  { ring: "190,190,210", edge: "240,240,255", body: "22,22,38"  },
+  { ring: "5,225,13",    edge: "235,255,238", body: "4,46,18"    },
+  { ring: "34,197,94",   edge: "248,255,250", body: "5,10,7"     },
+  { ring: "5,225,13",    edge: "9,24,12",     body: "224,238,228" },
+  { ring: "0,190,35",    edge: "220,255,226", body: "8,93,34"    },
+  { ring: "118,255,143", edge: "245,255,247", body: "10,18,12"   },
 ];
 
 const DOT_POS: Record<number, [number,number][]> = {
@@ -137,10 +137,11 @@ function Chip3D({ size, pal, logoUrl }: { size:number; pal:typeof CHIP_PAL[numbe
       <div style={{position:"absolute",inset:"27%",borderRadius:"50%",border:`1px dashed rgba(${pal.ring},0.28)`}}/>
       <div style={{
         position:"absolute",inset:"33%",borderRadius:"50%",
-        background:`rgba(${pal.body},0.98)`,
+        background: logoUrl ? "rgba(244,255,246,0.94)" : `rgba(${pal.body},0.98)`,
         border:`1.5px solid rgba(${pal.ring},0.65)`,
         display:"flex",alignItems:"center",justifyContent:"center",
         overflow:"hidden",
+        boxShadow: logoUrl ? `inset 0 0 ${size*.08}px rgba(5,80,20,0.22)` : undefined,
       }}>
         {logoUrl
           ? <img src={logoUrl} style={{width:"78%",height:"78%",objectFit:"contain"}} alt=""/>
