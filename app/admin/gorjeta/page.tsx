@@ -662,10 +662,8 @@ export default function AdminGorjetaPage() {
       maxVencedores: nVenc,
       saldoRestante: sessao.saldoRestante,
     }));
-    // Abre em uma guia separada para o minigame ficar limpo na tela da live.
     const corridaUrl = `/admin/corrida?top=${nVenc}`;
-    const popup = window.open(corridaUrl, "_blank");
-    if (!popup) window.location.assign(corridaUrl);
+    router.push(corridaUrl);
   }
 
   async function fecharSessao() { const r = await apiCall({ action: "fechar-sessao" }); if (r) flash("Gorjeta encerrada", "ok"); }
@@ -1055,7 +1053,7 @@ export default function AdminGorjetaPage() {
                       <button onClick={iniciarCorrida} disabled={sessao.participantes.length === 0}
                         className="w-full py-3 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
                         style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)", boxShadow: "0 4px 20px rgba(255,186,0,0.2)" }}>
-                        {sessao.participantes.length === 0 ? "Aguardando inscritos..." : "🏁 Abrir corrida 3D em nova guia →"}
+                        {sessao.participantes.length === 0 ? "Aguardando inscritos..." : "🏁 Abrir corrida 3D"}
                       </button>
                     </div>
                   )}

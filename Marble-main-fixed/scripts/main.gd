@@ -435,7 +435,7 @@ func set_mode(mode):
 			_stuck_tracker.clear()
 			_race_completed = false
 			_active_race_count = len(names)
-			_winner_limit = mini(maxi(1, _winner_limit), maxi(1, _active_race_count))
+			_winner_limit = maxi(1, _winner_limit)
 			_current_marble_index = -1
 
 			# Show HUD
@@ -554,7 +554,7 @@ func _process(delta):
 		if not found:
 			replace_camera(_rotation_camera)
 
-			if _race_has_started:
+			if _race_has_started and can_complete_race():
 				complete_race()
 
 	if _race_has_started and not _race_completed:
@@ -580,8 +580,7 @@ func register_finish(marble: Marble) -> void:
 	if not _finish_order.has(marble):
 		_finish_order.append(marble)
 
-	var required_winners = mini(maxi(1, _winner_limit), maxi(1, _active_race_count))
-	if _race_has_started and len(_finish_order) >= required_winners:
+	if _race_has_started and can_complete_race():
 		complete_race()
 
 
@@ -749,9 +748,12 @@ func collect_finished_marbles() -> void:
 func update_finish_order() -> void:
 	collect_finished_marbles()
 
-	var required_winners = mini(maxi(1, _winner_limit), maxi(1, _active_race_count))
-	if len(_finish_order) >= required_winners:
+	if can_complete_race():
 		complete_race()
+
+
+func can_complete_race() -> bool:
+	return len(_finish_order) >= maxi(1, _winner_limit)
 
 
 func complete_race() -> void:
