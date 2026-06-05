@@ -809,10 +809,10 @@ export default function AdminGorjetaPage() {
                   <div className="rounded-2xl px-4 py-4 space-y-3" style={{ background: "rgba(255,186,0,0.05)", border: "1px solid rgba(255,186,0,0.14)" }}>
                     <p className="text-sm font-black text-white">Como funciona</p>
                     <p className="text-xs text-gray-500 leading-relaxed">
-                      Abra a gorjeta para liberar a entrada dos inscritos. Depois escolha sorteio, envio manual, Crash ou Corrida; o pagamento automático usa GGPix e o pagamento manual fica pendente até você confirmar.
+                      Abra a gorjeta para liberar os inscritos. O pessoal entra pelo chat digitando !gorjeta; depois você escolhe Sorteio, Manual, Crash ou Corrida. No Pix automático o valor é enviado direto para a chave cadastrada, e no pagamento manual ele fica pendente até você conferir e marcar como pago.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                      {["Inscritos entram", "Você escolhe o modo", "Pagamentos são registrados"].map(item => (
+                      {["Chat usa !gorjeta", "Pix automático envia direto", "Manual fica pendente"].map(item => (
                         <div key={item} className="px-3 py-2 rounded-xl text-[11px] font-black text-[#ffba00]" style={{ background: "rgba(0,0,0,0.18)", border: "1px solid rgba(255,255,255,0.05)" }}>
                           {item}
                         </div>

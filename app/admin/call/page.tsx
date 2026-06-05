@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import PlayerAvatar from "@/components/PlayerAvatar";
 import type { CallState, CallEntry } from "@/lib/callStore";
@@ -20,39 +19,6 @@ const CSS = `
     50%      { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
   }
 `;
-
-function CopyBtn({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  function copy() {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    });
-  }
-  return (
-    <button
-      onClick={copy}
-      title="Copiar nome do jogo"
-      className="flex items-center justify-center w-7 h-7 rounded-lg transition-all hover:scale-110 active:scale-95 flex-shrink-0"
-      style={{
-        background: copied ? "rgba(34,197,94,0.2)" : "rgba(255,255,255,0.05)",
-        border: `1px solid ${copied ? "rgba(34,197,94,0.5)" : "rgba(255,255,255,0.1)"}`,
-        color: copied ? C : "#6b7280",
-      }}
-    >
-      {copied ? (
-        <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-        </svg>
-      ) : (
-        <svg className="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
-          <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-          <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
-        </svg>
-      )}
-    </button>
-  );
-}
 
 function FollowBtn({ jogo }: { jogo: string }) {
   const [copied, setCopied] = useState(false);
@@ -126,7 +92,6 @@ function EntryRow({ entry, num, onRemover, removing }: {
 
       <div className="flex items-center gap-1.5 flex-shrink-0">
         <FollowBtn jogo={entry.jogo} />
-        <CopyBtn text={entry.jogo} />
         <button
           onClick={onRemover}
           disabled={removing}
