@@ -119,7 +119,7 @@ func _apply_gorgita_ui() -> void:
 		names_preview.push_back("+%d inscritos" % (len(_external_names) - limit))
 	_players_label.set_text(
 		"Inscritos: %d  |  Top %d\n%s"
-		% [len(_external_names), mini(_top_n, maxi(1, len(_external_names))), ", ".join(names_preview)]
+		% [len(_external_names), _top_n, ", ".join(names_preview)]
 	)
 
 

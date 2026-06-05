@@ -34,7 +34,7 @@ function normalizarTop(data: RaceData, urlTop?: number) {
     topValido(data.maxVencedores),
     1,
   );
-  return Math.max(1, Math.min(Number.isFinite(raw) ? Math.floor(raw) : 1, Math.max(1, data.participants.length)));
+  return Math.max(1, Number.isFinite(raw) ? Math.floor(raw) : 1);
 }
 
 export default function CorridaPage() {

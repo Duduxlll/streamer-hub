@@ -537,9 +537,8 @@ export default function AdminGorjetaPage() {
       corridaSessaoIdRef.current = null;
       return;
     }
-    const participantes = Math.max(1, sessao.participantes.length);
-    const topSessao = sessao.maxVencedores > 0 ? sessao.maxVencedores : Math.min(5, participantes);
-    const top = Math.max(1, Math.min(topSessao, participantes));
+    const topSessao = sessao.maxVencedores > 0 ? sessao.maxVencedores : 5;
+    const top = Math.max(1, topSessao);
     if (corridaSessaoIdRef.current !== sessao.id || corridaNum.trim() === "") {
       corridaSessaoIdRef.current = sessao.id;
       setCorridaNum(String(top));
@@ -654,7 +653,7 @@ export default function AdminGorjetaPage() {
 
   function iniciarCorrida() {
     if (!sessao || sessao.participantes.length === 0) { flash("Sem inscritos na sessão", "err"); return; }
-    const nVenc = Math.max(1, Math.min(parseInt(corridaNum) || sessao.maxVencedores || 1, sessao.participantes.length));
+    const nVenc = Math.max(1, parseInt(corridaNum) || sessao.maxVencedores || 1);
     localStorage.setItem("corrida-race-data", JSON.stringify({
       participants: sessao.participantes.map(p => ({ username: p.username, displayName: p.displayName, image: p.image })),
       numVencedores: nVenc,
@@ -1047,7 +1046,7 @@ export default function AdminGorjetaPage() {
                       </div>
                       <div>
                         <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1.5">Quantos ganham (top N)</label>
-                        <input type="number" min="1" max={Math.max(1, sessao.participantes.length)} value={corridaNum}
+                        <input type="number" min="1" value={corridaNum}
                           onChange={e => setCorridaNum(e.target.value)}
                           className="w-full px-4 py-2.5 rounded-xl text-sm font-bold text-white outline-none"
                           style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
