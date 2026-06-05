@@ -17,6 +17,7 @@ function formatCpfInput(value: string): string {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 }
 function fmtBRL(v: number) { return v.toLocaleString("pt-BR", { minimumFractionDigits: 2 }); }
+const CRASH_MAX_PRIZE = 100;
 
 function Avatar({ image, name, size = 32 }: { image: string | null; name: string; size?: number }) {
   if (image) return (
@@ -485,10 +486,8 @@ export default function AdminGorjetaPage() {
   const corridaSessaoIdRef = useRef<string | null>(null);
 
   const [crashSel, setCrashSel] = useState<ParticipanteSessao | null>(null);
-  const [crashAposta, setCrashAposta] = useState("");
-  const [crashTeto, setCrashTeto] = useState("");
   const [crashBuscaSel, setCrashBuscaSel] = useState("");
-  const [crashGame, setCrashGame] = useState<{ participante: ParticipanteSessao; aposta: number; teto?: number } | null>(null);
+  const [crashGame, setCrashGame] = useState<{ participante: ParticipanteSessao } | null>(null);
   const [ggpixOk, setGgpixOk] = useState(false);
   const [cadastros, setCadastros] = useState<CadastroGorjeta[]>([]);
   const [sessao, setSessao] = useState<SessaoGorjeta | null>(null);
@@ -625,16 +624,12 @@ export default function AdminGorjetaPage() {
 
   function iniciarCrash() {
     if (!crashSel) { flash("Selecione um participante", "err"); return; }
-    const aposta = parseFloat(crashAposta.replace(",", "."));
-    if (isNaN(aposta) || aposta <= 0) { flash("Aposta inválida", "err"); return; }
-    const teto = crashTeto.trim() ? parseFloat(crashTeto.replace(",", ".")) : undefined;
-    const ganhoMax = teto && teto > 0 ? Math.min(aposta * 4, teto) : aposta * 4;
     const saldo = sessao?.saldoRestante ?? 0;
-    if (ganhoMax > saldo) {
-      flash(`Saldo não cobre o ganho máximo possível (R$ ${ganhoMax.toFixed(2)}). Reduza a aposta.`, "err");
+    if (CRASH_MAX_PRIZE > saldo) {
+      flash(`Saldo não cobre o prêmio máximo do Crash (R$ ${fmtBRL(CRASH_MAX_PRIZE)}).`, "err");
       return;
     }
-    setCrashGame({ participante: crashSel, aposta, teto: teto && teto > 0 ? teto : undefined });
+    setCrashGame({ participante: crashSel });
   }
 
   async function crashEnviar(valor: number, modo: "auto" | "fila"): Promise<boolean> {
@@ -703,9 +698,6 @@ export default function AdminGorjetaPage() {
       {crashGame && sessao && (
         <CrashGame
           participante={crashGame.participante}
-          aposta={crashGame.aposta}
-          teto={crashGame.teto}
-          saldoRestante={sessao.saldoRestante}
           autoDisponivel={ggpixOk}
           onEnviar={crashEnviar}
           onClose={() => setCrashGame(null)} />
@@ -946,7 +938,7 @@ export default function AdminGorjetaPage() {
                     <div className="px-5 py-5 space-y-3">
                       <div className="rounded-xl px-3 py-2.5 text-[11px] text-gray-500 leading-relaxed"
                         style={{ background: "rgba(255,186,0,0.04)", border: "1px solid rgba(255,186,0,0.1)" }}>
-                        🚀 O participante aposta um valor da gorjeta e tenta multiplicar (até <strong className="text-[#ffba00]">4x</strong>). Você tira quando ele pedir na live — se estourar antes, perde a vez.
+                        🚀 O Crash começa em R$ 0 e pode parar em 0x ou subir até <strong className="text-[#ffba00]">10x</strong>. Cada 1x vale R$ 10; quanto mais alto, mais raro.
                       </div>
 
                       <input type="text" placeholder="Buscar participante..." value={crashBuscaSel}
@@ -988,41 +980,33 @@ export default function AdminGorjetaPage() {
                             <button onClick={() => setCrashSel(null)} className="text-gray-600 hover:text-gray-400 text-sm">✕</button>
                           </div>
                           <div className="px-4 py-3 space-y-2.5">
-                            <div>
-                              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1">Aposta (R$)</label>
-                              <div className="flex gap-2 items-center">
-                                <span className="text-sm font-black text-[#ffba00]">R$</span>
-                                <input type="text" inputMode="decimal" placeholder="0,00" value={crashAposta}
-                                  onChange={e => setCrashAposta(e.target.value)}
-                                  className="flex-1 px-3 py-2 rounded-xl text-sm font-bold text-white placeholder-gray-600 outline-none"
-                                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,186,0,0.25)" }} />
-                              </div>
-                            </div>
-                            <div>
-                              <label className="text-[9px] font-black text-gray-600 uppercase tracking-widest block mb-1">Ganho máximo por pessoa (opcional)</label>
-                              <div className="flex gap-2 items-center">
-                                <span className="text-sm font-black text-gray-500">R$</span>
-                                <input type="text" inputMode="decimal" placeholder="sem limite" value={crashTeto}
-                                  onChange={e => setCrashTeto(e.target.value)}
-                                  className="flex-1 px-3 py-2 rounded-xl text-sm font-bold text-white placeholder-gray-600 outline-none"
-                                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }} />
-                              </div>
-                            </div>
                             {(() => {
-                              const a = parseFloat(crashAposta.replace(",", "."));
-                              if (isNaN(a) || a <= 0) return null;
-                              const t = crashTeto.trim() ? parseFloat(crashTeto.replace(",", ".")) : undefined;
-                              const ganhoMax = t && t > 0 ? Math.min(a * 4, t) : a * 4;
-                              const cobre = ganhoMax <= (sessao.saldoRestante);
+                              const cobre = CRASH_MAX_PRIZE <= (sessao.saldoRestante);
                               return (
-                                <div className="flex items-center justify-between px-3 py-2 rounded-xl text-[11px]"
+                                <div className="space-y-2">
+                                  <div className="grid grid-cols-3 gap-2">
+                                    <div className="px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                                      <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Valor por x</p>
+                                      <p className="text-sm font-black text-[#ffba00]">R$ 10</p>
+                                    </div>
+                                    <div className="px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                                      <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Máximo</p>
+                                      <p className="text-sm font-black text-[#ffba00]">10x</p>
+                                    </div>
+                                    <div className="px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                                      <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Prêmio</p>
+                                      <p className="text-sm font-black text-[#ffba00]">R$ 100</p>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center justify-between px-3 py-2 rounded-xl text-[11px]"
                                   style={{ background: cobre ? "rgba(255,186,0,0.04)" : "rgba(248,113,113,0.08)", border: `1px solid ${cobre ? "rgba(255,186,0,0.1)" : "rgba(248,113,113,0.25)"}` }}>
-                                  <span className="text-gray-500">Ganho máx. possível (4x)</span>
-                                  <span className="font-black" style={{ color: cobre ? "#ffba00" : "#f87171" }}>R$ {fmtBRL(ganhoMax)}</span>
+                                    <span className="text-gray-500">Saldo precisa cobrir o máximo</span>
+                                    <span className="font-black" style={{ color: cobre ? "#ffba00" : "#f87171" }}>R$ {fmtBRL(CRASH_MAX_PRIZE)}</span>
+                                  </div>
                                 </div>
                               );
                             })()}
-                            <button onClick={iniciarCrash} disabled={busy || !crashAposta}
+                            <button onClick={iniciarCrash} disabled={busy || CRASH_MAX_PRIZE > sessao.saldoRestante}
                               className="w-full py-2.5 rounded-xl text-xs font-black text-black disabled:opacity-50 transition-all hover:scale-[1.02]"
                               style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}>
                               🚀 Iniciar Crash

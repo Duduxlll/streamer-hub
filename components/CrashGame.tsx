@@ -3,51 +3,58 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { ParticipanteSessao } from "@/lib/gorjeta-store";
 
-const MAX_MULT       = 4;
-const GROWTH_PER_SEC = 1.08;
-const HOUSE_POWER    = 2.0;
+const MAX_MULT       = 10;
+const PRIZE_PER_X    = 10;
+const MAX_PRIZE      = MAX_MULT * PRIZE_PER_X;
+const ZERO_CHANCE    = 0.22;
 
-function gerarCrashPoint(streak: number): number {
-  const u = Math.pow(Math.random(), HOUSE_POWER + streak * 0.6);
-  if (u >= 1 - 1 / MAX_MULT) return MAX_MULT;
-  return Math.round((1 / (1 - u)) * 100) / 100;
+function randRange(min: number, max: number) {
+  return min + Math.random() * (max - min);
+}
+
+function gerarCrashPoint(): number {
+  if (Math.random() < ZERO_CHANCE) return 0;
+  const roll = Math.random();
+  let value: number;
+  if (roll < 0.50) value = randRange(1, 1.99);
+  else if (roll < 0.74) value = randRange(2, 2.99);
+  else if (roll < 0.89) value = randRange(3, 4.99);
+  else if (roll < 0.96) value = randRange(5, 6.99);
+  else if (roll < 0.99) value = randRange(7, 8.99);
+  else value = randRange(9, MAX_MULT);
+  return Math.min(MAX_MULT, Math.round(value * 100) / 100);
 }
 
 function fmtBRL(v: number) { return v.toLocaleString("pt-BR", { minimumFractionDigits: 2 }); }
 function numColor(m: number, bust: boolean): string {
   if (bust) return "#ff4d4d";
-  if (m < 1.8) return "#ffffff";
-  if (m < 2.6) return "#ffd24d";
-  if (m < 3.3) return "#ff9f43";
+  if (m < 1) return "#ffffff";
+  if (m < 2) return "#86efac";
+  if (m < 3) return "#ffd24d";
+  if (m < 6) return "#ff9f43";
   return "#ff5a5a";
 }
 
 interface Pt { t: number; m: number; }
 interface Star { x: number; y: number; z: number; }
 
-export function CrashGame({ participante, aposta, teto, saldoRestante, autoDisponivel, onEnviar, onClose }: {
+export function CrashGame({ participante, autoDisponivel, onEnviar, onClose }: {
   participante: ParticipanteSessao;
-  aposta: number;
-  teto?: number;
-  saldoRestante: number;
   autoDisponivel: boolean;
   onEnviar: (valor: number, modo: "auto" | "fila") => Promise<boolean>;
   onClose: () => void;
 }) {
   const [phase, setPhase]       = useState<"playing" | "win" | "bust">("playing");
-  const [mult, setMult]         = useState(1);
-  const [apostaRound, setApostaRound] = useState(aposta);
-  const [streak, setStreak]     = useState(0);
+  const [mult, setMult]         = useState(0);
   const [ganho, setGanho]       = useState(0);
   const [enviando, setEnviando] = useState<"" | "auto" | "fila">("");
   const [enviado, setEnviado]   = useState<"auto" | "fila" | "">("");
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const wrapRef   = useRef<HTMLDivElement | null>(null);
-  const crashRef  = useRef(1);
-  const multRef   = useRef(1);
-  const apostaRef = useRef(aposta);
-  const ptsRef    = useRef<Pt[]>([{ t: 0, m: 1 }]);
+  const crashRef  = useRef(0);
+  const multRef   = useRef(0);
+  const ptsRef    = useRef<Pt[]>([{ t: 0, m: 0 }]);
   const rafRef    = useRef(0);
   const startRef  = useRef(0);
   const lastBgRef = useRef(0);
@@ -57,12 +64,7 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
   const sunAngRef = useRef(0);
   const starsRef  = useRef<Star[]>([]);
 
-  const ganhoPotencial = useCallback((m: number, ap: number) => {
-    let g = ap * m;
-    if (teto && teto > 0) g = Math.min(g, teto);
-    g = Math.min(g, saldoRestante);
-    return Math.round(g * 100) / 100;
-  }, [teto, saldoRestante]);
+  const ganhoPotencial = useCallback((m: number) => Math.round(Math.min(MAX_PRIZE, Math.max(0, m * PRIZE_PER_X)) * 100) / 100, []);
 
   const draw = useCallback((now: number) => {
     const canvas = canvasRef.current, wrap = wrapRef.current;
@@ -108,16 +110,15 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
     ctx.globalAlpha = 1;
 
     const pts = ptsRef.current;
-    const m   = multRef.current;
     const tNow = pts.length ? pts[pts.length - 1].t : 0;
     const xMax = Math.max(6, tNow * 1.06);
-    const yMax = Math.max(1.6, m * 1.20);
+    const yMax = MAX_MULT;
     const mapX = (t: number) => ox + (t / xMax) * (W - ox - 18);
-    const mapY = (mm: number) => oy - ((mm - 1) / (yMax - 1)) * (oy - 18);
+    const mapY = (mm: number) => oy - (mm / yMax) * (oy - 18);
 
     ctx.fillStyle = "rgba(255,255,255,0.22)"; ctx.font = "11px system-ui"; ctx.textAlign = "right";
     for (let i = 0; i <= 4; i++) {
-      const frac = 1 - i / 4, val = 1 + frac * (yMax - 1);
+      const frac = 1 - i / 4, val = frac * yMax;
       const y = 14 + i * ((oy - 14) / 4);
       ctx.fillText(`${val.toFixed(1)}x`, ox - 8, y + 4);
       ctx.strokeStyle = "rgba(255,255,255,0.04)"; ctx.lineWidth = 1;
@@ -139,7 +140,8 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
       ctx.beginPath();
       for (let i = 0; i < pts.length; i++) {
         const x = mapX(pts[i].t), y = mapY(pts[i].m);
-        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       }
       const lg = ctx.createLinearGradient(0, oy, 0, 18);
       lg.addColorStop(0, "#ffb24d"); lg.addColorStop(1, isBust ? "#ff3b3b" : "#ff5a4d");
@@ -190,23 +192,23 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
 
 
     if (phaseRef.current === "playing") {
-      let m = multRef.current * Math.pow(GROWTH_PER_SEC, dt);
       const t = (now - startRef.current) / 1000;
-      if (m >= crashRef.current) {
-        m = Math.min(m, crashRef.current);
-        multRef.current = m; ptsRef.current.push({ t, m });
-        if (crashRef.current >= MAX_MULT) {
-
-          phaseRef.current = "win";
-          setMult(m); setGanho(ganhoPotencial(m, apostaRef.current)); setPhase("win");
-        } else {
+      if (crashRef.current === 0) {
+        if (t > 0.75) {
+          multRef.current = 0; ptsRef.current.push({ t, m: 0 });
           phaseRef.current = "bust"; bustAtRef.current = now;
-          setMult(m); setPhase("bust");
+          setMult(0); setGanho(0); setPhase("bust");
         }
       } else {
+        const m = Math.min(crashRef.current, t * 0.82 + t * t * 0.12);
         multRef.current = m; ptsRef.current.push({ t, m });
-        if (ptsRef.current.length > 1400) ptsRef.current.shift();
-        if (now - lastSetRef.current > 55) { lastSetRef.current = now; setMult(m); }
+        if (m >= crashRef.current) {
+          phaseRef.current = "win";
+          setMult(m); setGanho(ganhoPotencial(m)); setPhase("win");
+        } else {
+          if (ptsRef.current.length > 1400) ptsRef.current.shift();
+          if (now - lastSetRef.current > 55) { lastSetRef.current = now; setMult(m); }
+        }
       }
     }
 
@@ -214,42 +216,34 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
     rafRef.current = requestAnimationFrame(loop);
   }, [draw, ganhoPotencial]);
 
-  const startRound = useCallback((apostaInicial: number, streakNum: number) => {
-    crashRef.current = gerarCrashPoint(streakNum);
-    multRef.current = 1; apostaRef.current = apostaInicial;
-    ptsRef.current = [{ t: 0, m: 1 }];
+  const startRound = useCallback(() => {
+    crashRef.current = gerarCrashPoint();
+    multRef.current = 0;
+    ptsRef.current = [{ t: 0, m: 0 }];
     startRef.current = performance.now();
     phaseRef.current = "playing";
-    setApostaRound(apostaInicial); setStreak(streakNum);
-    setMult(1); setGanho(0); setEnviado(""); setEnviando(""); setPhase("playing");
+    setMult(0); setGanho(0); setEnviado(""); setEnviando(""); setPhase("playing");
   }, []);
 
   useEffect(() => {
 
     starsRef.current = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), z: Math.random() }));
-    startRound(aposta, 0);
+    startRound();
     rafRef.current = requestAnimationFrame(loop);
     const onResize = () => draw(performance.now());
     window.addEventListener("resize", onResize);
     return () => { stop(); window.removeEventListener("resize", onResize); };
   }, []);
 
-  function tirar() {
-    if (phaseRef.current !== "playing") return;
-    const m = multRef.current;
-    phaseRef.current = "win";
-    setMult(m); setGanho(ganhoPotencial(m, apostaRef.current)); setPhase("win");
-  }
-
   async function enviar(modo: "auto" | "fila") {
-    if (enviado || enviando) return;
+    if (enviado || enviando || ganho <= 0) return;
     setEnviando(modo);
     const ok = await onEnviar(ganho, modo);
     setEnviando("");
     if (ok) setEnviado(modo);
   }
 
-  const potAtual = ganhoPotencial(mult, apostaRound);
+  const potAtual = ganhoPotencial(mult);
   const cor = numColor(mult, phase === "bust");
 
   return (
@@ -266,8 +260,7 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
           <div className="flex-1 min-w-0">
             <p className="text-sm font-black text-white truncate">{participante.displayName}</p>
             <p className="text-[11px] text-gray-500">
-              Aposta: <span className="text-[#ffba00] font-black">R$ {fmtBRL(apostaRound)}</span>
-              {streak > 0 && <span className="ml-2 text-orange-400 font-black">🔥 Rodada {streak + 1} · risco alto</span>}
+              Cada 1x vale <span className="text-[#ffba00] font-black">R$ {fmtBRL(PRIZE_PER_X)}</span> · máximo <span className="text-[#ffba00] font-black">R$ {fmtBRL(MAX_PRIZE)}</span>
             </p>
           </div>
           <button onClick={() => { stop(); onClose(); }} className="text-gray-500 hover:text-white text-xl transition-colors">✕</button>
@@ -290,13 +283,13 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
             )}
             {phase === "bust" && (
               <p className="mt-2 text-xl sm:text-2xl font-black uppercase tracking-[0.25em] text-red-400" style={{ animation: "crashFloat 0.5s ease-out" }}>
-                🛫 Voou!
+                Não ganhou nada
               </p>
             )}
             {phase === "win" && (
               <div className="mt-2" style={{ animation: "crashPop 0.4s cubic-bezier(.34,1.56,.64,1)" }}>
                 <p className="text-sm font-black text-green-400 uppercase tracking-widest">
-                  {mult >= MAX_MULT - 0.01 ? "🎉 Bateu o teto! 4x" : `Tirou em ${mult.toFixed(2)}x`}
+                  {mult >= MAX_MULT - 0.01 ? "🎉 Bateu o teto! 10x" : `Parou em ${mult.toFixed(2)}x`}
                 </p>
                 <p className="text-3xl sm:text-5xl font-black text-white mt-1">Ganhou <span className="text-green-400">R$ {fmtBRL(ganho)}</span></p>
               </div>
@@ -307,21 +300,20 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
 
         <div className="px-4 sm:px-5 py-4 border-t border-white/5 flex-shrink-0">
           {phase === "playing" && (
-            <button onClick={tirar}
-              className="w-full py-5 rounded-2xl font-black text-lg sm:text-xl text-black transition-all hover:scale-[1.01] active:scale-95"
+            <div className="w-full py-5 rounded-2xl font-black text-lg sm:text-xl text-center text-black"
               style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)", boxShadow: "0 6px 34px rgba(34,197,94,0.5)" }}>
-              💰 TIRAR — R$ {fmtBRL(potAtual)} ({mult.toFixed(2)}x)
-            </button>
+              🚀 Rodando — R$ {fmtBRL(potAtual)}
+            </div>
           )}
 
           {phase === "bust" && (
             <div className="space-y-2.5">
-              <p className="text-center text-sm text-gray-500">O aviãozinho fugiu! O acumulado foi pro espaço. 🫠</p>
+              <p className="text-center text-sm text-gray-500">Não ganhou nada. Mais sorte na próxima.</p>
               <div className="grid grid-cols-2 gap-2.5">
-                <button onClick={() => startRound(aposta, 0)}
+                <button onClick={startRound}
                   className="py-4 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02]"
                   style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
-                  🔁 Jogar de novo (R$ {fmtBRL(aposta)})
+                  🔁 Rodar novamente
                 </button>
                 <button onClick={() => { stop(); onClose(); }}
                   className="py-4 rounded-2xl font-black text-sm transition-all hover:bg-white/5"
@@ -354,13 +346,6 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
                     {enviando === "fila" ? "..." : "💳 Pagamento manual"}
                   </button>
                 </div>
-              )}
-              {!enviado && (
-                <button onClick={() => startRound(ganho, streak + 1)}
-                  className="w-full py-3.5 rounded-2xl font-black text-sm transition-all hover:scale-[1.01]"
-                  style={{ color: "#ff8c00", border: "1px solid rgba(255,140,0,0.35)", background: "rgba(255,140,0,0.06)" }}>
-                  🚀 Jogar +1 apostando os R$ {fmtBRL(ganho)} <span className="text-gray-500 font-bold">· chance menor!</span>
-                </button>
               )}
               <button onClick={() => { stop(); onClose(); }}
                 className="w-full py-2.5 rounded-2xl font-black text-xs transition-all hover:bg-white/5"
