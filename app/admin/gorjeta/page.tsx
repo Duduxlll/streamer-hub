@@ -581,6 +581,26 @@ export default function AdminGorjetaPage() {
       onConfirm: () => { apiCall({ action: "limpar-historico" }).then(r => { if (r) flash("Histórico limpo", "ok"); }); },
     });
   }
+  function limparInscritosAction() {
+    if (!sessao || sessao.participantes.length === 0) return;
+    setConfirmModal({
+      title: "Limpar inscritos?",
+      desc: "A lista atual será zerada e o chat poderá entrar de novo com !gorjeta.",
+      icon: "🧹",
+      confirmLabel: "Limpar inscritos",
+      onConfirm: () => {
+        apiCall({ action: "limpar-inscritos" }).then(r => {
+          if (r) {
+            setSortearVencedores([]);
+            setManualSel(null);
+            setCrashSel(null);
+            setCrashGame(null);
+            flash("Inscritos limpos", "ok");
+          }
+        });
+      },
+    });
+  }
   async function aprovar(id: string) { const r = await apiCall({ action: "aprovar", id }); if (r) flash("Aprovado!", "ok"); }
   async function rejeitar(id: string, motivo: string) { const r = await apiCall({ action: "rejeitar", id, motivo }); if (r) flash("Rejeitado", "ok"); }
 
@@ -798,7 +818,12 @@ export default function AdminGorjetaPage() {
                 {sessao.participantes.length > 0 && (
                   <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.85)", border: "1px solid rgba(255,255,255,0.06)" }}>
                     <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/5">
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex-1">Inscritos</p>
+                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest flex-1 min-w-0">Inscritos</p>
+                      <button onClick={limparInscritosAction} disabled={busy}
+                        className="px-3 py-1.5 rounded-full text-[10px] font-black transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:bg-red-500/10 shrink-0 whitespace-nowrap"
+                        style={{ color: "#f87171", border: "1px solid rgba(248,113,113,0.25)" }}>
+                        Limpar inscritos
+                      </button>
                       <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full" style={{ background: "rgba(255,186,0,0.1)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.2)" }}>{sessao.participantes.length}</span>
                     </div>
                     <div className="p-4 overflow-y-auto" style={{ maxHeight: 260, scrollbarWidth: "thin", scrollbarColor: "rgba(255,186,0,0.2) transparent" }}>

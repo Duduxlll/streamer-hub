@@ -309,6 +309,18 @@ export async function entrarSessao(
   return { ok: true };
 }
 
+export async function limparInscritosSessao(): Promise<{ ok: true; sessao: SessaoGorjeta } | { ok: false; error: string }> {
+  const sessao = await loadSessao();
+  if (!sessao) return { ok: false, error: "Sem sessão ativa" };
+  if (sessao.status === "fechada") return { ok: false, error: "Sessão encerrada" };
+
+  sessao.participantes = [];
+  sessao.vencedores = [];
+  if (sessao.status === "sorteada") sessao.status = "aberta";
+  await saveSessao(sessao);
+  return { ok: true, sessao };
+}
+
 export async function sortearGorjeta(params?: {
   valorUnitario?: number; maxVencedores?: number;
 }): Promise<{ ok: true; sessao: SessaoGorjeta } | { ok: false; error: string }> {

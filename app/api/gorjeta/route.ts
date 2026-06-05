@@ -4,7 +4,7 @@ import { isAdmin } from "@/lib/admins";
 import {
   getCadastros, getCadastro, cadastrar, aprovarCadastro, rejeitarCadastro, editarCpfCadastro, editarChaveCadastro, deletarCadastro,
   getScreenshot, getSessao, abrirSessao, entrarSessao, sortearGorjeta,
-  salvarPagamentos, registrarManual, adicionarParticipanteTeste, fecharSessaoSemPagar, limparSessao,
+  salvarPagamentos, registrarManual, adicionarParticipanteTeste, fecharSessaoSemPagar, limparSessao, limparInscritosSessao,
   getHistoricoGorjeta, limparHistorico, mascarCpf, normalizarChave,
   getPagamentos, adicionarPagamentos, atualizarStatusPagamento, removerPagamento, limparPagamentosFinalizados,
   type ResultadoPagamento, type TipoChavePix,
@@ -174,6 +174,14 @@ export async function POST(req: NextRequest) {
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     await limparSessao();
     return NextResponse.json({ ok: true }, { headers: NO_CACHE });
+  }
+
+  if (action === "limpar-inscritos") {
+    const session = await auth();
+    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    const result = await limparInscritosSessao();
+    if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+    return NextResponse.json({ ok: true, sessao: result.sessao }, { headers: NO_CACHE });
   }
 
   if (action === "entrar") {
