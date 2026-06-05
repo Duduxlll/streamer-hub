@@ -406,8 +406,8 @@ export default function AdminConfigPage() {
     try {
       const body: Record<string, string> = { type: "ggpix", webhookAuthMode: ggAuthMode };
       if (ggApiKey.trim()) body.apiKey = ggApiKey.trim();
-      body.bearerToken = ggBearer.trim();
-      body.hmacSecret  = ggHmac.trim();
+      if (ggBearer.trim()) body.bearerToken = ggBearer.trim();
+      if (ggHmac.trim()) body.hmacSecret = ggHmac.trim();
 
       const res = await fetch("/api/config", {
         method: "POST",
