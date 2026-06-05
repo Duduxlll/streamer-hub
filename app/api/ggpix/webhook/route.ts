@@ -16,33 +16,78 @@ function verifyBearer(authHeader: string | null, token: string): boolean {
   } catch { return false; }
 }
 
-function verifyHmac(payload: string, signatureHeader: string | null, secret: string): boolean {
-  if (!secret || !signatureHeader) return false;
+type HmacCheck = { ok: true; reason: string } | { ok: false; reason: string };
+
+function hmacHex(secret: string, payload: string): string {
+  return createHmac("sha256", secret).update(payload).digest("hex");
+}
+
+function safeHexEqual(received: string, expected: string): boolean {
+  const a = received.trim().toLowerCase();
+  const b = expected.trim().toLowerCase();
+  if (!/^[0-9a-f]+$/.test(a) || !/^[0-9a-f]+$/.test(b)) return false;
+  if (a.length !== b.length) return false;
   try {
-    const parts = Object.fromEntries(signatureHeader.split(",").map(part => {
-      const [key, ...rest] = part.trim().split("=");
-      return [key, rest.join("=")];
-    }));
-    const timestamp = parts.t;
-    const receivedSig = parts.v1;
+    return timingSafeEqual(Buffer.from(a, "hex"), Buffer.from(b, "hex"));
+  } catch { return false; }
+}
 
-    if (timestamp && receivedSig) {
-      const ts = Number(timestamp);
-      if (!Number.isFinite(ts)) return false;
-      const age = Math.abs(Date.now() / 1000 - ts);
-      if (age > 300) return false;
+function parseSignatureHeader(signatureHeader: string): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const part of signatureHeader.split(",")) {
+    const [rawKey, ...rest] = part.trim().split("=");
+    const key = rawKey.trim().toLowerCase();
+    const value = rest.join("=").trim();
+    if (!key || !value) continue;
+    out[key] = [...(out[key] ?? []), value];
+  }
+  return out;
+}
 
-      const signedPayload = `${timestamp}.${payload}`;
-      const expected = createHmac("sha256", secret).update(signedPayload).digest("hex");
-      if (receivedSig.length !== expected.length) return false;
-      return timingSafeEqual(Buffer.from(receivedSig, "hex"), Buffer.from(expected, "hex"));
+function verifyHmac(payload: string, signatureHeader: string | null, secret: string): HmacCheck {
+  if (!secret) return { ok: false, reason: "HMAC Secret não está salvo no site" };
+  if (!signatureHeader) return { ok: false, reason: "header X-Webhook-Signature não veio na requisição" };
+
+  const parts = parseSignatureHeader(signatureHeader);
+  const timestamps = parts.t ?? [];
+  const signatures = parts.v1 ?? [];
+
+  if (timestamps.length > 0 && signatures.length > 0) {
+    let sawFreshTimestamp = false;
+
+    for (const timestamp of timestamps) {
+      const rawTs = timestamp.trim();
+      const numericTs = Number(rawTs);
+      if (!Number.isFinite(numericTs)) continue;
+
+      const timestampSeconds = numericTs > 10_000_000_000 ? numericTs / 1000 : numericTs;
+      const age = Math.abs(Date.now() / 1000 - timestampSeconds);
+      if (age > 300) continue;
+      sawFreshTimestamp = true;
+
+      const normalizedTs = String(Math.trunc(timestampSeconds));
+      const payloads = new Set([
+        `${rawTs}.${payload}`,
+        `${normalizedTs}.${payload}`,
+        payload,
+      ]);
+
+      for (const candidatePayload of payloads) {
+        const expected = hmacHex(secret, candidatePayload);
+        if (signatures.some(sig => safeHexEqual(sig, expected))) {
+          return { ok: true, reason: "HMAC válido" };
+        }
+      }
     }
 
-    const expected = createHmac("sha256", secret).update(payload).digest("hex");
-    const sig = signatureHeader.toLowerCase().replace(/^sha256=/, "").trim();
-    if (sig.length !== expected.length) return false;
-    return timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"));
-  } catch { return false; }
+    if (!sawFreshTimestamp) return { ok: false, reason: "timestamp do HMAC expirado ou inválido" };
+    return { ok: false, reason: "assinatura HMAC não bateu com o HMAC Secret salvo" };
+  }
+
+  const compactSig = signatureHeader.toLowerCase().replace(/^sha256=/, "").trim();
+  const expected = hmacHex(secret, payload);
+  if (safeHexEqual(compactSig, expected)) return { ok: true, reason: "HMAC válido" };
+  return { ok: false, reason: "formato do header HMAC inválido ou assinatura não bateu" };
 }
 
 export async function POST(req: NextRequest) {
@@ -57,7 +102,8 @@ export async function POST(req: NextRequest) {
     const authHeader  = req.headers.get("authorization");
     const sigHeader   = req.headers.get("x-webhook-signature");
     const bearerOk = verifyBearer(authHeader, bearerToken);
-    const hmacOk = verifyHmac(rawBody, sigHeader, hmacSecret);
+    const hmacCheck = verifyHmac(rawBody, sigHeader, hmacSecret);
+    const hmacOk = hmacCheck.ok;
 
     let authorized = false;
 
@@ -75,7 +121,7 @@ export async function POST(req: NextRequest) {
         ok: false,
         status: "auth_failed",
         mode,
-        message: `Autenticação falhou no webhook GGPix. Bearer: ${bearerOk ? "ok" : "falhou"}. HMAC: ${hmacOk ? "ok" : "falhou"}.`,
+        message: `Autenticação falhou no webhook GGPix. Bearer: ${bearerOk ? "ok" : "falhou"}. HMAC: ${hmacOk ? "ok" : hmacCheck.reason}.`,
         checkedAt: Date.now(),
         bearerOk,
         hmacOk,
