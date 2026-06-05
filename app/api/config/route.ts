@@ -2,7 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isAdmin } from "@/lib/admins";
 import { isConfigured as livepixConfigured, testConnection as testLivepix } from "@/lib/livepix";
-import { testConnection as testGgpix } from "@/lib/ggpix";
+import {
+  clearGgpixWebhookStatus,
+  getGgpixServerIp,
+  getGgpixWebhookAuthIssue,
+  getGgpixWebhookStatus,
+  testConnection as testGgpix,
+} from "@/lib/ggpix";
 import { getCredentials, patchLivePix, patchGGPix, type WebhookAuthMode } from "@/lib/credentials";
 import { getSiteUrl } from "@/lib/site-url";
 import { addLog } from "@/lib/security-log";
@@ -11,6 +17,15 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 const NO_CACHE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
+async function getGgpixTestStatus() {
+  const [api, creds, webhookStatus] = await Promise.all([testGgpix(), getCredentials(), getGgpixWebhookStatus()]);
+  const authIssue = getGgpixWebhookAuthIssue(creds);
+  if (!api.ok) return api;
+  if (authIssue) return { ok: false, error: authIssue };
+  if (webhookStatus?.ok === false) return { ok: false, error: webhookStatus.message };
+  return { ok: true };
+}
+
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!isAdmin(session?.user?.twitchLogin)) {
@@ -18,15 +33,24 @@ export async function GET(req: NextRequest) {
   }
 
   if (req.nextUrl.searchParams.get("test") === "1") {
-    const [livepix, ggpix] = await Promise.all([testLivepix(), testGgpix()]);
+    const [livepix, ggpix] = await Promise.all([testLivepix(), getGgpixTestStatus()]);
     return NextResponse.json({ livepix, ggpix }, { headers: NO_CACHE });
   }
 
-  const [livepixOk, creds] = await Promise.all([livepixConfigured(), getCredentials()]);
+  const [livepixOk, creds, webhookStatus, serverIp] = await Promise.all([
+    livepixConfigured(),
+    getCredentials(),
+    getGgpixWebhookStatus(),
+    getGgpixServerIp(),
+  ]);
 
   const siteUrl = getSiteUrl();
 
-  const ggpixOk = !!(creds.ggpix.apiKey || process.env.GGPIX_API_KEY);
+  const ggpixApiOk = !!(creds.ggpix.apiKey || process.env.GGPIX_API_KEY);
+  const webhookAuthError = getGgpixWebhookAuthIssue(creds);
+  const webhookAuthReady = !webhookAuthError;
+  const webhookLastOk = webhookStatus?.ok !== false;
+  const ggpixOk = ggpixApiOk && webhookAuthReady && webhookLastOk;
 
   const hasWebhookSecret = !!(creds.livepix.webhookSecret || process.env.LIVEPIX_WEBHOOK_SECRET);
   const webhookSecret    = creds.livepix.webhookSecret || process.env.LIVEPIX_WEBHOOK_SECRET || "";
@@ -44,6 +68,10 @@ export async function GET(req: NextRequest) {
       hasBearerToken:   !!creds.ggpix.bearerToken,
       hasHmacSecret:    !!creds.ggpix.hmacSecret,
       webhookUrl:       `${siteUrl}/api/ggpix/webhook`,
+      webhookAuthReady,
+      webhookAuthError,
+      webhookStatus,
+      serverIp,
     },
     livepix: {
       ok: livepixOk,
@@ -91,9 +119,10 @@ export async function POST(req: NextRequest) {
     if (typeof body.bearerToken     === "string")                                 patch.bearerToken     = body.bearerToken.trim();
     if (typeof body.hmacSecret      === "string")                                 patch.hmacSecret      = body.hmacSecret.trim();
     await patchGGPix(patch);
+    await clearGgpixWebhookStatus();
     await addLog({ admin: session!.user!.twitchLogin!, action: "config_ggpix", detail: "Credenciais GGPix atualizadas" });
 
-    const test = await testGgpix();
+    const test = await getGgpixTestStatus();
     return NextResponse.json({ ok: true, test }, { headers: NO_CACHE });
   }
 

@@ -16,6 +16,18 @@ interface ConfigStatus {
     hasBearerToken: boolean;
     hasHmacSecret: boolean;
     webhookUrl: string;
+    webhookAuthReady: boolean;
+    webhookAuthError: string | null;
+    webhookStatus: {
+      ok: boolean;
+      status: "received" | "auth_failed" | "parse_error";
+      mode: string;
+      message: string;
+      checkedAt: number;
+      bearerOk?: boolean;
+      hmacOk?: boolean;
+    } | null;
+    serverIp: string | null;
   };
   livepix: {
     ok: boolean;
@@ -73,6 +85,23 @@ function UrlBox({ label, url }: { label: string; url: string }) {
   );
 }
 
+function MaskedCopyBox({ label, value, emptyText }: { label: string; value: string | null; emptyText: string }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="text-[10px] font-black text-gray-500 uppercase tracking-wider">{label}</p>
+      <div className="flex items-center gap-2">
+        <code
+          className="flex-1 px-3 py-2 rounded-lg text-[11px] text-gray-300 truncate"
+          style={{ background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.08)" }}
+        >
+          {value ? "•••.•••.•••.•••" : emptyText}
+        </code>
+        {value && <CopyButton value={value} />}
+      </div>
+    </div>
+  );
+}
+
 function FieldInput({
   label, placeholder, value, onChange, type = "text", configured, hint,
 }: {
@@ -80,7 +109,17 @@ function FieldInput({
   type?: string; configured?: boolean; hint?: string;
 }) {
   const [show, setShow] = useState(false);
+  const [editingStored, setEditingStored] = useState(false);
   const isPassword = type === "password";
+  const showingStored = isPassword && !!configured && !editingStored && !value;
+
+  useEffect(() => {
+    if (configured && !value) {
+      setEditingStored(false);
+      setShow(false);
+    }
+  }, [configured, value]);
+
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
@@ -92,9 +131,13 @@ function FieldInput({
       <div className="relative">
         <input
           type={isPassword && !show ? "password" : "text"}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={configured ? "Deixe vazio para manter o valor atual" : placeholder}
+          value={showingStored ? "••••••••••••••••" : value}
+          readOnly={showingStored}
+          onChange={(e) => {
+            if (showingStored) return;
+            onChange(e.target.value);
+          }}
+          placeholder={configured ? "Valor atual salvo com segurança" : placeholder}
           className="w-full px-3 py-2.5 rounded-xl text-sm text-white pr-16 outline-none transition-all"
           style={{
             background: "rgba(0,0,0,0.45)",
@@ -106,14 +149,54 @@ function FieldInput({
         {isPassword && (
           <button
             type="button"
-            onClick={() => setShow((s) => !s)}
+            onClick={() => {
+              if (showingStored) {
+                setEditingStored(true);
+                setShow(false);
+                return;
+              }
+              setShow((s) => !s);
+            }}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-black text-gray-600 hover:text-gray-400 transition-colors"
           >
-            {show ? "Ocultar" : "Revelar"}
+            {showingStored ? "Trocar" : show ? "Ocultar" : "Revelar"}
           </button>
         )}
       </div>
       {hint && <p className="text-[10px] text-gray-600 leading-relaxed">{hint}</p>}
+    </div>
+  );
+}
+
+function WebhookStatusBox({ status, authError }: { status: ConfigStatus["ggpix"]["webhookStatus"]; authError: string | null }) {
+  if (authError) {
+    return (
+      <div className="px-4 py-3 rounded-xl text-xs text-red-300" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}>
+        <p className="font-black mb-1">Webhook incompleto</p>
+        <p className="text-red-200/80">{authError}</p>
+      </div>
+    );
+  }
+
+  if (!status) {
+    return (
+      <div className="px-4 py-3 rounded-xl text-xs text-gray-500" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+        Nenhum teste de webhook recebido ainda. Depois de clicar em Testar na GGPix, o resultado aparece aqui.
+      </div>
+    );
+  }
+
+  const ok = status.ok;
+  return (
+    <div
+      className={`px-4 py-3 rounded-xl text-xs ${ok ? "text-green-300" : "text-red-300"}`}
+      style={ok
+        ? { background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)" }
+        : { background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)" }}
+    >
+      <p className="font-black mb-1">{ok ? "Webhook validado" : "Webhook falhou"}</p>
+      <p className={ok ? "text-green-200/80" : "text-red-200/80"}>{status.message}</p>
+      <p className="text-[10px] text-gray-600 mt-1">{new Date(status.checkedAt).toLocaleString("pt-BR")}</p>
     </div>
   );
 }
@@ -314,6 +397,12 @@ export default function AdminConfigPage() {
         const d = await res.json() as { livepix: { ok: boolean; error?: string }; ggpix: { ok: boolean; error?: string } };
         setLiveTest(d.livepix);
         setGgTest(d.ggpix);
+      }
+      const configRes = await fetch("/api/config");
+      if (configRes.ok) {
+        const data = await configRes.json() as ConfigStatus;
+        setConfig(data);
+        setGgAuthMode(data.ggpix.webhookAuthMode);
       }
     } catch {  }
     finally { setTesting(false); }
@@ -604,6 +693,11 @@ export default function AdminConfigPage() {
               {config?.ggpix.webhookUrl && (
                 <UrlBox label="Cole esta URL no painel da GGPix" url={config.ggpix.webhookUrl} />
               )}
+              <MaskedCopyBox
+                label="IP do servidor para liberar na GGPix"
+                value={config?.ggpix.serverIp ?? null}
+                emptyText="Não foi possível detectar agora"
+              />
               <p className="text-[10px] text-gray-600">
                 Eventos a ativar:{" "}
                 <span className="text-gray-400 font-black">PIX Enviado</span>
@@ -665,6 +759,14 @@ export default function AdminConfigPage() {
                   hint='GGPix: Credenciais e Webhooks → Webhooks → HMAC Secret → "Gerar". Assinatura enviada em X-Webhook-Signature.'
                 />
               )}
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-[11px] font-black text-gray-500 uppercase tracking-wider">Status do Webhook</p>
+              <WebhookStatusBox
+                status={config?.ggpix.webhookStatus ?? null}
+                authError={config?.ggpix.webhookAuthError ?? null}
+              />
             </div>
 
             {ggMsg && (

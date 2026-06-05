@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createHmac, timingSafeEqual } from "crypto";
 import { atualizarTransacaoPorTxid } from "@/lib/gorjeta-store";
 import { getCredentials } from "@/lib/credentials";
+import { setGgpixWebhookStatus } from "@/lib/ggpix";
 
 export const dynamic = "force-dynamic";
 
@@ -70,12 +71,28 @@ export async function POST(req: NextRequest) {
 
     if (!authorized) {
       console.error(`[ggpix/webhook] ❌ Autenticação falhou (modo: ${mode}, bearer=${bearerOk ? "ok" : "falhou"}, hmac=${hmacOk ? "ok" : "falhou"})`);
+      await setGgpixWebhookStatus({
+        ok: false,
+        status: "auth_failed",
+        mode,
+        message: `Autenticação falhou no webhook GGPix. Bearer: ${bearerOk ? "ok" : "falhou"}. HMAC: ${hmacOk ? "ok" : "falhou"}.`,
+        checkedAt: Date.now(),
+        bearerOk,
+        hmacOk,
+      });
       return new NextResponse("Unauthorized", { status: 401 });
     }
   }
 
   try {
     const body = JSON.parse(rawBody || "{}");
+    await setGgpixWebhookStatus({
+      ok: true,
+      status: "received",
+      mode,
+      message: "Webhook GGPix recebido com autenticação válida.",
+      checkedAt: Date.now(),
+    });
     console.log("[ggpix/webhook] Notificação:", JSON.stringify(body));
 
     const externalId: string | undefined =
@@ -100,6 +117,13 @@ export async function POST(req: NextRequest) {
     }
   } catch (err) {
     console.error("[ggpix/webhook] Erro:", err);
+    await setGgpixWebhookStatus({
+      ok: false,
+      status: "parse_error",
+      mode,
+      message: "Webhook chegou, mas o corpo da requisição não veio em JSON válido.",
+      checkedAt: Date.now(),
+    });
   }
 
   return new NextResponse("OK", { status: 200 });

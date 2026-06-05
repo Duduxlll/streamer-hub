@@ -48,6 +48,7 @@ export default function CorridaPage() {
   const [ggpixOk, setGgpixOk] = useState(false);
   const [enviando, setEnviando] = useState<"" | "auto" | "fila">("");
   const [enviado, setEnviado] = useState(false);
+  const [erroEnvio, setErroEnvio] = useState<string | null>(null);
   const [erroDados, setErroDados] = useState(false);
   const [jogoPronto, setJogoPronto] = useState(false);
 
@@ -165,20 +166,34 @@ export default function CorridaPage() {
 
   async function enviar(modo: "auto" | "fila") {
     if (enviado || enviando) return;
+    setErroEnvio(null);
     setEnviando(modo);
     const action = modo === "auto" ? "enviar-manual" : "enviar-manual-fila";
     let allOk = true;
+    let firstError = "";
     for (let i = 0; i < winners.length; i++) {
       const v = valores[i] || 0; if (v <= 0) continue;
       try {
         const r = await fetch("/api/gorjeta", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, username: winners[i].username, valor: v }) });
-        if (!r.ok) allOk = false;
-      } catch { allOk = false; }
+        const data = await r.json().catch(() => ({})) as { error?: string; result?: { status?: string; erro?: string } };
+        if (!r.ok) {
+          allOk = false;
+          firstError ||= data.error ?? "Falha ao enviar PIX";
+        } else if (modo === "auto" && data.result?.status === "falhou") {
+          allOk = false;
+          firstError ||= data.result.erro ?? "Falha ao enviar PIX";
+        }
+      } catch {
+        allOk = false;
+        firstError ||= "Erro de conexão ao enviar PIX";
+      }
     }
     setEnviando("");
     if (allOk) {
       setEnviado(true);
       if (modo === "fila") router.push("/admin/gorjeta/pagamentos");
+    } else {
+      setErroEnvio(firstError || "Algum PIX falhou. Confira a configuração da GGPix.");
     }
   }
 
@@ -276,6 +291,11 @@ export default function CorridaPage() {
                 <span className="text-lg font-black" style={{ color: cobre ? "#4ade80" : "#f87171" }}>R$ {fmtBRL(total)} <span className="text-[11px] text-gray-600">/ saldo R$ {fmtBRL(saldo)}</span></span>
               </div>
               {!cobre && <p className="text-center text-xs text-red-400 font-bold">Total passa do saldo — reduza os valores.</p>}
+              {erroEnvio && (
+                <div className="rounded-2xl px-4 py-3 text-xs text-red-300 font-bold leading-relaxed" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(248,113,113,0.28)" }}>
+                  {erroEnvio}
+                </div>
+              )}
 
               {enviado ? (
                 <div className="text-center space-y-3 py-2">
