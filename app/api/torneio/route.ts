@@ -78,7 +78,7 @@ export async function POST(req: Request) {
     const torneio = await finalizarTorneio();
     if (!torneio) return NextResponse.json({ error: "Nenhum torneio ativo" }, { status: 400 });
 
-    // Mapeia username → displayName a partir das escolhas de todas as fases
+
     const nameMap = new Map<string, string>();
     for (const fase of torneio.fases) {
       for (const e of fase.escolhas) nameMap.set(e.username.toLowerCase(), e.displayName);

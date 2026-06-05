@@ -165,7 +165,7 @@ function ScreenshotModal({ id, onClose }: { id: string; onClose: () => void }) {
   );
 }
 
-// ─── Modal de sorteio animado ─────────────────────────────────────────────
+
 
 function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
   participantes: ParticipanteSessao[];
@@ -213,7 +213,6 @@ function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
 
     run();
     return () => { cancelRef.current = true; };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const unrevealed = vencedores.length - revealedWinners.length;
@@ -223,7 +222,7 @@ function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
       <div className="w-full max-w-sm rounded-3xl overflow-hidden"
         style={{ background: "rgba(6,17,10,0.98)", border: "1px solid rgba(255,186,0,0.3)", boxShadow: "0 0 80px rgba(255,186,0,0.1)" }}>
 
-        {/* Header */}
+
         <div className="px-6 pt-6 pb-4 text-center border-b border-white/5">
           <div className="text-2xl mb-1">🎲</div>
           <h2 className="text-lg font-black text-white">
@@ -234,7 +233,7 @@ function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
           </p>
         </div>
 
-        {/* Slot machine */}
+
         {!done && (
           <div className="px-6 py-6 flex flex-col items-center gap-3">
             <div className="relative w-full rounded-2xl overflow-hidden"
@@ -253,7 +252,7 @@ function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
                 </p>
               </div>
             </div>
-            {/* Spinning indicator */}
+
             <div className="flex gap-1">
               {[0,1,2].map(i => (
                 <div key={i} className="w-1.5 h-1.5 rounded-full bg-[#ffba00] animate-bounce"
@@ -263,7 +262,7 @@ function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
           </div>
         )}
 
-        {/* Vencedores revelados */}
+
         {revealedWinners.length > 0 && (
           <div className="px-5 pb-4 space-y-2">
             {!done && <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest px-1 mb-2">Revelados</p>}
@@ -289,7 +288,7 @@ function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
           </div>
         )}
 
-        {/* Ações */}
+
         <div className="px-5 pb-6 space-y-2 border-t border-white/5 pt-4">
           {done && (
             <button
@@ -312,7 +311,7 @@ function SortearModal({ participantes, vencedores, onPagarFila, onClose }: {
   );
 }
 
-// ─── Modal de confirmação ────────────────────────────────────────────────
+
 
 function ConfirmModal({ title, desc, icon, confirmLabel = "Confirmar", onConfirm, onClose }: {
   title: string; desc: string; icon: string; confirmLabel?: string;
@@ -357,7 +356,7 @@ function ConfirmModal({ title, desc, icon, confirmLabel = "Confirmar", onConfirm
   );
 }
 
-// ─── Card de cadastro ─────────────────────────────────────────────────────
+
 
 function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onDeletar }: {
   c: CadastroGorjeta;
@@ -472,19 +471,19 @@ function CadastroCard({ c, onAprovar, onRejeitar, onVerFoto, onChaveEditada, onD
   );
 }
 
-// ─── Página principal ─────────────────────────────────────────────────────
+
 
 export default function AdminGorjetaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
-  // tab é derivado do URL — navegação feita pelo sidebar
+
   const tab = (searchParams.get("tab") as "sessao" | "cadastros" | "historico") ?? "sessao";
   const [cadastroFiltro, setCadastroFiltro] = useState<"pendente" | "aprovado" | "rejeitado">("pendente");
   const [sessaoTab, setSessaoTab] = useState<"sortear" | "manual" | "crash" | "corrida">("sortear");
   const [corridaNum, setCorridaNum] = useState("");
   const corridaSessaoIdRef = useRef<string | null>(null);
-  // Crash
+
   const [crashSel, setCrashSel] = useState<ParticipanteSessao | null>(null);
   const [crashAposta, setCrashAposta] = useState("");
   const [crashTeto, setCrashTeto] = useState("");
@@ -545,7 +544,7 @@ export default function AdminGorjetaPage() {
     }
   }, [sessao, corridaNum]);
 
-  // GGPix configurado? (controla o botão "PIX automático" do Crash)
+
   useEffect(() => {
     if (status !== "authenticated") return;
     fetch("/api/config").then(r => r.ok ? r.json() : null).then(d => setGgpixOk(!!d?.ggpix?.ok)).catch(() => {});
@@ -731,11 +730,11 @@ export default function AdminGorjetaPage() {
           )}
         </div>
 
-        {/* ── ABA SESSÃO ── */}
+
         {tab === "sessao" && (
           <div className="space-y-4">
             {!sessao || sessao.status === "fechada" ? (
-              /* Abrir sessão */
+
               <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.9)", border: "1px solid rgba(255,186,0,0.15)", boxShadow: "0 0 40px rgba(255,186,0,0.04)" }}>
                 <div className="px-6 py-5 border-b border-white/5">
                   <p className="text-[10px] font-black text-[#ffba00] uppercase tracking-widest mb-1">Nova sessão</p>
@@ -762,7 +761,7 @@ export default function AdminGorjetaPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {/* Status + saldo */}
+
                 <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.95)", border: "1px solid rgba(255,186,0,0.25)", boxShadow: "0 0 50px rgba(255,186,0,0.06)" }}>
                   <div className="flex items-center gap-3 px-6 py-4 border-b border-white/5">
                     <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
@@ -777,7 +776,7 @@ export default function AdminGorjetaPage() {
                     )}
                   </div>
 
-                  {/* Saldo */}
+
                   <div className="px-6 py-5 space-y-3">
                     <div className="flex items-end justify-between mb-1">
                       <div>
@@ -791,7 +790,7 @@ export default function AdminGorjetaPage() {
                         <p className="text-sm font-black text-gray-500">R$ {fmtBRL(sessao.saldoTotal)}</p>
                       </div>
                     </div>
-                    {/* Progress bar */}
+
                     <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
                       <div className="h-full rounded-full transition-all duration-500"
                         style={{ width: `${Math.min(100, pctGasto)}%`, background: pctGasto > 80 ? "linear-gradient(90deg, #ef4444, #f87171)" : "linear-gradient(90deg, #ffba00, #ffdd55)" }} />
@@ -803,7 +802,7 @@ export default function AdminGorjetaPage() {
                   </div>
                 </div>
 
-                {/* Participantes */}
+
                 {sessao.participantes.length > 0 && (
                   <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.85)", border: "1px solid rgba(255,255,255,0.06)" }}>
                     <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/5">
@@ -827,9 +826,9 @@ export default function AdminGorjetaPage() {
                   </div>
                 )}
 
-                {/* Tabs sortear / manual */}
+
                 <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.9)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                  {/* Sub-tabs */}
+
                   <div className="flex border-b border-white/5">
                     {(["sortear", "manual", "crash", "corrida"] as const).map(t => (
                       <button key={t} onClick={() => setSessaoTab(t)}
@@ -842,7 +841,7 @@ export default function AdminGorjetaPage() {
                     ))}
                   </div>
 
-                  {/* Sortear */}
+
                   {sessaoTab === "sortear" && (
                     <div className="px-5 py-5 space-y-4">
                       <div className="grid grid-cols-2 gap-3">
@@ -881,7 +880,7 @@ export default function AdminGorjetaPage() {
                     </div>
                   )}
 
-                  {/* Manual */}
+
                   {sessaoTab === "manual" && (
                     <div className="px-5 py-5 space-y-3">
                       <input type="text" placeholder="Buscar participante..." value={busca}
@@ -943,7 +942,6 @@ export default function AdminGorjetaPage() {
                     </div>
                   )}
 
-                  {/* Crash */}
                   {sessaoTab === "crash" && (
                     <div className="px-5 py-5 space-y-3">
                       <div className="rounded-xl px-3 py-2.5 text-[11px] text-gray-500 leading-relaxed"
@@ -1035,7 +1033,7 @@ export default function AdminGorjetaPage() {
                     </div>
                   )}
 
-                  {/* Corrida de Bolinhas 3D */}
+
                   {sessaoTab === "corrida" && (
                     <div className="px-5 py-5 space-y-3">
                       <div className="rounded-xl px-3 py-2.5 text-[11px] text-gray-500 leading-relaxed"
@@ -1059,7 +1057,7 @@ export default function AdminGorjetaPage() {
                   )}
                 </div>
 
-                {/* Histórico de transações da sessão */}
+
                 {sessao.transacoes.length > 0 && (
                   <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.8)", border: "1px solid rgba(255,255,255,0.05)" }}>
                     <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest px-5 py-3 border-b border-white/5">PIX enviados nesta sessão</p>
@@ -1076,7 +1074,7 @@ export default function AdminGorjetaPage() {
                   </div>
                 )}
 
-                {/* Botões de controle */}
+
                 <div className="flex gap-2 flex-wrap">
                   <button onClick={fecharSessao} disabled={busy}
                     className="flex-1 py-3 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] disabled:opacity-50"
@@ -1094,10 +1092,10 @@ export default function AdminGorjetaPage() {
           </div>
         )}
 
-        {/* ── ABA CADASTROS ── */}
+
         {tab === "cadastros" && (
           <div className="space-y-4">
-            {/* Barra de pesquisa global */}
+
             <div className="relative">
               <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600 pointer-events-none" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
@@ -1118,7 +1116,7 @@ export default function AdminGorjetaPage() {
               )}
             </div>
 
-            {/* Filtros de status — ocultos durante pesquisa global */}
+
             {!buscaCadastro && (
               <div className="flex gap-2">
                 {([
@@ -1187,7 +1185,7 @@ export default function AdminGorjetaPage() {
           </div>
         )}
 
-        {/* ── ABA HISTÓRICO ── */}
+
         {tab === "historico" && (
           <div className="space-y-4">
             {historico.length === 0 && (

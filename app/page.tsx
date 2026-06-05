@@ -38,7 +38,6 @@ export default function HomePage() {
             <div className="relative">
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[#16a34a]/20 to-transparent blur-3xl scale-125 pointer-events-none" />
               <div className="glow-card w-52 h-52 lg:w-64 lg:h-64 rounded-full border-2 border-[#16a34a]/40 overflow-hidden relative">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/stain-icon.jpg"
                   alt="stainzincs"
@@ -60,7 +59,7 @@ export default function HomePage() {
                 <TwitchIcon className="w-5 h-5 text-[#22c55e]" />
               </a>
 
-              {/* Logo JonBet — parceiro oficial, clicável */}
+
               <a
                 href={JONBET_URL}
                 target="_blank"
@@ -69,7 +68,6 @@ export default function HomePage() {
                 className="flex items-center px-4 py-2.5 rounded-full transition-all hover:scale-[1.04]"
                 style={{ background: "rgba(5,225,13,0.1)", border: "1px solid rgba(5,225,13,0.35)", boxShadow: "0 0 18px rgba(5,225,13,0.12)" }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={JONBET_LOGO} alt="JonBet" className="h-4 w-auto" />
               </a>
             </div>
@@ -93,7 +91,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── Banner Parceiro Oficial — JonBet ─── */}
+
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <style>{`
           @keyframes jbGlow {
@@ -121,17 +119,17 @@ export default function HomePage() {
             border: "1px solid rgba(34,197,94,0.2)",
           }}>
 
-          {/* Linha de luz no topo */}
+
           <div className="absolute top-0 left-0 right-0 h-px"
             style={{ background: "linear-gradient(90deg, transparent, rgba(34,197,94,0.5), transparent)" }} />
-          {/* Orbe de brilho suave */}
+
           <div className="absolute -top-24 -left-16 w-80 h-80 rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, rgba(34,197,94,0.1), transparent 70%)", filter: "blur(55px)" }} />
 
           <div className="relative px-6 sm:px-10 py-9 flex flex-col lg:flex-row items-center gap-8 text-center lg:text-left">
             <div className="flex-1 flex flex-col items-center lg:items-start">
 
-              {/* Badge */}
+
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-5"
                 style={{ background: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.25)" }}>
                 <span className="relative flex h-2 w-2">
@@ -141,19 +139,18 @@ export default function HomePage() {
                 <span className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: "#4ade80" }}>Parceiro Oficial</span>
               </div>
 
-              {/* Logo */}
+
               <div className="jb-logo mb-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={JONBET_LOGO} alt="JonBet" className="h-8 sm:h-10 w-auto" style={{ filter: "drop-shadow(0 0 14px rgba(34,197,94,0.2))" }} />
               </div>
 
-              {/* Headline */}
+
               <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-3">
                 A casa oficial do{" "}
                 <span className="text-white">stain</span><span className="gradient-text">zincs</span>
               </h2>
 
-              {/* Texto */}
+
               <p className="text-gray-400 text-sm sm:text-base max-w-lg leading-relaxed">
                 A <strong className="text-white">melhor casa do Brasil</strong>, com o <strong className="text-white">saque mais rápido</strong> via Pix direto na sua conta.
                 Cadastre-se agora e jogue junto com a comunidade!
@@ -161,7 +158,7 @@ export default function HomePage() {
               <p className="text-[10px] text-gray-600 mt-3">+18 · Jogue com responsabilidade</p>
             </div>
 
-            {/* CTA */}
+
             <div className="flex-shrink-0">
               <a
                 href={JONBET_URL}

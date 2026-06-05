@@ -25,7 +25,7 @@ function StatusBadge({ status }: { status: PagamentoPendente["status"] }) {
   );
 }
 
-// ── Modal de QR Code PIX ──────────────────────────────────────────────────────
+
 
 function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
   pagamento: PagamentoPendente;
@@ -38,7 +38,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
   const [copiedKey, setCopiedKey] = useState(false);
   const [erro, setErro]         = useState<string | null>(null);
 
-  // payload PIX EMV — copia e cola padrão de qualquer banco
+
   const payload = generatePixPayload({
     pixKey:       pagamento.pixKey,
     amount:       pagamento.valor,
@@ -85,7 +85,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
           animation: "pixModalIn 0.32s cubic-bezier(0.16, 1, 0.3, 1)",
         }}>
 
-        {/* Header — sticky com gradiente */}
+
         <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
           style={{
             background: "linear-gradient(135deg, rgba(255,186,0,0.1), rgba(255,140,0,0.03))",
@@ -107,11 +107,11 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
           </button>
         </div>
 
-        {/* Conteúdo com scroll */}
+
         <div className="overflow-y-auto px-5 py-4 flex flex-col items-center gap-3"
           style={{ scrollbarWidth: "thin" }}>
 
-          {/* Valor */}
+
           <div className="text-center">
             <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Valor a pagar</p>
             <p className="text-3xl font-black" style={{ color: "#ffba00", animation: "pixValuePulse 2.5s ease-in-out infinite" }}>
@@ -119,7 +119,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
             </p>
           </div>
 
-          {/* QR Code */}
+
           {erro ? (
             <div className="w-[220px] h-[220px] flex items-center justify-center text-center px-6 rounded-2xl"
               style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.2)" }}>
@@ -128,7 +128,6 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
           ) : qrUrl ? (
             <div className="rounded-2xl overflow-hidden bg-white p-2.5"
               style={{ animation: "pixQrIn 0.4s ease-out", boxShadow: "0 0 30px rgba(255,186,0,0.12)" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={qrUrl} alt="QR Code PIX" className="w-[200px] h-[200px] block" />
             </div>
           ) : (
@@ -141,7 +140,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
             Escaneie com o app do seu banco ou use as opções abaixo
           </p>
 
-          {/* Chave PIX camuflada + copiar */}
+
           <div className="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl"
             style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div className="flex-1 min-w-0">
@@ -157,7 +156,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
             </button>
           </div>
 
-          {/* Copia e cola (payload completo) */}
+
           <button onClick={copiarPayload}
             className="w-full py-2.5 rounded-xl text-xs font-black transition-all hover:scale-[1.01] active:scale-95"
             style={copied
@@ -167,7 +166,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
           </button>
         </div>
 
-        {/* Ações — fixas embaixo */}
+
         <div className="px-5 pb-5 pt-3 space-y-2 flex-shrink-0 border-t border-white/5">
           <button
             disabled={busy}
@@ -187,7 +186,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
   );
 }
 
-// ── Card de pagamento ──────────────────────────────────────────────────────────
+
 
 function PagamentoCard({ p, onEnviar, onRemover, busy }: {
   p: PagamentoPendente;
@@ -254,7 +253,7 @@ function PagamentoCard({ p, onEnviar, onRemover, busy }: {
   );
 }
 
-// ── Página ──────────────────────────────────────────────────────────────────────
+
 
 export default function PagamentosPage() {
   const [pagamentos, setPagamentos] = useState<PagamentoPendente[]>([]);

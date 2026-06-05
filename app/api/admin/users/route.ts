@@ -21,10 +21,9 @@ export async function GET(req: NextRequest) {
   if (!adminLogin) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
 
   const url    = new URL(req.url);
-  const target = url.searchParams.get("history"); // ?history=twitchLogin
+  const target = url.searchParams.get("history");
 
   if (target) {
-    // Histórico de gorjetas ganhas pelo usuário
     const historico = await getHistoricoGorjeta();
     const ganhos = historico.flatMap(h =>
       h.transacoes
@@ -34,7 +33,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ganhos }, { headers: NO_CACHE });
   }
 
-  // Nunca expõe o hash da senha ao cliente, mesmo para o admin.
   const users = (await getUsers()).map(({ passwordHash, ...u }) => { void passwordHash; return u; });
   return NextResponse.json({ users }, { headers: NO_CACHE });
 }

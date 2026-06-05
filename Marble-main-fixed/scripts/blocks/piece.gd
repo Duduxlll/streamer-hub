@@ -19,7 +19,6 @@ func _init() -> void:
 
 
 func _ready() -> void:
-	# Setup collision layers
 	collision_layer = 1 << CollisionLayers.PROPS
 	collision_mask = 0
 

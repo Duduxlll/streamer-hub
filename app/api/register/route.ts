@@ -12,7 +12,6 @@ function getIp(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
-  // Limita criação de contas por IP (anti-spam): 6 por hora.
   const limite = rateLimit(`register:${getIp(req)}`, 6, 60 * 60 * 1000);
   if (!limite.ok) {
     return NextResponse.json({ error: "Muitas tentativas. Tente novamente mais tarde." }, { status: 429 });
@@ -46,11 +45,11 @@ export async function POST(req: NextRequest) {
   if (senha.length < 6) {
     return NextResponse.json({ error: "A senha precisa ter no mínimo 6 caracteres" }, { status: 400 });
   }
-  // Print do depósito (JonBet) é obrigatório para aprovação
+
   if (!screenshot.startsWith("data:image/")) {
     return NextResponse.json({ error: "Envie o print do seu histórico de depósito na JonBet" }, { status: 400 });
   }
-  if (screenshot.length > 2_900_000) { // ~2MB em base64
+  if (screenshot.length > 2_900_000) {
     return NextResponse.json({ error: "Imagem muito grande (máx 2MB)" }, { status: 400 });
   }
 
@@ -66,7 +65,7 @@ export async function POST(req: NextRequest) {
   });
   if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
 
-  // Cria o cadastro de gorjeta (pendente) com o print, reaproveitando o fluxo de aprovação.
+
   const cad = await cadastrar({
     username: login,
     displayName: result.user.displayName,
@@ -77,7 +76,7 @@ export async function POST(req: NextRequest) {
     screenshot,
   });
   if (!cad.ok) {
-    // Conta criada, mas o print não pôde ser registrado — informa para reenviar na página de Gorjeta.
+
     await addLog({ admin: "sistema", action: "cadastro", target: login, detail: `Conta criada (print pendente: ${cad.error})` });
     return NextResponse.json({ ok: true, avisoPrint: cad.error });
   }

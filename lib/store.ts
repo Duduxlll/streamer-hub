@@ -15,8 +15,8 @@ export interface Rodada {
   status: "aberta" | "travada" | "fechada";
   buyIn: number;
   numVencedores: number;
-  modoVitoria: ModoVitoria;       // "aproximado" = mais perto ganha | "exato" = valor exato
-  multiplosPalpites: boolean;     // true = palpitar quantas vezes quiser | false = apenas um
+  modoVitoria: ModoVitoria;
+  multiplosPalpites: boolean;
   palpites: Palpite[];
   createdAt: number;
 }
@@ -149,7 +149,7 @@ function parseState(raw: unknown): StoreState {
     const value = typeof raw === "string" ? JSON.parse(raw) : raw;
     const state = value as Partial<StoreState & { msgQueue?: unknown }>;
 
-    // Normaliza rodadas antigas que não tinham os campos de configuração
+
     const rodada = state.rodada
       ? {
           ...state.rodada,
@@ -281,7 +281,7 @@ export async function fecharRodada(
   let vencedores: VencedorInfo[] = [];
   if (typeof resultado === "number" && r.palpites.length > 0) {
     if (r.modoVitoria === "exato") {
-      // Só ganha quem acertou o valor exato — desempate por quem palpitou primeiro
+
       const exatos = r.palpites
         .filter(p => p.valor === resultado)
         .sort((a, b) => a.createdAt - b.createdAt);
@@ -292,7 +292,7 @@ export async function fecharRodada(
         diferenca: 0,
       }));
     } else {
-      // Aproximado — o mais perto ganha
+
       const ordenados = [...r.palpites].sort(
         (a, b) => Math.abs(a.valor - resultado) - Math.abs(b.valor - resultado)
       );
@@ -332,14 +332,14 @@ export async function addOrUpdatePalpite(
   const r = state.rodada;
   if (!r || r.status !== "aberta") return { ok: false, updated: false };
 
-  // Modo múltiplo: cada palpite é um novo registro (palpitar quantas vezes quiser)
+
   if (r.multiplosPalpites) {
     r.palpites.push({ username, valor, createdAt: Date.now() });
     await saveState(state);
     return { ok: true, updated: false };
   }
 
-  // Modo único: atualiza o palpite existente da pessoa
+
   const idx = r.palpites.findIndex(
     (p) => p.username.toLowerCase() === username.toLowerCase()
   );
@@ -386,7 +386,7 @@ export async function queueChatMessage(msg: string): Promise<void> {
 
   if (shouldUseLocalFile()) {
     let queue: string[] = [];
-    try { queue = parseQueue(await fs.readFile(LOCAL_QUEUE_FILE, "utf-8")); } catch { /**/ }
+    try { queue = parseQueue(await fs.readFile(LOCAL_QUEUE_FILE, "utf-8")); } catch {  }
     queue.push(msg);
     await fs.mkdir(path.dirname(LOCAL_QUEUE_FILE), { recursive: true });
     await fs.writeFile(LOCAL_QUEUE_FILE, JSON.stringify(queue), "utf-8");
@@ -415,7 +415,7 @@ export async function drainChatMessages(): Promise<string[]> {
 
   if (shouldUseLocalFile()) {
     let queue: string[] = [];
-    try { queue = parseQueue(await fs.readFile(LOCAL_QUEUE_FILE, "utf-8")); } catch { /**/ }
+    try { queue = parseQueue(await fs.readFile(LOCAL_QUEUE_FILE, "utf-8")); } catch {  }
     if (queue.length > 0) {
       await fs.mkdir(path.dirname(LOCAL_QUEUE_FILE), { recursive: true });
       await fs.writeFile(LOCAL_QUEUE_FILE, "[]", "utf-8");
@@ -463,7 +463,7 @@ export async function setLivePixUserToken(t: LivePixUserToken | null): Promise<v
     return;
   }
   if (shouldUseLocalFile()) {
-    if (t === null) { try { await fs.unlink(LOCAL_LIVEPIX_TOKEN_FILE); } catch { /**/ } }
+    if (t === null) { try { await fs.unlink(LOCAL_LIVEPIX_TOKEN_FILE); } catch {  } }
     else { await fs.writeFile(LOCAL_LIVEPIX_TOKEN_FILE, JSON.stringify(t), "utf-8"); }
     return;
   }

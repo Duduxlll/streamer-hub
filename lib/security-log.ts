@@ -36,5 +36,5 @@ export async function addLog(entry: Omit<LogEntry, "id" | "ts">): Promise<void> 
       ...entry,
     };
     await dbSet(KEY_LOGS, JSON.stringify([newEntry, ...logs].slice(0, MAX_LOGS)));
-  } catch { /* best-effort — log nunca deve quebrar a operação principal */ }
+  } catch {  }
 }

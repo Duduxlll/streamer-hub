@@ -17,7 +17,6 @@ func _process(_delta):
 
 
 func add_marble_rank(marble: Marble) -> void:
-	# Add the marble to the list of participants
 	var participant = ParticipantScene.instantiate()
 	participant.set_marble(marble)
 	_ranking.add_child(participant)

@@ -96,27 +96,26 @@ function Roleta({ participantes, vencedor }: { participantes: Participante[]; ve
       if (!stripRef.current) return;
       const containerW = stripRef.current.parentElement?.clientWidth ?? 600;
       const target = WINNER_POS * UNIT - (containerW / 2 - ITEM_W / 2);
-      // Deslocamento de suspense: para o giro com o vencedor quase um item inteiro fora do
-      // centro, e depois desliza BEM devagar até encaixar — o suspense final.
+
+
       const offsetSuspense = UNIT * 0.92;
 
-      // ── Fase 1: giro principal, desacelera forte e quase para ──
+
       stripRef.current.style.transition = "transform 6.5s cubic-bezier(0.05, 0.85, 0.12, 1)";
       stripRef.current.style.transform  = `translateX(-${target - offsetSuspense}px)`;
 
-      // ── Fase 2: deslize final ~5s, o mais lento possível, indo indo até parar ──
+
       timers.push(setTimeout(() => {
         if (!stripRef.current) return;
         stripRef.current.style.transition = "transform 5s cubic-bezier(0.18, 0.7, 0.1, 1)";
         stripRef.current.style.transform  = `translateX(-${target}px)`;
       }, 6700));
 
-      // Marca o vencedor quando o deslize final termina
+
       timers.push(setTimeout(() => setFinalizado(true), 11850));
     }, 300));
 
     return () => timers.forEach(clearTimeout);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

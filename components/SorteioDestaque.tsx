@@ -177,7 +177,7 @@ export default function SorteioDestaque() {
           (s: Sorteio) => s.status === "ativo" || s.status === "pronto"
         );
         setSorteios(ativos);
-      } catch { /* ignora */ }
+      } catch {  }
     }
     load();
     const iv = setInterval(load, 10000);

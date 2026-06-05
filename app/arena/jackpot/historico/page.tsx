@@ -22,7 +22,6 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
     <div className="rounded-2xl overflow-hidden transition-all"
       style={{ background: "rgba(8,20,13,0.97)", border: "1px solid rgba(245,158,11,0.15)", backdropFilter: "blur(12px)" }}>
 
-      {/* Header — clicável */}
       <button
         onClick={() => setExpanded(e => !e)}
         className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-white/[0.02] transition-colors"
@@ -67,7 +66,6 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
         <span className="text-gray-600 text-xs flex-shrink-0 ml-1">{expanded ? "▲" : "▼"}</span>
       </button>
 
-      {/* Stats móbile */}
       <div className="flex sm:hidden items-center gap-4 px-5 pb-3 border-t border-white/5 pt-3">
         <div className="text-center flex-1">
           <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Jogadores</p>
@@ -85,10 +83,8 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
         </div>
       </div>
 
-      {/* Detalhes expandidos */}
       {expanded && (
         <div className="border-t border-white/5">
-          {/* Vencedor destaque */}
           {item.vencedor && (
             <div className="px-5 py-4 flex items-center gap-4"
               style={{ background: "rgba(245,158,11,0.05)", borderBottom: "1px solid rgba(245,158,11,0.12)" }}>
@@ -110,7 +106,6 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
             </div>
           )}
 
-          {/* Lista de jogadores */}
           <div className="px-5 py-3">
             <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-3">
               Todos os participantes ({item.jogadores.length})
@@ -163,7 +158,7 @@ export default function JackpotHistoricoPage() {
     try {
       const res = await fetch("/api/jackpot/historico");
       if (res.ok) setHistorico(await res.json());
-    } catch { /* ignora */ }
+    } catch {  }
   }, []);
 
   useEffect(() => { fetchHistorico(); }, [fetchHistorico]);

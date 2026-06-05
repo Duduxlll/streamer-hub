@@ -193,7 +193,7 @@ export default function AdminJackpotPage() {
     try {
       const res = await fetch("/api/jackpot", { cache: "no-store" });
       setJackpot(await res.json());
-    } catch { /* ignora */ }
+    } catch {  }
     finally { setCarregando(false); }
   }, []);
 
@@ -520,7 +520,7 @@ export default function AdminJackpotPage() {
       {ConfirmModal}
       <div className="page-enter max-w-[1700px] mx-auto px-4 sm:px-6 pt-8 pb-24 space-y-4">
 
-        {/* ── Header ── */}
+
         <div className="flex items-start gap-3 flex-wrap">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
@@ -542,7 +542,7 @@ export default function AdminJackpotPage() {
           >Cancelar</button>
         </div>
 
-        {/* ── Stats ── */}
+
         <div className="flex items-stretch gap-2.5 flex-wrap">
           <StatBox icon="🎮" label="Jogados" value={`${jogados}/${total}`} />
           <StatBox icon="🏆" label="Prêmio Total" highlight value={premioTotal > 0 ? `R$ ${premioTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"} color="#f59e0b" />
@@ -550,19 +550,19 @@ export default function AdminJackpotPage() {
           {jackpot.valorEntrada > 0 && <StatBox icon="💰" label="Custo Total" value={`R$ ${custo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />}
         </div>
 
-        {/* Progress bar */}
+
         <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-700"
             style={{ width: `${progPct}%`, background: "linear-gradient(90deg,#f59e0b,#fbbf24)" }} />
         </div>
 
-        {/* ── Layout: Aguardando (esq) · Roleta (centro) · Placar (dir) ── */}
+
         <div className="grid grid-cols-1 lg:grid-cols-[290px_minmax(0,1fr)_290px] gap-4 items-start">
 
-        {/* ════ COLUNA CENTRAL — Roleta + Jogando Agora ════ */}
+
         <div className="order-1 lg:order-2 min-w-0 space-y-4">
 
-        {/* ── Roleta central ── */}
+
         <div
           className="rounded-2xl border overflow-hidden"
           style={{
@@ -619,7 +619,7 @@ export default function AdminJackpotPage() {
           )}
         </div>
 
-        {/* ── Painel de Registrar (destacado, mais embaixo) ── */}
+
         {!waitingToSpin && !spinning && jogadorAtual && (
           <div
             className="rounded-3xl border overflow-hidden"
@@ -632,7 +632,7 @@ export default function AdminJackpotPage() {
           >
             <style>{`@keyframes jkRegIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }`}</style>
 
-            {/* Faixa "JOGANDO AGORA" */}
+
             <div className="flex items-center justify-center gap-2 px-6 py-2.5"
               style={{ background: "rgba(34,197,94,0.1)", borderBottom: "1px solid rgba(34,197,94,0.18)" }}>
               <span className="relative flex h-2 w-2">
@@ -643,7 +643,7 @@ export default function AdminJackpotPage() {
             </div>
 
             <div className="px-6 py-6 flex flex-col items-center gap-5">
-              {/* Nome + jogo destacados */}
+
               <div className="text-center">
                 <p className="text-4xl sm:text-5xl font-black text-white leading-none tracking-tight"
                   style={{ textShadow: "0 0 30px rgba(34,197,94,0.25)" }}>
@@ -656,7 +656,7 @@ export default function AdminJackpotPage() {
                 )}
               </div>
 
-              {/* Input de resultado + botão */}
+
               <div className="w-full max-w-sm flex flex-col items-center gap-3">
                 <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Resultado do Bônus</span>
                 <div className="w-full flex items-center gap-2.5">
@@ -700,9 +700,9 @@ export default function AdminJackpotPage() {
             </div>
           </div>
         )}
-        </div>{/* ════ fim COLUNA CENTRAL ════ */}
+        </div>
 
-        {/* ════ COLUNA ESQUERDA — Aguardando ════ */}
+
         <div className="order-2 lg:order-1 rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,20,13,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">
@@ -794,9 +794,9 @@ export default function AdminJackpotPage() {
                 })}
               {restantes === 0 && <p className="text-xs text-gray-700 text-center py-3">Todos jogaram!</p>}
             </div>
-        </div>{/* ════ fim COLUNA ESQUERDA ════ */}
+        </div>
 
-        {/* ════ COLUNA DIREITA — Placar ao Vivo ════ */}
+
         <div className="order-3 rounded-2xl border border-white/10 p-5" style={{ background: "rgba(8,20,13,0.97)", backdropFilter: "blur(12px)" }}>
             <div className="flex items-center justify-between mb-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">🏆 Placar ao Vivo</p>

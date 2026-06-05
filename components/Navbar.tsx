@@ -64,7 +64,7 @@ function useConfigAlert(admin: boolean) {
 
 function UserMenu({ name, admin }: { name: string; admin: boolean }) {
   const [open, setOpen] = useState(false);
-  const color = "34,197,94"; // verde fixo (não depende mais de foto)
+  const color = "34,197,94";
   const configAlerta = useConfigAlert(admin);
 
   return (
@@ -159,7 +159,6 @@ export default function Navbar() {
           <div className="flex items-center gap-3">
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-8 h-8 rounded-xl overflow-hidden border border-[#16a34a]/40 shadow-lg shadow-green-950/50 group-hover:shadow-green-700/40 transition-all flex-shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src="/stain-icon.jpg"
                   alt="stainzincs"
@@ -172,13 +171,12 @@ export default function Navbar() {
               </span>
             </Link>
 
-            {/* Parceiro oficial — JonBet */}
+
             <a href={JONBET_URL} target="_blank" rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-2 pl-3 transition-all hover:opacity-80"
               style={{ borderLeft: "1px solid rgba(255,255,255,0.1)" }}
               title="Parceiro oficial — JonBet">
               <span className="text-[9px] font-black uppercase tracking-widest text-gray-600 leading-none">Parceiro</span>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={JONBET_LOGO} alt="JonBet" className="h-4 w-auto" />
             </a>
           </div>

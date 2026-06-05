@@ -125,7 +125,7 @@ export default function LogsPage() {
         </div>
       )}
 
-      {/* Filtros */}
+
       <div className="flex gap-2 flex-wrap mb-4">
         {categorias.map(c => (
           <button key={c.key} onClick={() => setFiltro(c.key)}
@@ -138,7 +138,7 @@ export default function LogsPage() {
         ))}
       </div>
 
-      {/* Busca */}
+
       <div className="relative mb-4">
         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600 text-sm">🔍</span>
         <input type="text" placeholder="Buscar por admin, usuário ou detalhe..."
@@ -148,7 +148,7 @@ export default function LogsPage() {
         {busca && <button onClick={() => setBusca("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white">✕</button>}
       </div>
 
-      {/* Lista */}
+
       <div className="rounded-2xl overflow-hidden"
         style={{ background: "rgba(6,15,9,0.92)", border: "1px solid rgba(255,255,255,0.07)", backdropFilter: "blur(20px)", boxShadow: "0 4px 20px rgba(0,0,0,0.4)" }}>
         {loading && (

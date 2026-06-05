@@ -32,7 +32,6 @@ export default function Footer() {
           <div className="flex flex-wrap items-center gap-5 lg:gap-8">
 
             <div className="flex items-center gap-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/stain-icon.jpg"
                 alt="stainzincs"
@@ -45,11 +44,9 @@ export default function Footer() {
                 <span className="gradient-text">zincs</span>
               </span>
 
-              {/* x JonBet — parceiro oficial (alinhado com a base do wordmark) */}
               <span className="text-3xl font-black text-gray-700 mx-1 self-center">×</span>
               <a href={JONBET_URL} target="_blank" rel="noopener noreferrer"
                 className="self-center transition-all hover:opacity-80" title="Parceiro oficial — JonBet">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={JONBET_LOGO} alt="JonBet" className="h-9 w-auto" style={{ transform: "translateY(0.08em)" }} />
               </a>
             </div>

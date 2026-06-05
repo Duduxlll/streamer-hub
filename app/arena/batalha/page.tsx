@@ -172,7 +172,7 @@ export default function ArenaTransferePage() {
     try {
       const res = await fetch("/api/batalha", { cache: "no-store" });
       setBatalha(await res.json());
-    } catch { /* ignora */ } finally { setCarregando(false); }
+    } catch {  } finally { setCarregando(false); }
   }, []);
 
   useEffect(() => {

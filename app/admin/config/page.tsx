@@ -179,7 +179,7 @@ function Divider() {
   return <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />;
 }
 
-/* ─── Accordion ──────────────────────────────────────────────────────── */
+
 function AccordionSection({
   icon, title, subtitle, ok, open, onToggle, children,
 }: {
@@ -198,7 +198,7 @@ function AccordionSection({
         boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
       }}
     >
-      {/* Header clicável */}
+
       <button
         type="button"
         onClick={onToggle}
@@ -225,7 +225,7 @@ function AccordionSection({
         </div>
       </button>
 
-      {/* Conteúdo expansível */}
+
       {open && (
         <>
           <Divider />
@@ -236,7 +236,7 @@ function AccordionSection({
   );
 }
 
-/* ─── Status de conexão (teste real) ─────────────────────────────────── */
+
 function ConexaoStatus({ test, testing, onTest }: {
   test: { ok: boolean; error?: string } | null;
   testing: boolean;
@@ -272,25 +272,25 @@ function ConexaoStatus({ test, testing, onTest }: {
   );
 }
 
-/* ─── Página ─────────────────────────────────────────────────────────── */
+
 export default function AdminConfigPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [config, setConfig]       = useState<ConfigStatus | null>(null);
   const [loadingPage, setLoading] = useState(true);
 
-  // sempre fechado por padrão — o usuário abre clicando
+
   const [openLive, setOpenLive] = useState(false);
   const [openGg,   setOpenGg]   = useState(false);
 
-  // LivePix form
+
   const [liveClientId,     setLiveClientId]     = useState("");
   const [liveClientSecret, setLiveClientSecret] = useState("");
   const [liveWebhookSec,   setLiveWebhookSec]   = useState("");
   const [liveSaving,       setLiveSaving]        = useState(false);
   const [liveMsg,          setLiveMsg]           = useState<{ ok: boolean; text: string } | null>(null);
 
-  // GGPix form
+
   const [ggApiKey,   setGgApiKey]   = useState("");
   const [ggAuthMode, setGgAuthMode] = useState<AuthMode>("none");
   const [ggBearer,   setGgBearer]   = useState("");
@@ -298,7 +298,7 @@ export default function AdminConfigPage() {
   const [ggSaving,   setGgSaving]   = useState(false);
   const [ggMsg,      setGgMsg]      = useState<{ ok: boolean; text: string } | null>(null);
 
-  // Resultado do teste REAL de conexão (chama as APIs)
+
   const [liveTest, setLiveTest] = useState<{ ok: boolean; error?: string } | null>(null);
   const [ggTest,   setGgTest]   = useState<{ ok: boolean; error?: string } | null>(null);
   const [testing,  setTesting]  = useState(false);
@@ -315,7 +315,7 @@ export default function AdminConfigPage() {
         setLiveTest(d.livepix);
         setGgTest(d.ggpix);
       }
-    } catch { /* ignora */ }
+    } catch {  }
     finally { setTesting(false); }
   }, []);
 
@@ -343,7 +343,7 @@ export default function AdminConfigPage() {
     runTest();
   }, [status, fetchConfig, runTest]);
 
-  // URL do webhook do LivePix — atualiza em tempo real com o secret digitado
+
   const livepixWebhookDisplay = (() => {
     const base = config?.livepix.webhookUrl?.split("?")[0] ?? "";
     if (!base) return "";
@@ -445,7 +445,7 @@ export default function AdminConfigPage() {
     );
   }
 
-  // status mostrado = resultado do teste real (quando disponível); senão, existência das credenciais
+
   const ggpixOk   = ggTest   ? ggTest.ok   : (config?.ggpix.ok   ?? false);
   const livepixOk = liveTest ? liveTest.ok : (config?.livepix.ok ?? false);
 
@@ -453,7 +453,7 @@ export default function AdminConfigPage() {
     <div className="page-enter relative min-h-[calc(100vh-4rem)]">
       <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-4">
 
-        {/* Breadcrumb */}
+
         <div className="flex items-center gap-2 text-xs text-gray-600">
           <Link href="/" className="hover:text-gray-400 transition-colors">Home</Link>
           <span>/</span>
@@ -462,7 +462,7 @@ export default function AdminConfigPage() {
 
         <h1 className="text-3xl font-black text-white">Configurações</h1>
 
-        {/* Banner de status */}
+
         {ggpixOk && livepixOk ? (
           <div
             className="flex items-center gap-2.5 px-4 py-3 rounded-xl text-sm text-green-400"
@@ -485,7 +485,7 @@ export default function AdminConfigPage() {
           </div>
         )}
 
-        {/* ═══ LIVEPIX ══════════════════════════════════════════════ */}
+
         <AccordionSection
           icon="🎰"
           title="LivePix"
@@ -498,7 +498,7 @@ export default function AdminConfigPage() {
 
             <ConexaoStatus test={liveTest} testing={testing} onTest={runTest} />
 
-            {/* Instruções */}
+
             <div className="space-y-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-wider">Como configurar</p>
               <div className="space-y-2.5">
@@ -512,7 +512,7 @@ export default function AdminConfigPage() {
 
             <Divider />
 
-            {/* URLs */}
+
             <div className="space-y-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-wider">URLs para o LivePix</p>
               {config?.livepix.callbackUrl && (
@@ -528,7 +528,7 @@ export default function AdminConfigPage() {
 
             <Divider />
 
-            {/* Campos */}
+
             <div className="space-y-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-wider">Credenciais</p>
               <FieldInput
@@ -572,7 +572,7 @@ export default function AdminConfigPage() {
           </form>
         </AccordionSection>
 
-        {/* ═══ GGPIX ════════════════════════════════════════════════ */}
+
         <AccordionSection
           icon="💰"
           title="GGPix"
@@ -585,7 +585,7 @@ export default function AdminConfigPage() {
 
             <ConexaoStatus test={ggTest} testing={testing} onTest={runTest} />
 
-            {/* Instruções */}
+
             <div className="space-y-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-wider">Como configurar</p>
               <div className="space-y-2.5">
@@ -598,7 +598,7 @@ export default function AdminConfigPage() {
 
             <Divider />
 
-            {/* URL do Webhook */}
+
             <div className="space-y-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-wider">URL do Webhook GGPix</p>
               {config?.ggpix.webhookUrl && (
@@ -614,7 +614,7 @@ export default function AdminConfigPage() {
 
             <Divider />
 
-            {/* API Key */}
+
             <div className="space-y-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-wider">Credenciais</p>
               <FieldInput
@@ -629,7 +629,7 @@ export default function AdminConfigPage() {
 
             <Divider />
 
-            {/* Autenticação do webhook */}
+
             <div className="space-y-3">
               <p className="text-[11px] font-black text-gray-500 uppercase tracking-wider">Autenticação do Webhook</p>
               <div className="space-y-2">

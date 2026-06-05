@@ -13,7 +13,7 @@ function fmtDuration(ms: number): string {
 }
 
 function Avatar({ user }: { user: SiteUser }) {
-  // Sempre a inicial do nome (não usamos mais foto de perfil da Twitch).
+
   return (
     <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-black text-sm text-white"
       style={{ background: "rgba(34,197,94,0.4)", border: "2px solid rgba(34,197,94,0.35)" }}>
@@ -244,7 +244,7 @@ function GerenciarModal({ user, onClose, onAction, busy = false }: {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
       <div className="w-full max-w-sm rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}
         style={{ background: "rgba(6,15,9,0.98)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
-        {/* Header */}
+
         <div className="px-5 py-4 flex items-center gap-3 border-b border-white/5">
           <Avatar user={user} />
           <div className="flex-1 min-w-0">
@@ -257,7 +257,7 @@ function GerenciarModal({ user, onClose, onAction, busy = false }: {
           <button onClick={onClose} className="text-gray-600 hover:text-white transition-colors text-lg flex-shrink-0">✕</button>
         </div>
 
-        {/* Stats */}
+
         <div className="px-5 py-3 grid grid-cols-3 gap-2 border-b border-white/[0.04]">
           <div>
             <p className="text-[9px] font-black text-gray-700 uppercase tracking-widest">Logins</p>
@@ -273,7 +273,7 @@ function GerenciarModal({ user, onClose, onAction, busy = false }: {
           </div>
         </div>
 
-        {/* Motivo de ban/suspensão */}
+
         {(user.banMotivo || user.suspMotivo) && (
           <div className="mx-5 mt-3 px-3 py-2 rounded-xl text-[11px]"
             style={isBanned
@@ -283,7 +283,7 @@ function GerenciarModal({ user, onClose, onAction, busy = false }: {
           </div>
         )}
 
-        {/* Ações */}
+
         <div className="px-5 py-4 space-y-2">
           <button onClick={() => onAction("history")} className={`${btnBase} hover:bg-white/5`}
             style={{ color: "#9ca3af", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -345,7 +345,7 @@ function UserCard({ user, onGerenciar }: { user: SiteUser; onGerenciar: () => vo
         backdropFilter: "blur(20px)",
         boxShadow: "0 4px 16px rgba(0,0,0,0.35)",
       }}>
-      {/* Header com botão de gerenciar */}
+
       <div className="px-4 py-4 flex items-center gap-3">
         <Avatar user={user} />
         <div className="flex-1 min-w-0">
@@ -373,7 +373,7 @@ export default function UsuariosPage() {
   const [filtro,    setFiltro]    = useState<"todos" | "ativo" | "banido" | "suspenso">("todos");
   const [modal,     setModal]     = useState<ModalState>(null);
   const [msg,       setMsg]       = useState<{ text: string; ok: boolean } | null>(null);
-  // twitchId do usuário sendo processado — impede double-click
+
   const [busyUser,  setBusyUser]  = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
@@ -435,7 +435,7 @@ export default function UsuariosPage() {
 
   return (
     <div className="page-enter max-w-4xl mx-auto px-4 sm:px-6 pt-10 pb-24">
-      {/* Modais */}
+
       {modal?.type === "gerenciar" && (
         <GerenciarModal user={modal.user} busy={busyUser === modal.user.twitchId}
           onClose={() => setModal(null)}
@@ -481,7 +481,7 @@ export default function UsuariosPage() {
         </div>
       )}
 
-      {/* Stats */}
+
       <div className="grid grid-cols-4 gap-2 mb-5">
         {([
           { key: "todos",    label: "Todos",     count: stats.total,     color: "#9ca3af" },
@@ -500,7 +500,7 @@ export default function UsuariosPage() {
         ))}
       </div>
 
-      {/* Busca */}
+
       <div className="relative mb-5">
         <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-600 text-sm">🔍</span>
         <input type="text" placeholder="Buscar por nome ou @login..."
@@ -510,7 +510,7 @@ export default function UsuariosPage() {
         {busca && <button onClick={() => setBusca("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-white transition-colors">✕</button>}
       </div>
 
-      {/* Lista */}
+
       {loading && (
         <div className="flex items-center justify-center py-20">
           <div className="w-8 h-8 rounded-full border-2 border-[#ffba00] border-t-transparent animate-spin" />
@@ -524,7 +524,7 @@ export default function UsuariosPage() {
         </div>
       )}
 
-      {/* Scroll interno — só a lista de usuários rola, não a página inteira */}
+
       <div
         className="overflow-y-auto pr-1"
         style={{ maxHeight: "calc(100vh - 340px)", scrollbarWidth: "thin", scrollbarColor: "rgba(255,186,0,0.2) transparent" }}>

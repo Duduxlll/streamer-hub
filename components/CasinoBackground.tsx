@@ -7,11 +7,11 @@ const VALUES = ["A", "K", "Q", "J", "10", "9", "7", "2"] as const;
 const IS_RED: Record<string, boolean> = { "♥": true, "♦": true, "♠": false, "♣": false };
 
 const CHIP_PAL = [
-  { ring: "34,197,94",   edge: "134,239,172", body: "4,40,18"   },  // verde
-  { ring: "16,185,129",  edge: "110,231,183", body: "3,38,28"   },  // esmeralda
-  { ring: "239,68,68",   edge: "252,165,165", body: "60,10,10"  },  // vermelho (clássico de cassino)
-  { ring: "240,178,28",  edge: "255,218,80",  body: "48,33,3"   },  // dourado
-  { ring: "190,190,210", edge: "240,240,255", body: "22,22,38"  },  // prata
+  { ring: "34,197,94",   edge: "134,239,172", body: "4,40,18"   },
+  { ring: "16,185,129",  edge: "110,231,183", body: "3,38,28"   },
+  { ring: "239,68,68",   edge: "252,165,165", body: "60,10,10"  },
+  { ring: "240,178,28",  edge: "255,218,80",  body: "48,33,3"   },
+  { ring: "190,190,210", edge: "240,240,255", body: "22,22,38"  },
 ];
 
 const DOT_POS: Record<number, [number,number][]> = {

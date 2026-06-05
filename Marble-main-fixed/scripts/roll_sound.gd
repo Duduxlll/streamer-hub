@@ -34,7 +34,6 @@ func _physics_process(delta: float) -> void:
 	_speed = (_speed * (a - 1.0) + speed) / a
 	_prev_pos = pos
 
-	# TODO : dicked around for 10min, needs improvements
 	pitch_scale = clamp(_speed * 0.5, 0.1, 10.0)
 	var linear_vol := clamp(_speed * 0.5 - 2.0, 0.0, 1.0) as float
 	volume_db = linear_to_db(linear_vol)

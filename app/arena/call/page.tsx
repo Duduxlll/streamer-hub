@@ -25,7 +25,7 @@ export default function ArenaCallPage() {
     try {
       const res = await fetch("/api/call", { cache: "no-store" });
       if (res.ok) setCall(await res.json());
-    } catch { /* ignora */ }
+    } catch {}
   }, []);
 
   useEffect(() => { fetchCall(); }, [fetchCall]);
@@ -41,7 +41,6 @@ export default function ArenaCallPage() {
     <div className="page-enter relative min-h-[calc(100vh-4rem)]">
       <style>{CSS}</style>
 
-      {/* Glow de fundo */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
         <div
           className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full opacity-[0.03]"
@@ -51,14 +50,14 @@ export default function ArenaCallPage() {
 
       <div className="relative max-w-xl mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-6">
 
-        {/* Breadcrumb */}
+
         <div className="flex items-center gap-2 text-xs text-gray-700">
           <Link href="/arena" className="hover:text-gray-400 transition-colors">← Arena</Link>
           <span>/</span>
           <span className="text-gray-500">Call de Slot</span>
         </div>
 
-        {/* Header */}
+
         <div>
           <span
             className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-3"
@@ -73,7 +72,7 @@ export default function ArenaCallPage() {
           </p>
         </div>
 
-        {/* Status badge */}
+
         <div>
           {call === null ? (
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-black text-gray-600"
@@ -101,9 +100,9 @@ export default function ArenaCallPage() {
           )}
         </div>
 
-        {/* Conteúdo principal */}
+
         {call !== null && !aberta && (
-          /* ── FECHADA ── */
+
           <div
             className="rounded-3xl text-center py-20 px-6"
             style={{ background: "rgba(6,16,10,0.97)", border: "1px solid rgba(255,255,255,0.06)" }}
@@ -122,9 +121,9 @@ export default function ArenaCallPage() {
         )}
 
         {call !== null && aberta && (
-          /* ── ABERTA ── */
+
           <div className="space-y-4">
-            {/* Instrução destaque */}
+
             <div
               className="rounded-2xl px-5 py-5"
               style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.22)" }}
@@ -139,7 +138,7 @@ export default function ArenaCallPage() {
               </p>
             </div>
 
-            {/* Lista de calls */}
+
             <div
               className="rounded-3xl overflow-hidden"
               style={{ background: "rgba(6,16,10,0.97)", border: "1px solid rgba(255,255,255,0.07)" }}
@@ -197,7 +196,7 @@ export default function ArenaCallPage() {
               </div>
             </div>
 
-            {/* Nota */}
+
             <p className="text-center text-xs text-gray-700 px-4">
               A lista é atualizada automaticamente · Acompanhe ao vivo
             </p>

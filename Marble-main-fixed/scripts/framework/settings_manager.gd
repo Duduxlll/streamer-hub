@@ -1,4 +1,3 @@
-# Helps with handling Godot Engine settings relevant to GOAT.
 @tool
 
 extends Node
@@ -7,14 +6,12 @@ signal value_changed(section, key)
 
 const SETTINGS_FILE_NAME := "user://settings.cfg"
 
-# Each entry contains: section name, key name, default value
 var default_values := [
 	[&"marbles", &"marble_names", ""],
 	[&"marbles", &"collision_enabled", true],
 	[&"marbles", &"explosion_enabled", false],
 ]
 
-# If enabled, settings will be saved to file when changed
 var autosave := true
 
 var _settings_file := ConfigFile.new()
@@ -27,10 +24,7 @@ func _ready():
 		var section = entry[0]
 		var key = entry[1]
 		var value = entry[2]
-		# Add detailed signals for each section and key
 		add_user_signal("value_changed_{}_{}".format([section, key], "{}"))
-		# If settings file doesn't have the section/key yet,
-		# add it with the default value
 		if _settings_file.get_value(section, key, null) == null:
 			_settings_file.set_value(section, key, value)
 
@@ -66,20 +60,15 @@ func find_matching_loaded_locale() -> String:
 	var loaded_locales = TranslationServer.get_loaded_locales()
 	var fallback_locale = ProjectSettings.get(&"locale/fallback")
 
-	# If no translations are provided, return ""
 	if not loaded_locales:
 		return ""
 
-	# If the exact locale is loaded, return it
 	if current_locale in loaded_locales:
 		return current_locale
 
-	# Look for partial matches, e.g. current is "en_US", loaded is "en"
-	# Try the current locale first, then the fallback locale
 	for locale in [current_locale, fallback_locale]:
 		for loaded_locale in loaded_locales:
 			if locale.substr(0, 2) == loaded_locale.substr(0, 2):
 				return loaded_locale
 
-	# If nothing matches, return first provided position
 	return loaded_locales[0]

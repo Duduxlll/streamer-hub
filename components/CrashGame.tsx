@@ -3,19 +3,13 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import type { ParticipanteSessao } from "@/lib/gorjeta-store";
 
-// ── Parâmetros do jogo (fáceis de ajustar) ──────────────────────────────────
-const MAX_MULT       = 4;       // teto do multiplicador (chegar nele = ganho automático)
-const GROWTH_PER_SEC = 1.08;    // ~8%/s (composto) — BEM devagar, bastante suspense. 2x≈9s · 4x≈18s
-const HOUSE_POWER    = 2.0;     // > 1 dá vantagem à casa. ↑ = mais difícil (mais chance de estourar cedo)
+const MAX_MULT       = 4;
+const GROWTH_PER_SEC = 1.08;
+const HOUSE_POWER    = 2.0;
 
-// Ponto de estouro — com VANTAGEM DA CASA (HOUSE_POWER). Com 2.0:
-//  · ~30% de estourar abaixo de 1.1x  (muito comum estourar logo!)
-//  · ~29% de chegar a 2x   →  ~71% estoura antes de dobrar  (mais chance de perder)
-//  · ~13% bate o teto de 4x (ganho automático)
-// `streak` (rodadas encadeadas / jogar +1) deixa cada rodada AINDA mais difícil.
 function gerarCrashPoint(streak: number): number {
   const u = Math.pow(Math.random(), HOUSE_POWER + streak * 0.6);
-  if (u >= 1 - 1 / MAX_MULT) return MAX_MULT;     // não estourou até o teto → ganha no 4x
+  if (u >= 1 - 1 / MAX_MULT) return MAX_MULT;
   return Math.round((1 / (1 - u)) * 100) / 100;
 }
 
@@ -70,7 +64,6 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
     return Math.round(g * 100) / 100;
   }, [teto, saldoRestante]);
 
-  // ── Desenho (estilo Aviator) ──
   const draw = useCallback((now: number) => {
     const canvas = canvasRef.current, wrap = wrapRef.current;
     if (!canvas || !wrap) return;
@@ -83,15 +76,13 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
 
-    // fundo radial escuro
     const bg = ctx.createRadialGradient(W * 0.12, H * 0.95, 10, W * 0.12, H * 0.95, Math.max(W, H));
     bg.addColorStop(0, "#160a0a"); bg.addColorStop(1, "#070504");
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
 
     const isBust = phaseRef.current === "bust";
-    const ox = 46, oy = H - 30;                  // origem do gráfico (canto inf. esq.)
+    const ox = 46, oy = H - 30;
 
-    // ── radar girando (sunburst) ──
     ctx.save();
     ctx.translate(ox, oy);
     ctx.rotate(-sunAngRef.current);
@@ -108,7 +99,6 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
     }
     ctx.restore();
 
-    // ── estrelas passando ──
     ctx.fillStyle = "#fff";
     for (const s of starsRef.current) {
       ctx.globalAlpha = 0.10 + s.z * 0.35;
@@ -117,7 +107,6 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
     }
     ctx.globalAlpha = 1;
 
-    // ── escala ──
     const pts = ptsRef.current;
     const m   = multRef.current;
     const tNow = pts.length ? pts[pts.length - 1].t : 0;
@@ -126,7 +115,6 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
     const mapX = (t: number) => ox + (t / xMax) * (W - ox - 18);
     const mapY = (mm: number) => oy - ((mm - 1) / (yMax - 1)) * (oy - 18);
 
-    // labels do eixo Y
     ctx.fillStyle = "rgba(255,255,255,0.22)"; ctx.font = "11px system-ui"; ctx.textAlign = "right";
     for (let i = 0; i <= 4; i++) {
       const frac = 1 - i / 4, val = 1 + frac * (yMax - 1);
@@ -136,10 +124,10 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
       ctx.beginPath(); ctx.moveTo(ox, y); ctx.lineTo(W - 14, y); ctx.stroke();
     }
 
-    // ── curva + área ──
+
     if (pts.length > 1) {
       const lastX = mapX(pts[pts.length - 1].t), lastY = mapY(pts[pts.length - 1].m);
-      // área
+
       ctx.beginPath(); ctx.moveTo(ox, oy);
       for (const p of pts) ctx.lineTo(mapX(p.t), mapY(p.m));
       ctx.lineTo(lastX, oy); ctx.closePath();
@@ -147,7 +135,7 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
       fill.addColorStop(0, isBust ? "rgba(255,60,60,0.28)" : "rgba(255,90,60,0.30)");
       fill.addColorStop(1, "rgba(255,90,60,0)");
       ctx.fillStyle = fill; ctx.fill();
-      // linha
+
       ctx.beginPath();
       for (let i = 0; i < pts.length; i++) {
         const x = mapX(pts[i].t), y = mapY(pts[i].m);
@@ -158,7 +146,7 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
       ctx.strokeStyle = lg; ctx.lineWidth = 4.5; ctx.lineJoin = "round"; ctx.lineCap = "round";
       ctx.shadowColor = "#ff5a3c"; ctx.shadowBlur = 18; ctx.stroke(); ctx.shadowBlur = 0;
 
-      // ── aviãozinho ──
+
       const p0 = pts[Math.max(0, pts.length - 6)];
       const ang = Math.atan2(mapY(pts[pts.length - 1].m) - mapY(p0.m), mapX(pts[pts.length - 1].t) - mapX(p0.t));
       let px = lastX, py = lastY, alpha = 1;
@@ -166,7 +154,7 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
         const dt = (now - bustAtRef.current) / 1000;
         px += dt * 520; py -= dt * 360; alpha = Math.max(0, 1 - dt * 1.1);
       } else {
-        py += Math.sin(now * 0.006) * 3;   // leve balanço
+        py += Math.sin(now * 0.006) * 3;
       }
       ctx.save();
       ctx.globalAlpha = alpha;
@@ -174,33 +162,33 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
       ctx.rotate(isBust ? -0.7 : Math.max(-0.85, Math.min(-0.05, ang)));
       ctx.shadowColor = "#ff3b3b"; ctx.shadowBlur = 16;
       ctx.fillStyle = "#e8253b";
-      ctx.beginPath(); ctx.ellipse(0, 0, 15, 6.5, 0, 0, Math.PI * 2); ctx.fill();      // corpo
-      ctx.beginPath(); ctx.moveTo(-13, -1); ctx.lineTo(-22, -9); ctx.lineTo(-10, -3); ctx.closePath(); ctx.fill(); // cauda
+      ctx.beginPath(); ctx.ellipse(0, 0, 15, 6.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-13, -1); ctx.lineTo(-22, -9); ctx.lineTo(-10, -3); ctx.closePath(); ctx.fill();
       ctx.fillStyle = "#b81b2d";
-      ctx.beginPath(); ctx.moveTo(-3, 2); ctx.lineTo(-11, 12); ctx.lineTo(5, 3); ctx.closePath(); ctx.fill();      // asa
+      ctx.beginPath(); ctx.moveTo(-3, 2); ctx.lineTo(-11, 12); ctx.lineTo(5, 3); ctx.closePath(); ctx.fill();
       ctx.shadowBlur = 0;
       ctx.fillStyle = "#fff";
-      ctx.beginPath(); ctx.arc(7, -1, 2.3, 0, Math.PI * 2); ctx.fill();                 // janela
+      ctx.beginPath(); ctx.arc(7, -1, 2.3, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
   }, []);
 
   const stop = useCallback(() => { if (rafRef.current) cancelAnimationFrame(rafRef.current); rafRef.current = 0; }, []);
 
-  // ── loop contínuo (fundo sempre vivo) ──
+
   const loop = useCallback((now: number) => {
     if (lastBgRef.current === 0) lastBgRef.current = now;
     const dt = Math.min(0.05, (now - lastBgRef.current) / 1000);
     lastBgRef.current = now;
 
-    // fundo: gira radar + move estrelas
+
     sunAngRef.current += dt * 0.05;
     for (const s of starsRef.current) {
       s.x -= (0.03 + s.z * 0.10) * dt;
       if (s.x < -0.02) { s.x = 1.02; s.y = Math.random(); s.z = Math.random(); }
     }
 
-    // física do multiplicador (só jogando)
+
     if (phaseRef.current === "playing") {
       let m = multRef.current * Math.pow(GROWTH_PER_SEC, dt);
       const t = (now - startRef.current) / 1000;
@@ -208,7 +196,7 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
         m = Math.min(m, crashRef.current);
         multRef.current = m; ptsRef.current.push({ t, m });
         if (crashRef.current >= MAX_MULT) {
-          // bateu o teto sem estourar → GANHO AUTOMÁTICO no 4x
+
           phaseRef.current = "win";
           setMult(m); setGanho(ganhoPotencial(m, apostaRef.current)); setPhase("win");
         } else {
@@ -237,14 +225,13 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
   }, []);
 
   useEffect(() => {
-    // estrelas iniciais
+
     starsRef.current = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), z: Math.random() }));
     startRound(aposta, 0);
     rafRef.current = requestAnimationFrame(loop);
     const onResize = () => draw(performance.now());
     window.addEventListener("resize", onResize);
     return () => { stop(); window.removeEventListener("resize", onResize); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function tirar() {
@@ -270,7 +257,7 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
       <div className="w-full max-w-5xl flex flex-col rounded-3xl overflow-hidden"
         style={{ height: "min(92vh, 800px)", background: "rgba(5,14,9,0.99)", border: `1px solid ${phase === "bust" ? "rgba(255,77,77,0.45)" : "rgba(255,140,60,0.3)"}`, boxShadow: `0 0 110px ${phase === "bust" ? "rgba(255,60,60,0.12)" : "rgba(255,140,60,0.1)"}` }}>
 
-        {/* Header */}
+
         <div className="px-5 py-3.5 flex items-center gap-3 border-b border-white/5 flex-shrink-0">
           <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-black text-[#ffba00] overflow-hidden"
             style={{ background: "rgba(255,186,0,0.12)", border: "2px solid rgba(255,186,0,0.25)" }}>
@@ -286,11 +273,11 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
           <button onClick={() => { stop(); onClose(); }} className="text-gray-500 hover:text-white text-xl transition-colors">✕</button>
         </div>
 
-        {/* Área do jogo */}
+
         <div ref={wrapRef} className="relative flex-1 min-h-0">
           <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
 
-          {/* Multiplicador sobreposto — posicionado mais para cima */}
+
           <div className="absolute inset-0 flex flex-col items-center justify-start pt-[7%] sm:pt-[6%] pointer-events-none px-4 text-center">
             <p className="font-black tabular-nums leading-none"
               style={{ fontSize: "clamp(3.5rem, 12vw, 8.5rem)", color: cor, textShadow: `0 0 60px ${cor}77, 0 4px 30px rgba(0,0,0,0.5)`, transition: "color 0.15s" }}>
@@ -317,7 +304,7 @@ export function CrashGame({ participante, aposta, teto, saldoRestante, autoDispo
           </div>
         </div>
 
-        {/* Ações */}
+
         <div className="px-4 sm:px-5 py-4 border-t border-white/5 flex-shrink-0">
           {phase === "playing" && (
             <button onClick={tirar}

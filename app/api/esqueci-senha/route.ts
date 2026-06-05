@@ -7,7 +7,6 @@ import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  // Limita pedidos de código por IP (anti-spam): 10 por hora.
   const limite = rateLimit(`forgot:${ipFromHeaders(req.headers)}`, 10, 60 * 60 * 1000);
   if (!limite.ok) {
     return NextResponse.json({ error: "Muitas tentativas. Tente novamente mais tarde." }, { status: 429 });
@@ -22,8 +21,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "E-mail inválido" }, { status: 400 });
   }
 
-  // Sempre responde { ok: true }, exista ou não a conta e mesmo se o envio falhar,
-  // para não revelar quais e-mails têm cadastro (evita enumeração de usuários).
+
+
   const user = await getUserByEmail(email);
   if (user) {
     const code = await createResetCode(email);

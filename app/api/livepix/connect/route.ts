@@ -11,7 +11,6 @@ export async function GET() {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  // env tem prioridade, depois o store
   let clientId = process.env.LIVEPIX_CLIENT_ID ?? "";
   if (!clientId) {
     const creds = await getCredentials();

@@ -17,7 +17,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
-  // ?test=1 → faz teste REAL de conexão (chama as APIs). Mais lento, usado na página de config.
   if (req.nextUrl.searchParams.get("test") === "1") {
     const [livepix, ggpix] = await Promise.all([testLivepix(), testGgpix()]);
     return NextResponse.json({ livepix, ggpix }, { headers: NO_CACHE });
@@ -27,13 +26,11 @@ export async function GET(req: NextRequest) {
 
   const siteUrl = getSiteUrl();
 
-  // banco tem prioridade sobre env (UI sobrepõe Render)
   const ggpixOk = !!(creds.ggpix.apiKey || process.env.GGPIX_API_KEY);
 
   const hasWebhookSecret = !!(creds.livepix.webhookSecret || process.env.LIVEPIX_WEBHOOK_SECRET);
   const webhookSecret    = creds.livepix.webhookSecret || process.env.LIVEPIX_WEBHOOK_SECRET || "";
 
-  // URL do webhook do livepix — inclui o secret se configurado
   const livepixWebhookBase = `${siteUrl}/api/livepix/webhook`;
   const livepixWebhookUrl  = webhookSecret
     ? `${livepixWebhookBase}?secret=${encodeURIComponent(webhookSecret)}`
@@ -82,7 +79,7 @@ export async function POST(req: NextRequest) {
     await patchLivePix(patch);
     globalThis.__livepix_token = undefined;
     await addLog({ admin: session!.user!.twitchLogin!, action: "config_livepix", detail: "Credenciais LivePix atualizadas" });
-    // Testa a conexão logo após salvar
+
     const test = await testLivepix();
     return NextResponse.json({ ok: true, test }, { headers: NO_CACHE });
   }
@@ -95,7 +92,7 @@ export async function POST(req: NextRequest) {
     if (typeof body.hmacSecret      === "string")                                 patch.hmacSecret      = body.hmacSecret.trim();
     await patchGGPix(patch);
     await addLog({ admin: session!.user!.twitchLogin!, action: "config_ggpix", detail: "Credenciais GGPix atualizadas" });
-    // Testa a conexão logo após salvar
+
     const test = await testGgpix();
     return NextResponse.json({ ok: true, test }, { headers: NO_CACHE });
   }

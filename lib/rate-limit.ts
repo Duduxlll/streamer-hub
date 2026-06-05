@@ -1,6 +1,3 @@
-// Rate limiter simples em memória (janela deslizante).
-// Suficiente para uma única instância (Render). Reinicia a cada deploy — é uma
-// primeira barreira contra força-bruta/abuso, não um controle distribuído.
 
 const hits = new Map<string, number[]>();
 
@@ -21,7 +18,6 @@ export function rateLimit(
   arr.push(now);
   hits.set(key, arr);
 
-  // Limpeza ocasional para não crescer indefinidamente
   if (hits.size > 5000) {
     for (const [k, v] of hits) {
       if (v.every(t => now - t > windowMs)) hits.delete(k);

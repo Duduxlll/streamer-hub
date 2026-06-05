@@ -12,7 +12,6 @@ func _ready() -> void:
 
 
 func _on_EndArea_body_entered(body: PhysicsBody3D) -> void:
-	# If a marble collide
 	if body.is_in_group(Group.MARBLES):
 		var marble_name = body.get_marble_name()
 		if not _marbles.has(marble_name):

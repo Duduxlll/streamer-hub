@@ -23,22 +23,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = String(creds?.password ?? "");
         if (!email || !password) return null;
 
-        // Anti-força-bruta: limita tentativas por IP e por e-mail.
         const ip = request?.headers ? ipFromHeaders(request.headers) : "desconhecido";
-        const porIp    = rateLimit(`login:ip:${ip}`, 20, 10 * 60 * 1000);     // 20 / 10min por IP
-        const porEmail = rateLimit(`login:em:${email}`, 8, 10 * 60 * 1000);   // 8 / 10min por e-mail
+        const porIp    = rateLimit(`login:ip:${ip}`, 20, 10 * 60 * 1000);
+        const porEmail = rateLimit(`login:em:${email}`, 8, 10 * 60 * 1000);
         if (!porIp.ok || !porEmail.ok) {
           await addLog({ admin: "sistema", action: "acesso_negado", target: email, detail: "Muitas tentativas de login (rate limit)" });
           return null;
         }
 
-        // Valida e-mail + senha
+
         const user = await verifyCredentials(email, password);
         if (!user) return null;
 
         const login = user.twitchLogin;
 
-        // Bloqueia banidos/suspensos
+
         if (await isBanned(login)) {
           await addLog({ admin: "sistema", action: "acesso_negado", target: login, detail: "Login bloqueado — conta banida ou suspensa" });
           return null;

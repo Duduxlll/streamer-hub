@@ -23,7 +23,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "State inválido — possível ataque CSRF" }, { status: 403 });
   }
 
-  // env tem prioridade, depois o store
   let clientId     = process.env.LIVEPIX_CLIENT_ID     ?? "";
   let clientSecret = process.env.LIVEPIX_CLIENT_SECRET ?? "";
   if (!clientId || !clientSecret) {

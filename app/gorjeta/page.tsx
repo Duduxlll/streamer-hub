@@ -192,25 +192,24 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
     sessao.vencedores.forEach((v, i) => {
       setTimeout(() => setShownWinners(prev => [...prev, v]), (i + 1) * 1400);
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessao.vencedores.map(v => v.username).join(",")]);
 
   const saldoRestante = (sessao as SessaoGorjeta & { saldoRestante?: number }).saldoRestante ?? 0;
 
   return (
     <div className="space-y-4">
-      {/* Live banner */}
+
       <div className="relative overflow-hidden rounded-2xl"
         style={{
           background: "linear-gradient(135deg, rgba(20,14,2,0.98) 0%, rgba(30,20,0,0.98) 100%)",
           border: "1px solid rgba(255,186,0,0.35)",
           boxShadow: "0 4px 40px rgba(255,186,0,0.1), 0 1px 0 rgba(255,186,0,0.2) inset",
         }}>
-        {/* Glow strip */}
+
         <div className="absolute top-0 left-0 right-0 h-px"
           style={{ background: "linear-gradient(90deg, transparent, rgba(255,186,0,0.6), transparent)" }} />
 
-        {/* Header */}
+
         <div className="flex items-center gap-3 px-5 py-3.5">
           <span className="relative flex h-3 w-3 flex-shrink-0">
             {isAberta && <span className="live-ring absolute inline-flex h-full w-full rounded-full bg-[#ffba00]" />}
@@ -227,7 +226,7 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
           )}
         </div>
 
-        {/* Stats row */}
+
         <div className="grid grid-cols-3 border-t border-white/5">
           {[
             { label: "Saldo", value: `R$ ${saldoRestante.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, gold: true },
@@ -244,7 +243,7 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
           ))}
         </div>
 
-        {/* CTA for participant */}
+
         {isAberta && cadastro?.status === "aprovado" && (
           <div className="border-t border-white/5 px-5 py-3 flex items-center gap-2"
             style={{ background: jaParticipa ? "rgba(34,197,94,0.06)" : "rgba(255,186,0,0.04)" }}>
@@ -264,17 +263,17 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
         )}
       </div>
 
-      {/* Vencedores */}
+
       {shownWinners.length > 0 && (
         <div className="space-y-3" style={{ animation: "fadeInUp 0.4s ease-out" }}>
-          {/* Título vencedores */}
+
           <div className="flex items-center gap-2.5 px-1">
             <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, rgba(255,186,0,0.4), transparent)" }} />
             <span className="text-[11px] font-black text-[#ffba00] uppercase tracking-[0.2em]">🏆 Vencedores</span>
             <div className="h-px flex-1" style={{ background: "linear-gradient(90deg, transparent, rgba(255,186,0,0.4))" }} />
           </div>
 
-          {/* Winner cards grid */}
+
           <div className={`grid gap-3 ${
             shownWinners.length === 1 ? "grid-cols-1 max-w-[200px] mx-auto" :
             shownWinners.length === 2 ? "grid-cols-2" :
@@ -288,7 +287,7 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
         </div>
       )}
 
-      {/* Participantes */}
+
       {sessao.participantes.length > 0 && (
         <div className="rounded-2xl overflow-hidden"
           style={{ background: "rgba(12,9,2,0.9)", border: "1px solid rgba(255,255,255,0.06)" }}>
@@ -347,10 +346,10 @@ export default function GorjetaPage() {
     const data = await res.json();
     const s: SessaoGorjeta | null = data.sessao ?? null;
     setSessao(s && (s.status === "aberta" || s.status === "sorteada") ? s : null);
-    // Só atualiza cadastro se não estiver no meio de preencher um novo formulário
+
     if (data.meucadastro !== undefined) {
       setCadastro(prev => {
-        // Se usuário clicou "enviar novo cadastro", não sobrescreve com o rejeitado
+
         if (prev === null) return null;
         return data.meucadastro ?? null;
       });
@@ -399,7 +398,7 @@ export default function GorjetaPage() {
     finally { setEnviando(false); }
   }
 
-  // Reenvia apenas o print quando o cadastro foi rejeitado (mantém nome e CPF).
+
   async function reenviarPrint() {
     setErro("");
     if (!form.screenshot) return setErro("Envie o print do depósito");
@@ -429,30 +428,30 @@ export default function GorjetaPage() {
 
   return (
     <div className="page-enter relative min-h-[calc(100vh-4rem)]">
-      {/* Ambient background glow */}
+
       <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden>
         <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full opacity-10"
           style={{ background: "radial-gradient(ellipse, #ffba00, transparent 70%)", filter: "blur(60px)" }} />
       </div>
 
       <div className="relative max-w-xl mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-5">
-        {/* Breadcrumb */}
+
         <div className="flex items-center gap-2 text-xs text-gray-600">
           <Link href="/" className="hover:text-gray-400 transition-colors">Home</Link>
           <span>/</span>
           <span className="text-gray-400">Gorjeta</span>
         </div>
 
-        {/* Page title */}
+
         <div>
           <h1 className="text-3xl font-black text-white">Gorjeta 💰</h1>
           <p className="text-sm text-gray-500 mt-1">Receba PIX direto do streamer — entre pela chat!</p>
         </div>
 
-        {/* Sessão ativa */}
+
         {sessao && <SessaoAoVivo sessao={sessao} cadastro={cadastro ?? null} />}
 
-        {/* Sem sessão ativa */}
+
         {!sessao && (
           <div className="relative overflow-hidden rounded-2xl text-center py-16 px-6"
             style={{ background: "rgba(12,9,2,0.85)", border: "1px solid rgba(255,186,0,0.12)", boxShadow: "0 0 40px rgba(255,186,0,0.04)" }}>
@@ -465,7 +464,7 @@ export default function GorjetaPage() {
           </div>
         )}
 
-        {/* Login necessário */}
+
         {status === "unauthenticated" && (
           <div className="rounded-2xl p-7 text-center"
             style={{ background: "rgba(12,9,2,0.85)", border: "1px solid rgba(255,186,0,0.15)" }}>
@@ -481,7 +480,7 @@ export default function GorjetaPage() {
           </div>
         )}
 
-        {/* Formulário de cadastro */}
+
         {status === "authenticated" && cadastro === null && (
           <div className="rounded-2xl overflow-hidden"
             style={{ background: "rgba(12,9,2,0.9)", border: "1px solid rgba(255,186,0,0.2)", boxShadow: "0 4px 30px rgba(255,186,0,0.06)" }}>
@@ -521,7 +520,6 @@ export default function GorjetaPage() {
                 </button>
                 {form.screenshot && (
                   <div className="mt-2 rounded-xl overflow-hidden border border-white/5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={form.screenshot} alt="preview" className="w-full max-h-48 object-cover" />
                   </div>
                 )}
@@ -536,7 +534,7 @@ export default function GorjetaPage() {
           </div>
         )}
 
-        {/* Status do cadastro */}
+
         {status === "authenticated" && cadastro && (
           <div className="rounded-2xl overflow-hidden"
             style={{ background: "rgba(12,9,2,0.9)", border: "1px solid rgba(255,186,0,0.14)" }}>
@@ -597,7 +595,6 @@ export default function GorjetaPage() {
                   </button>
                   {form.screenshot && (
                     <div className="rounded-xl overflow-hidden border border-white/5">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={form.screenshot} alt="preview" className="w-full max-h-44 object-cover" />
                     </div>
                   )}
@@ -613,7 +610,7 @@ export default function GorjetaPage() {
           </div>
         )}
 
-        {/* Como funciona */}
+
         <div className="rounded-2xl px-5 py-5"
           style={{ background: "rgba(8,6,2,0.7)", border: "1px solid rgba(255,255,255,0.05)" }}>
           <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-3">Como funciona</p>

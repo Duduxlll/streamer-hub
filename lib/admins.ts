@@ -1,9 +1,3 @@
-// Os administradores são definidos pelo NICK da Twitch, via variável de ambiente
-// NEXT_PUBLIC_ADMIN_LOGINS (lista separada por vírgula). Ex.:
-//   NEXT_PUBLIC_ADMIN_LOGINS=dudufpss,stainzincs
-// Quem criar a conta com um desses nicks vira admin automaticamente.
-// (É NEXT_PUBLIC para funcionar também no navegador; o nick não é segredo — o que
-//  protege o acesso é a senha + o login por e-mail.)
 
 const FALLBACK_ADMINS = ["dudufpss", "dudufpsssss", "stainzincs"];
 

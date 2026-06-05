@@ -11,7 +11,6 @@ const STREAMER_IMG = "/stain-icon.jpg";
 
 interface StatusData { cadastrosPendentes: number }
 
-// ── Active link helper ────────────────────────────────────────────────────────
 
 function useLinkActive(href: string) {
   const pathname = usePathname();
@@ -23,16 +22,13 @@ function useLinkActive(href: string) {
 
   const hrefEntries = [...new URLSearchParams(qs ?? "").entries()];
 
-  // Sem params no href → ativo só quando não há nenhum param de navegação na URL
   if (hrefEntries.length === 0) {
     return !params.get("tab") && !params.get("view");
   }
 
-  // Com params → todos devem casar com os da URL atual
   return hrefEntries.every(([key, val]) => params.get(key) === val);
 }
 
-// ── Sub-link ─────────────────────────────────────────────────────────────────
 
 function SideLink({
   href, icon, label, dot, onClose,
@@ -63,7 +59,7 @@ function SideLink({
   );
 }
 
-// ── Accordion group ───────────────────────────────────────────────────────────
+
 
 function AccordionGroup({
   icon, label, children, defaultPaths, onClose,
@@ -84,7 +80,7 @@ function AccordionGroup({
         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-black transition-all hover:bg-white/[0.03]"
         style={{ color: isPathActive ? "#e5e7eb" : "#6b7280" }}>
         <span className="text-sm w-4 text-center flex-shrink-0">{icon}</span>
-        {/* whitespace-normal permite que textos longos quebrem linha */}
+
         <span className="flex-1 text-left leading-tight whitespace-normal">{label}</span>
         <span
           className="text-gray-700 flex-shrink-0 transition-transform duration-300"
@@ -93,7 +89,7 @@ function AccordionGroup({
         </span>
       </button>
 
-      {/* Slide-down animation */}
+
       <div
         className="overflow-hidden transition-all duration-300"
         style={{ maxHeight: open ? "300px" : "0px", opacity: open ? 1 : 0 }}>
@@ -109,25 +105,24 @@ function Divider() {
   return <div className="mx-3 my-2" style={{ height: 1, background: "rgba(255,255,255,0.05)" }} />;
 }
 
-// ── Sidebar content ───────────────────────────────────────────────────────────
+
 
 function SidebarContent({ status, onClose }: { status: StatusData; onClose?: () => void }) {
   const pending = status.cadastrosPendentes;
 
   return (
     <div className="flex flex-col h-full">
-      {/* Logo com foto do streamer */}
+
       <div className="px-4 py-4 border-b border-white/5 flex-shrink-0">
         <Link href="/admin" onClick={onClose} className="flex items-center gap-3 group">
           <div className="relative flex-shrink-0">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={STREAMER_IMG}
               alt="stainzincs"
               className="w-8 h-8 rounded-xl object-cover"
               style={{ border: "2px solid rgba(255,186,0,0.4)", boxShadow: "0 0 12px rgba(255,186,0,0.25)" }}
             />
-            {/* Pulsing glow */}
+
             <span className="absolute -inset-0.5 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
               style={{ boxShadow: "0 0 16px rgba(255,186,0,0.4)" }} />
           </div>
@@ -138,16 +133,16 @@ function SidebarContent({ status, onClose }: { status: StatusData; onClose?: () 
         </Link>
       </div>
 
-      {/* Nav principal */}
+
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5"
         style={{ scrollbarWidth: "none" }}>
 
-        {/* Dashboard */}
+
         <SideLink href="/admin" icon="◈" label="Dashboard" onClose={onClose} />
 
         <Divider />
 
-        {/* Gorjeta */}
+
         <AccordionGroup icon="💰" label="Gorjeta" defaultPaths={["/admin/gorjeta"]} onClose={onClose}>
           <SideLink href="/admin/gorjeta"                  icon="▶"  label="Sessão"     onClose={onClose} />
           <SideLink href="/admin/gorjeta/pagamentos"       icon="💳" label="Pagamentos manual" onClose={onClose} />
@@ -158,7 +153,7 @@ function SidebarContent({ status, onClose }: { status: StatusData; onClose?: () 
 
         <Divider />
 
-        {/* Interações com a live */}
+
         <AccordionGroup
           icon="📺" label="Interações com a live"
           defaultPaths={["/admin/palpites", "/admin/jackpot", "/admin/torneio", "/admin/batalha", "/admin/call"]}
@@ -172,7 +167,7 @@ function SidebarContent({ status, onClose }: { status: StatusData; onClose?: () 
 
         <Divider />
 
-        {/* Sorteio */}
+
         <AccordionGroup icon="🎁" label="Sorteio" defaultPaths={["/admin/sorteio"]} onClose={onClose}>
           <SideLink href="/admin/sorteio/criar" icon="✨" label="Criar Sorteio"  onClose={onClose} />
           <SideLink href="/admin/sorteio"       icon="🟢" label="Sorteio Ativo" onClose={onClose} />
@@ -180,7 +175,7 @@ function SidebarContent({ status, onClose }: { status: StatusData; onClose?: () 
 
       </nav>
 
-      {/* Nav inferior */}
+
       <div className="border-t border-white/5 py-3 px-2 space-y-0.5 flex-shrink-0">
         <SideLink href="/admin/usuarios" icon="👥" label="Usuários"          onClose={onClose} />
         <SideLink href="/admin/logs"     icon="🔒" label="Logs de Segurança" onClose={onClose} />
@@ -198,7 +193,7 @@ function SidebarContent({ status, onClose }: { status: StatusData; onClose?: () 
   );
 }
 
-// ── Layout principal ──────────────────────────────────────────────────────────
+
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -218,7 +213,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const data = await res.json() as { cadastros?: Array<{ status: string }> };
       const pending = (data.cadastros ?? []).filter(c => c.status === "pendente").length;
       setSideStatus({ cadastrosPendentes: pending });
-    } catch { /**/ }
+    } catch {  }
   }, []);
 
   useEffect(() => {
@@ -252,7 +247,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       `}</style>
 
       <div className="flex relative">
-        {/* Sidebar desktop */}
+
         <aside
           className="admin-sidebar-anim hidden md:flex flex-col fixed left-0 top-16 w-56 h-[calc(100vh-4rem)] z-30"
           style={{
@@ -263,7 +258,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarContent status={sideStatus} />
         </aside>
 
-        {/* Botão hamburguer mobile */}
+
         <button
           className="md:hidden fixed bottom-5 right-5 z-50 w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-2xl transition-transform hover:scale-110 active:scale-95"
           style={{ background: "linear-gradient(135deg, #ffba00, #ff8c00)", color: "#000" }}
@@ -271,7 +266,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           ☰
         </button>
 
-        {/* Drawer mobile */}
+
         {mobileOpen && (
           <>
             <div className="md:hidden fixed inset-0 z-40 bg-black/70 backdrop-blur-sm"
@@ -290,7 +285,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </>
         )}
 
-        {/* Conteúdo principal */}
+
         <main className="flex-1 md:ml-56 min-h-[calc(100vh-4rem)] w-full">
           {children}
         </main>

@@ -4,7 +4,6 @@ import { getCredentials } from "./credentials";
 const BASE_URL = "https://ggpixapi.com/api/v1";
 
 async function getApiKey(): Promise<string> {
-  // banco tem prioridade — configurado via UI sobrepõe o env do Render
   const creds = await getCredentials();
   if (creds.ggpix.apiKey) return creds.ggpix.apiKey;
   if (process.env.GGPIX_API_KEY) return process.env.GGPIX_API_KEY;
@@ -16,10 +15,6 @@ async function getApiKeyOrNull(): Promise<string | null> {
   return creds.ggpix.apiKey || process.env.GGPIX_API_KEY || null;
 }
 
-/**
- * Testa de verdade se a API Key do GGPix funciona, consultando o saldo da conta.
- * Detecta chaves removidas/inválidas ou conta bloqueada.
- */
 export async function testConnection(): Promise<{ ok: boolean; error?: string }> {
   const apiKey = await getApiKeyOrNull();
   if (!apiKey) return { ok: false, error: "API Key não preenchida" };
@@ -32,7 +27,7 @@ export async function testConnection(): Promise<{ ok: boolean; error?: string }>
       return { ok: false, error: "O GGPix recusou a API Key (inválida ou sem permissão)" };
     }
     if (res.ok) return { ok: true };
-    // 404: o endpoint de saldo pode não existir nessa versão, mas a auth passou
+
     if (res.status === 404) return { ok: true };
     return { ok: false, error: `O GGPix respondeu com erro (HTTP ${res.status})` };
   } catch {
@@ -77,7 +72,7 @@ export async function enviarPix(
 
   if (!res.ok) {
     let msg = text;
-    try { msg = (JSON.parse(text) as { message?: string; error?: string }).message ?? (JSON.parse(text) as { message?: string; error?: string }).error ?? text; } catch { /* noop */ }
+    try { msg = (JSON.parse(text) as { message?: string; error?: string }).message ?? (JSON.parse(text) as { message?: string; error?: string }).error ?? text; } catch {  }
     throw new Error(`GGPix ${res.status}: ${msg}`);
   }
 

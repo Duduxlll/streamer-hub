@@ -58,7 +58,7 @@ function FollowBtn({ jogo }: { jogo: string }) {
   const [copied, setCopied] = useState(false);
 
   async function copiar() {
-    try { await navigator.clipboard.writeText(jogo); } catch { /* clipboard pode falhar em contextos sem permissão */ }
+    try { await navigator.clipboard.writeText(jogo); } catch {  }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -166,7 +166,7 @@ export default function AdminCallPage() {
         setCall(data);
         prevCount.current = data.entries.length;
       }
-    } catch { /* ignora */ }
+    } catch {  }
     finally { setCarregando(false); }
   }, []);
 
@@ -234,12 +234,12 @@ export default function AdminCallPage() {
 
       <div className="relative max-w-2xl mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-5">
 
-        {/* Breadcrumb */}
+
         <div className="flex items-center gap-2 text-xs text-gray-700">
           <span className="text-gray-500">Admin · Call de Slot</span>
         </div>
 
-        {/* Header */}
+
         <div className="flex items-start gap-4">
           <div className="flex-1">
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
@@ -260,7 +260,7 @@ export default function AdminCallPage() {
           )}
         </div>
 
-        {/* Status badge */}
+
         <div className="flex items-center gap-3">
           {aberta ? (
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-black"
@@ -280,9 +280,9 @@ export default function AdminCallPage() {
           )}
         </div>
 
-        {/* Card principal */}
+
         {!aberta ? (
-          /* ── FECHADA ── */
+
           <div className="rounded-3xl overflow-hidden text-center py-16 px-6"
             style={{ background: "rgba(6,16,10,0.95)", border: "1px solid rgba(34,197,94,0.12)" }}>
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl mb-6"
@@ -307,9 +307,9 @@ export default function AdminCallPage() {
             </button>
           </div>
         ) : (
-          /* ── ABERTA ── */
+
           <div className="space-y-4">
-            {/* Instrução */}
+
             <div className="rounded-2xl px-5 py-4"
               style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.2)" }}>
               <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: C }}>Comando ativo</p>
@@ -317,7 +317,7 @@ export default function AdminCallPage() {
               <p className="text-xs text-gray-500 mt-1">1 call por pessoa · as calls aparecem abaixo em tempo real</p>
             </div>
 
-            {/* Lista de entries */}
+
             <div className="rounded-3xl overflow-hidden"
               style={{ background: "rgba(6,16,10,0.95)", border: "1px solid rgba(255,255,255,0.07)" }}>
               <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/5">
@@ -351,7 +351,7 @@ export default function AdminCallPage() {
               </div>
             </div>
 
-            {/* Fechar call */}
+
             <button
               onClick={async () => { const r = await post({ action: "fechar" }); if (r) flash("Call fechada", "ok"); }}
               disabled={busy}

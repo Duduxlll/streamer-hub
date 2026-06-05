@@ -157,7 +157,7 @@ export default function PalpitesPage() {
       ]);
       setRodada(await rRes.json() as Rodada | null);
       setHistorico(await hRes.json() as ResultadoRodada[]);
-    } catch { /* ignora */ } finally {
+    } catch {  } finally {
       setCarregando(false);
     }
   }, []);

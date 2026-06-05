@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, cadastro: result.cadastro }, { headers: NO_CACHE });
   }
 
-  // Reenvio apenas do print quando o cadastro foi REJEITADO — reaproveita nome/CPF já cadastrados.
+
   if (action === "reenviar-print") {
     const session = await auth();
     if (!session?.user) return NextResponse.json({ error: "Login necessário" }, { status: 401 });
@@ -271,17 +271,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true }, { headers: NO_CACHE });
   }
 
-  // ── Fila de pagamentos ────────────────────────────────────────────────────
+
 
   if (action === "pagar-fila") {
-    // Adiciona vencedores à fila sem enviar via API, e reseta a sessão
+
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const sessao = await getSessao();
     if (!sessao || sessao.status !== "sorteada") return NextResponse.json({ error: "Sorteie primeiro" }, { status: 400 });
     if (sessao.vencedores.length === 0) return NextResponse.json({ error: "Sem vencedores" }, { status: 400 });
 
-    // Adiciona à fila ANTES de resetar a sessão (precisa dos dados dos vencedores)
+
     await adicionarPagamentos(sessao.vencedores.map(v => ({
       username:    v.username,
       displayName: v.displayName,
@@ -291,7 +291,7 @@ export async function POST(req: NextRequest) {
       tipo:        "sorteio" as const,
     })));
 
-    // Marca como "enviado" na sessão para reduzir o saldo e mostrar em "PIX enviados"
+
     const committed: ResultadoPagamento[] = sessao.vencedores.map(v => ({
       username:    v.username,
       displayName: v.displayName,
@@ -305,7 +305,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "enviar-manual-fila") {
-    // Adiciona um pagamento manual à fila sem chamar a API
+
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const { username, valor } = body;
@@ -332,7 +332,7 @@ export async function POST(req: NextRequest) {
       tipo:        "manual" as const,
     }]);
 
-    // Reduz o saldo e registra em "PIX enviados nesta sessão"
+
     const sessaoAtualizada = await registrarManual(
       participante.username, participante.displayName, valorNum,
       { status: "enviado", txid: `fila-${participante.username}-${Date.now()}` },
@@ -341,7 +341,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (action === "fila-enviar") {
-    // Envia um pagamento pendente via GGPix e atualiza o status
+
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const { id } = body;

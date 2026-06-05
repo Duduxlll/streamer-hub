@@ -161,7 +161,7 @@ export default function AdminJackpotHistoricoPage() {
     try {
       const res = await fetch("/api/jackpot/historico");
       if (res.ok) setHistorico(await res.json());
-    } catch { /* ignora */ }
+    } catch {  }
   }, []);
 
   useEffect(() => { fetchHistorico(); }, [fetchHistorico]);

@@ -1,8 +1,5 @@
 import type { NextAuthConfig } from "next-auth";
 
-// Configuração "leve" (edge-safe) compartilhada entre o proxy/middleware e o auth completo.
-// NÃO importa node:crypto nem o provider de Credentials — só lê/escreve o token JWT.
-// O provider real (Credentials, que valida a senha) é adicionado em auth.ts (runtime Node).
 
 declare module "next-auth" {
   interface Session {
@@ -21,7 +18,7 @@ declare module "next-auth" {
 
 export const authConfig = {
   trustHost: true,
-  providers: [], // preenchido em auth.ts
+  providers: [],
 
   session: {
     strategy: "jwt",
@@ -36,7 +33,6 @@ export const authConfig = {
 
   callbacks: {
     async jwt({ token, user }) {
-      // No login com Credentials, `user` vem do authorize() na primeira passagem.
       if (user) {
         token.twitchLogin = (user as { twitchLogin?: string }).twitchLogin;
         token.twitchId    = user.id ?? undefined;

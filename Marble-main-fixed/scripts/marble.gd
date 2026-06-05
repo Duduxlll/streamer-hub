@@ -22,13 +22,11 @@ func _ready() -> void:
 
 	randomize()
 
-	# Set material color
 	var color = Color(randf(), randf(), randf())
 	var x_ray_material: StandardMaterial3D = _ball_mesh.get_active_material(0)
 	x_ray_material.set_albedo(color)
 	var toon_material: StandardMaterial3D = x_ray_material.get_next_pass()
 	toon_material.set_albedo(color)
-#		toon_material.set_shader_parameter(&"albedo", color)
 	x_ray_material.set_next_pass(toon_material)
 	_ball_mesh.set_surface_override_material(0, x_ray_material)
 
@@ -127,7 +125,6 @@ func _start() -> void:
 	set_inertia(Vector3.ZERO)
 	set_freeze_enabled(false)
 
-	# Set collision mask
 	var collision_enabled = SettingsManager.get_value(&"marbles", &"collision_enabled") as bool
 	if collision_enabled:
 		collision_mask = 1 << CollisionLayers.PROPS | 1 << CollisionLayers.MARBLES

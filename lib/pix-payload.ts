@@ -1,5 +1,3 @@
-// Gerador de payload PIX no formato EMV QRCPS (Merchant Presented Mode)
-// Compatível com qualquer app bancário brasileiro que suporte PIX
 
 function field(id: string, value: string): string {
   return `${id}${String(value.length).padStart(2, "0")}${value}`;
@@ -37,16 +35,16 @@ export function generatePixPayload({
   );
 
   const payload =
-    field("00", "01") +                                       // Payload Format Indicator
-    mai +                                                      // Merchant Account Information
-    field("52", "0000") +                                      // MCC
-    field("53", "986") +                                       // Currency (BRL)
-    field("54", amount.toFixed(2)) +                           // Amount
-    field("58", "BR") +                                        // Country Code
-    field("59", merchantName.slice(0, 25).toUpperCase()) +    // Merchant Name
-    field("60", merchantCity.slice(0, 15).toUpperCase()) +    // Merchant City
-    field("62", field("05", txId.slice(0, 25))) +             // Additional Data
-    "6304";                                                    // CRC placeholder
+    field("00", "01") +
+    mai +
+    field("52", "0000") +
+    field("53", "986") +
+    field("54", amount.toFixed(2)) +
+    field("58", "BR") +
+    field("59", merchantName.slice(0, 25).toUpperCase()) +
+    field("60", merchantCity.slice(0, 15).toUpperCase()) +
+    field("62", field("05", txId.slice(0, 25))) +
+    "6304";
 
   return payload + crc16(payload);
 }

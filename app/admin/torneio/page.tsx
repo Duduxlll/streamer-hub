@@ -80,7 +80,7 @@ export default function AdminTorneioPage() {
     try {
       const res = await fetch("/api/torneio", { cache: "no-store" });
       setTorneio(await res.json());
-    } catch { /* ignora */ }
+    } catch {  }
     finally { setCarregando(false); }
   }, []);
 
@@ -203,14 +203,14 @@ export default function AdminTorneioPage() {
               @keyframes tnGlow { 0%,100% { text-shadow: 0 0 20px rgba(255,186,0,0.4); } 50% { text-shadow: 0 0 40px rgba(255,186,0,0.7); } }
             `}</style>
 
-            {/* Cabeçalho */}
+
             <div className="px-6 pt-8 pb-5 text-center">
               <div className="text-6xl mb-3 inline-block" style={{ animation: "tnTrophyBounce 1.8s ease-in-out infinite" }}>🏆</div>
               <p className="text-[11px] font-black uppercase tracking-[0.25em] mb-1" style={{ color: "#ffba00" }}>Torneio Finalizado</p>
               <h2 className="text-3xl font-black text-white" style={{ animation: "tnGlow 2.5s ease-in-out infinite" }}>{resultadoFinal.nome}</h2>
             </div>
 
-            {/* Vencedores */}
+
             <div className="px-6 pb-6">
               {resultadoFinal.vencedores.length === 0 ? (
                 <div className="text-center py-8 rounded-2xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -251,7 +251,7 @@ export default function AdminTorneioPage() {
               )}
             </div>
 
-            {/* Botão próximo torneio */}
+
             <div className="px-6 pb-7">
               <button
                 onClick={() => { setResultadoFinal(null); setTorneio(null); }}

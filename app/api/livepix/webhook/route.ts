@@ -7,7 +7,6 @@ import { dbGet, dbSet } from "@/lib/store";
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
 export async function GET() {
-  // LivePix valida o endpoint com um GET antes de ativar o webhook
   return new NextResponse("OK", { status: 200 });
 }
 
@@ -40,7 +39,6 @@ export async function POST(req: NextRequest) {
   const messageId = body.resource?.id;
 
   if (!messageId) {
-    // Não é erro — eventos sem messageId são normais (ex: ping)
     return NextResponse.json({ ok: true, skipped: "sem messageId" });
   }
 
@@ -64,7 +62,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (jackpot.status === "aguardando") {
-    // msg.amount vem em centavos; valorEntrada está em reais
+
     const pagoCentavos    = Math.round(msg.amount);
     const entradaCentavos = Math.round(jackpot.valorEntrada * 100);
 

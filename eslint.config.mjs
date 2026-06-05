@@ -9,6 +9,7 @@ const eslintConfig = defineConfig([
     rules: {
       "react-hooks/purity": "off",
       "react-hooks/set-state-in-effect": "off",
+      "react-hooks/immutability": "off",
     },
   },
   {
@@ -17,12 +18,11 @@ const eslintConfig = defineConfig([
       "@typescript-eslint/no-require-imports": "off",
     },
   },
-  // Override default ignores of eslint-config-next.
   globalIgnores([
-    // Default ignores of eslint-config-next:
     ".next/**",
     "out/**",
     "build/**",
+    "public/marble-web/**",
     "next-env.d.ts",
   ]),
 ]);

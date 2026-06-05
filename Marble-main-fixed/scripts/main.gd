@@ -10,7 +10,7 @@ const MarbleScene := preload("res://scenes/marble.tscn")
 const Group := preload("res://scripts/constants/groups.gd")
 const NameGenerator := preload("res://scripts/utils/name_generator.gd")
 
-const TIME_PERIOD := 5  # 500ms
+const TIME_PERIOD := 5
 const STUCK_SPEED_THRESHOLD := 0.08
 const STUCK_MOVE_THRESHOLD := 0.08
 const STUCK_NUDGE_AFTER := 3.0
@@ -42,13 +42,9 @@ var _speed_buttons := []
 var _speed_panel: PanelContainer = null
 var _stuck_tracker := {}
 
-# Variables used in explosion mode to check
-# if we need to generate another chunk of the race
 var _max_checkpoint_count := -1
 var _old_lap_count := 0
 
-# There are limited places to ensure equality among the marbles.
-# TODO : remove this limit
 var _positions := []
 
 @onready var _pause_menu := get_node(^"%Menu") as Menu
@@ -125,7 +121,6 @@ func _unhandled_input(event):
 					if _mode == State.MODE_MARBLE:
 						activate_free_camera()
 
-				# Debug command to spawn a new marble
 				KEY_T:
 					if _mode == State.MODE_MARBLE:
 						var all_marble_has_finish = true
@@ -143,7 +138,6 @@ func _unhandled_input(event):
 							marble.set_marble_name(NameGenerator.generate())
 							_overlay.add_marble_rank(marble)
 
-				# Debug command to generate a new race
 				KEY_R:
 					if _mode == State.MODE_MARBLE:
 						_race.generate_race(!_explosion_enabled)
@@ -157,7 +151,6 @@ func _unhandled_input(event):
 							break
 
 
-# Reset marble positions
 func reset_position(count: int = 14) -> void:
 	_positions = []
 	var safe_count = maxi(1, count)
@@ -180,7 +173,6 @@ func ensure_marble_capacity(count: int) -> void:
 	_marbles = _marble_pool.get_children()
 
 
-# Try placing a new marble on the start line
 func try_place_start_marble() -> Marble:
 	var piece = get_highest_piece()
 	if piece == null:
@@ -212,7 +204,6 @@ func try_place_start_marble() -> Marble:
 	return new_marble
 
 
-# Get the highest piece in the race
 func get_highest_piece() -> Piece:
 	var pieces = _race.get_children()
 	if len(pieces) == 0:
@@ -233,7 +224,6 @@ func get_lowest_piece(piece_or_race, recursive: bool = false) -> Piece:
 	if len(pieces) == 0:
 		return null
 
-	# Find the lower piece from children of the current node3d
 	var lowest_piece = null
 	for piece in pieces:
 		if not piece is Piece:
@@ -250,13 +240,10 @@ func get_lowest_piece(piece_or_race, recursive: bool = false) -> Piece:
 	return lowest_piece
 
 
-# Replace cameras with a new one
 func replace_camera(new_camera, _old_cameras = []) -> void:
-	# Ensure old cameras are removed from the current scene
 	for camera in [_rotation_camera, _marble_camera, _spectator_camera]:
 		if camera != null and camera != new_camera and camera.is_inside_tree():
 			Main.remove_from_tree(camera)
-	# And create a new one
 	if not new_camera.is_inside_tree():
 		add_child(new_camera)
 
@@ -379,41 +366,34 @@ func pick_marble(screen_position: Vector2) -> Marble:
 
 
 func _on_timer_timeout():
-	# Release SceneTree
 	get_tree().set_pause(false)
 	_timer.start()
 	_race_has_started = true
 
-	# Put the camera at the right place for the start
 	place_free_camera_at_start()
 
 
-# Set the game mode
 func set_mode(mode):
 	var start_a_new_race = false
 
 	if mode != _mode:
 		if _mode == State.MODE_PAUSE or _mode == State.MODE_START:
-			# For each start action, delete all marbles
 			if _pause_menu.is_start() or _pause_menu.is_quit():
 				start_a_new_race = true
 				for marble in _marbles:
 					marble.pause()
 
-				# Ensure the timer is reset
 				_race_has_started = false
 				_race_completed = false
 				_timer.set_wait_time(10)
 				_timer.stop()
 
-			# Ensure that the pause menu is closed
 			if _pause_menu.visible:
 				_pause_menu.close()
 
 	_mode = mode
 
 	if _mode == State.MODE_MARBLE:
-		# If no marbles exist
 		if start_a_new_race:
 			_podium.hide()
 
@@ -423,7 +403,6 @@ func set_mode(mode):
 			_race.generate_race(!_explosion_enabled)
 			_lower_boundary = get_lowest_piece(_race, true).global_transform.origin.y
 
-			# Reset values at each new race
 			_max_checkpoint_count = -1
 			_old_lap_count = 0
 
@@ -438,21 +417,16 @@ func set_mode(mode):
 			_winner_limit = maxi(1, _winner_limit)
 			_current_marble_index = -1
 
-			# Show HUD
 			_overlay.show()
 
-			# Put the camera at the right place for the start
 			replace_camera(_rotation_camera)
 
-			# Focus the rotation camera on the marble start line
 			_rotation_camera.target = get_highest_piece().global_position + Vector3.UP * 5
 			_rotation_camera.distance_to_target = 10.0
 
 			if len(names) > 0:
-				# Stop SceneTree, to make all the marbles leave at the same time
 				get_tree().set_pause(true)
 
-				# Create one marble for each name
 				for marble_name in _pause_menu.get_names():
 					var marble = try_place_start_marble()
 					if marble == null:
@@ -474,19 +448,16 @@ func set_mode(mode):
 		_overlay.hide()
 		_pause_menu.open_start_menu()
 		replace_camera(_rotation_camera)
-		# Focus the rotation camera on race
 		_rotation_camera.target = Vector3.ZERO
 		_rotation_camera.distance_to_target = 50.0
 
 	elif _mode == State.MODE_PAUSE:
 		_pause_menu.open_pause_menu()
 		replace_camera(_rotation_camera)
-		# Focus the rotation camera on race
 		_rotation_camera.target = Vector3.ZERO
 		_rotation_camera.distance_to_target = 50.0
 
 
-# Remove a node from the scene tree
 static func remove_from_tree(node):
 	node.get_parent().remove_child(node)
 
@@ -496,10 +467,8 @@ func _process(delta):
 
 	if _time > TIME_PERIOD:
 		if _mode == State.MODE_START:
-			# Regenerate race
 			_race.generate_race(true)
 
-			# Reset timer
 			_time = 0
 
 	if _mode != State.MODE_START and _explosion_enabled:
@@ -521,16 +490,11 @@ func _process(delta):
 					_explosion.set_emitting(true)
 
 		if _ranking._first_marble:
-			# If a new checkpoint is crossed by the first marble
 			if _ranking._first_marble._checkpoint_count > _max_checkpoint_count:
-				# Store the max number of checkpoints crossed
 				_max_checkpoint_count = _ranking._first_marble._checkpoint_count
 
-				# Compute the lap (1 lap equals  to one chunk)
 				var lap_count := ceili(_max_checkpoint_count / (_race._step_count - 3.0))
-				# If one more lap was done
 				if lap_count > _old_lap_count:
-					# Generate a chunk
 					_race.generate_chunk()
 					_lower_boundary = get_lowest_piece(_race, true).global_transform.origin.y
 					_old_lap_count = lap_count
@@ -561,7 +525,6 @@ func _process(delta):
 		update_finish_order()
 		update_stuck_marbles(delta)
 
-	# Check if some marbles are out of bound
 	if _race_has_started and _lower_boundary != null:
 		for marble in _marbles:
 			if (
@@ -910,7 +873,6 @@ func _post_web_event(event_type: StringName, payload: Dictionary = {}) -> void:
 	_eval_js(script)
 
 
-# Handle victory conditions on explosion mode
 func explosion_victory(_last_marble: Marble) -> bool:
 	var marble_exploded_count := 0
 	var tmp_marble = null
@@ -928,7 +890,6 @@ func explosion_victory(_last_marble: Marble) -> bool:
 		tmp_marble.finish()
 
 	if marble_exploded_count == 1:
-#		_last_marble.finish()
 		return true
 
 	if marble_exploded_count == 0:

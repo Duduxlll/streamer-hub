@@ -1,8 +1,3 @@
-// Envio de e-mail via Resend (https://resend.com) usando a API HTTP — sem dependência npm.
-// Requer as variáveis de ambiente:
-//   RESEND_API_KEY  → chave da API (re_...)
-//   RESEND_FROM     → remetente verificado, ex.: "stainzincs <no-reply@seudominio.com>"
-//                     (sem domínio verificado, o Resend só entrega para o e-mail do dono da conta)
 
 export async function sendEmail(params: {
   to: string;
@@ -32,7 +27,7 @@ export async function sendEmail(params: {
   }
 }
 
-// Template HTML do e-mail de redefinição de senha (tema verde, código em destaque).
+
 export function resetCodeEmailHtml(code: string, minutos = 15): string {
   const digits = code.split("").map(d =>
     `<td style="padding:0 5px;"><div style="width:44px;height:56px;line-height:56px;text-align:center;font-size:28px;font-weight:800;color:#eafff3;background:#0a2e1a;border:1px solid #16a34a;border-radius:12px;">${d}</div></td>`

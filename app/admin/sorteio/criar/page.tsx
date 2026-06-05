@@ -55,7 +55,7 @@ export default function CriarSorteioPage() {
       });
       if (!res.ok) throw new Error();
       toast("Sorteio criado com sucesso! 🎟️", "success");
-      // Rota separada → navegação limpa para a lista de sorteios ativos
+
       router.push("/admin/sorteio");
       router.refresh();
     } catch { toast("Erro ao criar sorteio.", "error"); setCriando(false); }
@@ -104,7 +104,7 @@ export default function CriarSorteioPage() {
                 e.target.style.borderColor = "rgba(255,255,255,0.1)";
                 setForm(f => ({ ...f, valor: formatarValor(f.valor) }));
               }} />
-            {/* Duração do sorteio — dias / horas / minutos / segundos */}
+
             <div>
               <label className="text-[10px] text-gray-600 font-bold uppercase tracking-wide block mb-1.5">Duração do sorteio</label>
               <div className="grid grid-cols-4 gap-2">
@@ -135,7 +135,7 @@ export default function CriarSorteioPage() {
               })()}
             </div>
 
-            {/* Ticket a cada X minutos */}
+
             <div>
               <label className="text-[10px] text-gray-600 font-bold uppercase tracking-wide block mb-1">Ticket a cada X minutos</label>
               <input type="number" min="1" value={form.minutosTicket}

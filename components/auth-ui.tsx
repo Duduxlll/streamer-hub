@@ -2,7 +2,6 @@
 
 import type { ReactNode, InputHTMLAttributes } from "react";
 
-/* ─────────────────────────  Ícones  ───────────────────────── */
 
 const ic = "w-[18px] h-[18px]";
 export const Icons = {
@@ -58,7 +57,6 @@ export const Icons = {
   ),
 };
 
-/* ─────────────────────────  Shell  ───────────────────────── */
 
 export function AuthShell({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
   return (
@@ -102,7 +100,7 @@ export function AuthHeader({ icon, title, subtitle }: { icon: ReactNode; title: 
   );
 }
 
-/* ─────────────────────────  Campos  ───────────────────────── */
+
 
 export function AuthField({ label, right, children, delay = 0 }: {
   label: string; right?: ReactNode; children: ReactNode; delay?: number;
@@ -160,7 +158,7 @@ export function AuthDivider() {
   return <div className="my-5 h-px w-full" style={{ background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.08),transparent)" }} />;
 }
 
-/* ─────────────────────────  CSS  ───────────────────────── */
+
 
 const AUTH_CSS = `
 @keyframes authFadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }

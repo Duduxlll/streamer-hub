@@ -12,13 +12,11 @@ export interface SiteUser {
   displayName: string;
   image: string | null;
   status: UserStatus;
-  // ── Login próprio (usuário + senha) ──────────────────────────────
   passwordHash?: string;
   nomeCompleto?: string;
   cpf?: string;
   email?: string;
   isAdmin?: boolean;
-  // ─────────────────────────────────────────────────────────────────
   banMotivo?: string;
   banEm?: number;
   banPor?: string;
@@ -41,23 +39,18 @@ async function loadUsers(): Promise<SiteUser[]> {
     const raw = await dbGet(KEY_USERS);
     if (!raw) return [];
     const list = JSON.parse(raw) as SiteUser[];
-    // Decifra o CPF (transparente — em memória o resto do código vê o valor real)
     for (const u of list) if (u.cpf) u.cpf = decField(u.cpf);
     return list;
   } catch { return []; }
 }
 
 async function saveUsers(list: SiteUser[]): Promise<void> {
-  // Cifra o CPF apenas na persistência, sem alterar a lista em memória
   const toSave = list.map(u => (u.cpf ? { ...u, cpf: encField(u.cpf) } : u));
   await dbSet(KEY_USERS, JSON.stringify(toSave));
 }
 
-// Reconstrói as listas de bloqueio: IPs (de banidos) e logins (banidos + suspensos ativos).
-// O proxy consulta essas listas para bloquear o acesso em toda requisição.
 async function rebuildBlocklists(list: SiteUser[]): Promise<void> {
   const ips    = new Set<string>();
-  // ate = 0 → bloqueio permanente (banido); ate = timestamp → suspensão até essa data
   const logins: { login: string; ate: number }[] = [];
   const now    = Date.now();
   for (const u of list) {
@@ -123,7 +116,6 @@ export async function isBanned(twitchLogin: string): Promise<boolean> {
   if (!u) return false;
   if (u.status === "banido") return true;
   if (u.status === "suspenso" && u.suspAte && u.suspAte > Date.now()) return true;
-  // Levanta suspensão automaticamente quando expirada
   if (u.status === "suspenso" && u.suspAte && u.suspAte <= Date.now()) {
     u.status = "ativo";
     delete u.suspAte; delete u.suspMotivo; delete u.suspPor;
@@ -193,7 +185,6 @@ export async function getBannedIps(): Promise<string[]> {
   } catch { return []; }
 }
 
-// ─── Login próprio (usuário + senha) ──────────────────────────────────────────
 
 export async function getUserByLogin(login: string): Promise<SiteUser | null> {
   const list = await loadUsers();
@@ -211,11 +202,6 @@ export type CreateUserResult =
   | { ok: true; user: SiteUser }
   | { ok: false; error: string };
 
-/**
- * Cria uma nova conta com login próprio.
- * `twitchLogin` é o nome da Twitch (casa com o chat do bot e define se é admin).
- * O acesso (login) é feito pelo e-mail. E-mail e CPF são únicos.
- */
 export async function createUser(params: {
   twitchLogin: string;
   nomeCompleto: string;
@@ -241,11 +227,9 @@ export async function createUser(params: {
   const emailNorm = params.email.trim().toLowerCase();
   const cpfNorm   = params.cpf.replace(/\D/g, "");
 
-  // E-mail único
   if (emailNorm && list.some(u => u.email === emailNorm && u.twitchLogin !== login && !!u.passwordHash)) {
     return { ok: false, error: "Esse e-mail já está cadastrado" };
   }
-  // CPF único
   if (cpfNorm && list.some(u => u.cpf === cpfNorm && u.twitchLogin !== login && !!u.passwordHash)) {
     return { ok: false, error: "Esse CPF já está cadastrado em outra conta" };
   }
@@ -255,7 +239,6 @@ export async function createUser(params: {
   const ehAdmin = isAdmin(login);
 
   if (existing) {
-    // Conta já existia (ex.: criada por um login antigo) — anexa as credenciais.
     existing.passwordHash = passwordHash;
     existing.nomeCompleto = params.nomeCompleto.trim();
     existing.cpf          = cpfNorm;
@@ -287,7 +270,6 @@ export async function createUser(params: {
   return { ok: true, user };
 }
 
-/** Valida e-mail + senha. Retorna o usuário se as credenciais conferem. */
 export async function verifyCredentials(email: string, senha: string): Promise<SiteUser | null> {
   const u = await getUserByEmail(email);
   if (!u || !u.passwordHash) return null;
@@ -295,7 +277,6 @@ export async function verifyCredentials(email: string, senha: string): Promise<S
   return u;
 }
 
-/** Registra um login bem-sucedido (contador + data + IP). */
 export async function touchLogin(login: string, ip?: string): Promise<void> {
   const list = await loadUsers();
   const u = list.find(x => x.twitchLogin === login.toLowerCase());
@@ -306,7 +287,6 @@ export async function touchLogin(login: string, ip?: string): Promise<void> {
   await saveUsers(list);
 }
 
-/** Define uma nova senha (usado pelo admin para resetar). */
 export async function setPassword(login: string, novaSenha: string): Promise<boolean> {
   if (novaSenha.length < 6) return false;
   const list = await loadUsers();
@@ -317,7 +297,6 @@ export async function setPassword(login: string, novaSenha: string): Promise<boo
   return true;
 }
 
-/** Remove as contas antigas (login pela Twitch) — as que não têm senha própria. */
 export async function removerContasSemSenha(): Promise<number> {
   const list = await loadUsers();
   const restantes = list.filter(u => !!u.passwordHash);
@@ -328,4 +307,3 @@ export async function removerContasSemSenha(): Promise<number> {
   }
   return removidos;
 }
-

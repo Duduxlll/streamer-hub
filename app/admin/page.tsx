@@ -67,18 +67,18 @@ export default function AdminDashboardPage() {
   const [siteStatus, setSiteStatus] = useState<SiteStatus | null>(null);
 
   useEffect(() => {
-    // Integrações — usa o TESTE REAL de conexão (mesma fonte da página de Configurações),
-    // para o status bater com o que aparece lá e não dar "piscada"/divergência.
+
+
     fetch("/api/config?test=1").then(r => r.ok ? r.json() : null).then(d => setConfig(d)).catch(() => {});
 
-    // Usuários
+
     fetch("/api/admin/users").then(r => r.ok ? r.json() : null).then(d => {
       if (!d?.users) return;
       const list = d.users as Array<{ status: string }>;
       setUsers({ total: list.length, banidos: list.filter(u => u.status === "banido").length, suspensos: list.filter(u => u.status === "suspenso").length });
     }).catch(() => {});
 
-    // Status de features ativas
+
     Promise.all([
       fetch("/api/gorjeta").then(r => r.ok ? r.json() : null),
       fetch("/api/gorjeta?tipo=cadastros").then(r => r.ok ? r.json() : null),
@@ -111,7 +111,7 @@ export default function AdminDashboardPage() {
         <p className="text-sm text-gray-600 mt-1">Visão geral do painel de administração</p>
       </div>
 
-      {/* ── Gorjeta ──────────────────────────────────────────── */}
+
       <div>
         <SectionLabel>Gorjeta</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -129,7 +129,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* ── Interações com a live ─────────────────────────────── */}
+
       <div>
         <SectionLabel>Interações com a live</SectionLabel>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -141,7 +141,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* ── Sorteio ──────────────────────────────────────────── */}
+
       <div>
         <SectionLabel>Sorteio</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -149,7 +149,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* ── Usuários & Segurança ──────────────────────────────── */}
+
       <div>
         <SectionLabel>Usuários &amp; Segurança</SectionLabel>
         <div className="grid grid-cols-2 gap-3">
@@ -163,7 +163,7 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* ── Integrações (embaixo) ─────────────────────────────── */}
+
       <div>
         <SectionLabel>Integrações</SectionLabel>
         <div className="grid grid-cols-2 gap-3">

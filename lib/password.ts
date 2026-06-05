@@ -1,7 +1,5 @@
 import { scryptSync, randomBytes, timingSafeEqual } from "node:crypto";
 
-// Hash de senha com scrypt nativo do Node — sem dependência externa (evita binários nativos).
-// Formato armazenado: "scrypt$<salt hex>$<hash hex>"
 const SCRYPT_KEYLEN = 64;
 
 export function hashPassword(plain: string): string {

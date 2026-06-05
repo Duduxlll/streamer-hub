@@ -286,7 +286,7 @@ export default function AdminBatalhaPage() {
     try {
       const res = await fetch("/api/batalha", { cache: "no-store" });
       setBatalha(await res.json());
-    } catch { /* ignora */ }
+    } catch {  }
     finally { setCarregando(false); }
   }, []);
 

@@ -3,15 +3,12 @@ import { authConfig } from "./auth.config";
 import { isAdmin } from "@/lib/admins";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Instância "leve" (edge-safe): só lê o JWT da sessão, sem o provider de Credentials
-// (que usa node:crypto e não roda no Edge).
 const { auth } = NextAuth(authConfig);
 
-// Cache das listas de bloqueio — persiste entre requests no mesmo processo (Render single instance)
 let bannedIpsCache: Set<string>       = new Set();
-let bannedLoginsCache: Map<string, number> = new Map(); // login → ate (0 = permanente; senão timestamp de fim da suspensão)
+let bannedLoginsCache: Map<string, number> = new Map();
 let cacheTs = 0;
-const CACHE_TTL = 30_000; // 30s
+const CACHE_TTL = 30_000;
 
 async function refreshBlocklists(): Promise<void> {
   const dbUrl   = process.env.TURSO_DATABASE_URL;
@@ -46,7 +43,7 @@ async function refreshBlocklists(): Promise<void> {
     const loginsArr = loginsRaw ? JSON.parse(loginsRaw) as { login: string; ate: number }[] : [];
     bannedLoginsCache = new Map(loginsArr.map(x => [x.login.toLowerCase(), x.ate]));
     cacheTs = Date.now();
-  } catch { /* best-effort — nunca bloqueia o request por erro de rede */ }
+  } catch {  }
 }
 
 function getClientIp(req: NextRequest): string {
@@ -62,7 +59,7 @@ export const proxy = auth(async (req) => {
   const { pathname } = req.nextUrl;
   const twitchLogin  = (req.auth?.user as { twitchLogin?: string })?.twitchLogin;
 
-  // Não verifica na própria página de banido nem em assets/auth (evita loop de redirect)
+
   const skipCheck =
     pathname === "/banido" ||
     pathname.startsWith("/_next") ||
@@ -73,19 +70,19 @@ export const proxy = auth(async (req) => {
       await refreshBlocklists();
     }
 
-    // Admin nunca é bloqueado (evita auto-trancamento acidental)
+
     const ehAdmin = isAdmin(twitchLogin);
 
     if (!ehAdmin) {
-      // 1) Bloqueio pela CONTA logada (banido ou suspenso) — funciona mesmo já estando logado.
-      //    ate === 0 → ban permanente; ate > agora → suspensão ainda ativa (expira sozinha).
+
+
       if (twitchLogin) {
         const ate = bannedLoginsCache.get(twitchLogin.toLowerCase());
         if (ate !== undefined && (ate === 0 || ate > Date.now())) {
           return NextResponse.redirect(new URL("/banido", req.url));
         }
       }
-      // 2) Bloqueio pelo IP (banidos)
+
       const ip = getClientIp(req);
       if (ip && bannedIpsCache.has(ip)) {
         return NextResponse.redirect(new URL("/banido", req.url));
@@ -93,7 +90,7 @@ export const proxy = auth(async (req) => {
     }
   }
 
-  // ── Proteção das rotas /admin ────────────────────────────────────────
+
   if (pathname.startsWith("/admin")) {
     if (!req.auth) {
       const loginUrl = new URL("/login", req.url);
@@ -105,9 +102,9 @@ export const proxy = auth(async (req) => {
     }
   }
 
-  // ── Cross-origin isolation (COOP/COEP) para a corrida 3D em Godot ──────
-  // Garante o isolamento que estabiliza o WebAssembly, mesmo que o
-  // next.config não aplique os headers a tempo (reforço).
+
+
+
   if (pathname === "/admin/corrida" || pathname.startsWith("/marble-web")) {
     const res = NextResponse.next();
     res.headers.set("Cross-Origin-Opener-Policy", "same-origin");

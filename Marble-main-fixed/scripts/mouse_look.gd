@@ -22,26 +22,21 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.pressed and Input.get_mouse_mode() != Input.MOUSE_MODE_CAPTURED:
 			if capture_mouse:
-				# Capture the mouse
 				Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 	elif event is InputEventMouseMotion:
 		if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED || not capture_mouse:
-			# Get mouse delta
 			var motion = event.relative
 
-			# Add to rotations
 			_yaw -= motion.x * sensitivity
 			_pitch += motion.y * sensitivity
 
-			# Clamp pitch
 			var e := 0.001
 			if _pitch > max_angle - e:
 				_pitch = max_angle - e
 			elif _pitch < min_angle + e:
 				_pitch = min_angle + e
 
-			# Apply rotations
 			update_rotations()
 
 

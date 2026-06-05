@@ -55,13 +55,13 @@ export default function CorridaPage() {
   const raceDataRef = useRef<RaceData | null>(null);
   const phaseRef = useRef<"racing" | "result">("racing");
 
-  // Auth guard
+
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
     if (status === "authenticated" && !isAdmin(session?.user?.twitchLogin)) router.replace("/");
   }, [status, session, router]);
 
-  // Carrega os dados (inscritos da gorjeta) + status do GGPix
+
   useEffect(() => {
     const raw = localStorage.getItem("corrida-race-data");
     if (!raw) { setErroDados(true); return; }
@@ -73,7 +73,7 @@ export default function CorridaPage() {
       const normalizedData: RaceData = { ...data, numVencedores: top, topN: top, top, maxVencedores: top };
       raceDataRef.current = normalizedData;
       setRaceData(normalizedData);
-      // Disponibiliza pro Godot exportado ler pela página pai.
+
       const jogadores = normalizedData.participants.map(p => p.displayName || p.username);
       const payload: RacePayload = {
         jogadores,
@@ -94,7 +94,7 @@ export default function CorridaPage() {
     fetch("/api/config").then(r => r.ok ? r.json() : null).then(d => setGgpixOk(!!d?.ggpix?.ok)).catch(() => {});
   }, []);
 
-  // Fallback: se o jogo não emitir nenhum evento em 30s, esconde o loading mesmo assim
+
   useEffect(() => {
     if (!iframeReady) return;
     const t = setTimeout(() => setJogoPronto(true), 30000);
@@ -122,16 +122,16 @@ export default function CorridaPage() {
     setPhase("result");
   }, [findParticipant]);
 
-  // Ponte: escuta o Godot (postMessage) + função global de backup
+
   useEffect(() => {
     function onMsg(e: MessageEvent) {
       let data: { type?: string; payload?: { winners?: Array<{ place?: number; name: string }> } };
       try { data = typeof e.data === "string" ? JSON.parse(e.data) : e.data; } catch { return; }
       if (!data || typeof data !== "object" || typeof data.type !== "string" || !data.type.startsWith("marble:")) return;
-      // Qualquer evento do jogo significa que ele já carregou → esconde a tela de loading
+
       setJogoPronto(true);
       if (data.type === "marble:ready") {
-        // Reforço: manda os jogadores por postMessage também
+
         const rd = raceDataRef.current;
         if (rd && iframeRef.current?.contentWindow) {
           const jogadores = rd.participants.map(p => p.displayName || p.username);
@@ -199,14 +199,14 @@ export default function CorridaPage() {
 
   return (
     <div className="fixed inset-0 z-[100] bg-[#050d08] flex flex-col">
-      {/* Barra superior */}
+
       <div className="flex-shrink-0 px-4 py-2.5 flex items-center gap-3 border-b border-white/10" style={{ background: "rgba(5,13,8,0.98)" }}>
         <button onClick={() => router.push("/admin/gorjeta")} className="text-gray-400 hover:text-white text-sm font-bold transition-colors">← Voltar para Gorjeta</button>
         <span className="text-white font-black flex-1 truncate text-sm">🏁 Corrida do stainzin</span>
         {raceData && <span className="text-[11px] text-gray-500">{raceData.participants.length} na pista · Top {raceData.numVencedores}</span>}
       </div>
 
-      {/* Jogo (iframe) */}
+
       <div className="flex-1 relative bg-black">
         {iframeReady && (
           <iframe
@@ -216,7 +216,7 @@ export default function CorridaPage() {
             allow="autoplay; fullscreen; gamepad"
             title="Corrida do stainzin" />
         )}
-        {/* Tela de carregamento — cobre o splash "Godot Engine" até o jogo ficar pronto */}
+
         {(!iframeReady || !jogoPronto) && phase === "racing" && (
           <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-5"
             style={{ background: "linear-gradient(160deg,#071a0f,#04100a)" }}>
@@ -228,7 +228,7 @@ export default function CorridaPage() {
           </div>
         )}
 
-        {/* Overlay de resultado/pagamento */}
+
         {phase === "result" && (
           <div className="absolute inset-0 z-10 overflow-y-auto bg-black/85 backdrop-blur-md p-4 sm:p-6">
             <div className="max-w-xl mx-auto space-y-4 py-4">

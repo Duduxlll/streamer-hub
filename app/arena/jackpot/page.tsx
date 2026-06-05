@@ -60,7 +60,7 @@ export default function ArenaJackpotPage() {
     try {
       const res = await fetch("/api/jackpot", { cache: "no-store" });
       setJackpot(await res.json());
-    } catch { /* ignora */ } finally { setCarregando(false); }
+    } catch {} finally { setCarregando(false); }
   }, []);
 
   useEffect(() => {

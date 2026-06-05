@@ -10,12 +10,10 @@ declare global {
 }
 
 async function getClientIdAndSecret(): Promise<{ clientId: string; clientSecret: string }> {
-  // banco tem prioridade — configurado via UI sobrepõe o env do Render
   const creds = await getCredentials();
   if (creds.livepix.clientId && creds.livepix.clientSecret) {
     return { clientId: creds.livepix.clientId, clientSecret: creds.livepix.clientSecret };
   }
-  // fallback para env (deployments antigos / antes de configurar pela UI)
   return {
     clientId:     process.env.LIVEPIX_CLIENT_ID     ?? "",
     clientSecret: process.env.LIVEPIX_CLIENT_SECRET ?? "",
@@ -28,16 +26,11 @@ export async function isConfigured(): Promise<boolean> {
   return !!(process.env.LIVEPIX_CLIENT_ID && process.env.LIVEPIX_CLIENT_SECRET);
 }
 
-/**
- * Testa de verdade se as credenciais do LivePix funcionam, tentando obter
- * um token OAuth. Detecta credenciais removidas/inválidas no lado do LivePix.
- */
 export async function testConnection(): Promise<{ ok: boolean; error?: string }> {
   const { clientId, clientSecret } = await getClientIdAndSecret();
   if (!clientId || !clientSecret) {
     return { ok: false, error: "Credenciais não preenchidas" };
   }
-  // Limpa o cache do token para forçar uma verificação real
   globalThis.__livepix_token = undefined;
   try {
     const res = await fetch("https://oauth.livepix.gg/oauth2/token", {
@@ -127,7 +120,6 @@ export async function getMessage(messageId: string): Promise<LivePixMessage> {
 }
 
 export async function getWebhookSecret(): Promise<string> {
-  // banco tem prioridade — configurado via UI sobrepõe o env do Render
   const creds = await getCredentials();
   if (creds.livepix.webhookSecret) return creds.livepix.webhookSecret;
   return process.env.LIVEPIX_WEBHOOK_SECRET ?? "";

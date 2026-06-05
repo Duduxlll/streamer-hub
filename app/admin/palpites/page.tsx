@@ -168,7 +168,7 @@ export default function AdminPalpitesPage() {
       if (actionInFlight.current) return;
       setRodada(await rRes.json());
       setHistorico(await hRes.json() as ResultadoRodada[]);
-    } catch { /* ignora */ } finally {
+    } catch {  } finally {
       setCarregando(false);
     }
   }, []);
@@ -333,10 +333,10 @@ export default function AdminPalpitesPage() {
                 </div>
               </div>
 
-              {/* Configurações de modo — só ao abrir nova rodada */}
+
               {!rodadaAtiva && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                  {/* Modo de vitória */}
+
                   <div>
                     <label className="text-xs font-semibold text-gray-400 mb-2 block">Como ganha?</label>
                     <div className="grid grid-cols-2 gap-2">
@@ -359,7 +359,7 @@ export default function AdminPalpitesPage() {
                     </div>
                   </div>
 
-                  {/* Quantidade de palpites por pessoa */}
+
                   <div>
                     <label className="text-xs font-semibold text-gray-400 mb-2 block">Palpites por pessoa</label>
                     <div className="grid grid-cols-2 gap-2">
@@ -384,7 +384,7 @@ export default function AdminPalpitesPage() {
                 </div>
               )}
 
-              {/* Resumo do modo durante rodada ativa */}
+
               {rodadaAtiva && rodada && (
                 <div className="flex items-center gap-2 flex-wrap mb-5">
                   <span className="text-[10px] font-black px-2.5 py-1 rounded-full"

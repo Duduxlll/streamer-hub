@@ -144,7 +144,6 @@ export default function CadastroPage() {
           </button>
           {screenshot && (
             <div className="mt-2 rounded-xl overflow-hidden border border-white/5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={screenshot} alt="preview" className="w-full max-h-40 object-cover" />
             </div>
           )}

@@ -7,9 +7,9 @@ export interface CadastroGorjeta {
   id: string;
   username: string;
   displayName: string;
-  cpf: string;          // campo legado — armazena a chave PIX normalizada
+  cpf: string;
   tipoChave: TipoChavePix;
-  cpfTitular?: string;  // CPF do titular da chave (obtido via DICT), para detecção de duplicatas
+  cpfTitular?: string;
   nomeCompleto: string;
   status: "pendente" | "aprovado" | "rejeitado";
   criadoEm: number;
@@ -21,7 +21,7 @@ export interface ParticipanteSessao {
   username: string;
   displayName: string;
   image: string | null;
-  cpf: string;          // chave PIX normalizada
+  cpf: string;
   tipoChave?: TipoChavePix;
   nomeCompleto: string;
   entradaEm: number;
@@ -91,7 +91,7 @@ async function loadCadastros(): Promise<CadastroGorjeta[]> {
     const raw = await dbGet(KEY_CADASTROS);
     const parsed = raw ? JSON.parse(raw) : null;
     const list = Array.isArray(parsed) ? parsed as CadastroGorjeta[] : (globalThis.__gorjetaCadastros ?? []);
-    // Decifra a chave PIX (cpf) e o titular (transparente em memória)
+
     for (const c of list) {
       if (c.cpf) c.cpf = decField(c.cpf);
       if (c.cpfTitular) c.cpfTitular = decField(c.cpfTitular);
@@ -101,7 +101,7 @@ async function loadCadastros(): Promise<CadastroGorjeta[]> {
 }
 
 async function saveCadastros(list: CadastroGorjeta[]): Promise<void> {
-  globalThis.__gorjetaCadastros = list; // memória: texto puro
+  globalThis.__gorjetaCadastros = list;
   const toSave = list.map(c => ({
     ...c,
     cpf: encField(c.cpf),
@@ -122,7 +122,7 @@ async function loadSessao(): Promise<SessaoGorjeta | null> {
 }
 
 async function saveSessao(s: SessaoGorjeta | null): Promise<void> {
-  globalThis.__gorjetaSessao = s; // memória: texto puro
+  globalThis.__gorjetaSessao = s;
   let toSave: SessaoGorjeta | null = s;
   if (s) {
     toSave = {
@@ -148,7 +148,7 @@ async function saveHistorico(list: HistoricoItemGorjeta[]): Promise<void> {
   try { await dbSet(KEY_HISTORICO, JSON.stringify(trimmed)); } catch {}
 }
 
-// ─── Cadastros ─────────────────────────────────────────────────────────────
+
 
 export async function getCadastros(): Promise<CadastroGorjeta[]> { return loadCadastros(); }
 
@@ -179,7 +179,7 @@ export async function cadastrar(params: {
     return { ok: false, error: msgs[params.tipoChave] };
   }
 
-  // Bloqueia mesma chave em contas diferentes
+
   const chaveDup = list.find(c =>
     c.cpf === chaveNorm &&
     c.username.toLowerCase() !== params.username.toLowerCase() &&
@@ -187,15 +187,15 @@ export async function cadastrar(params: {
   );
   if (chaveDup) return { ok: false, error: "Esta chave PIX já está cadastrada por outro usuário" };
 
-  // Bloqueia mesmo titular (mesmo CPF identificado via DICT) em contas diferentes
+
   if (params.cpfTitular) {
     const titularDup = list.find(c => {
       if (c.username.toLowerCase() === params.username.toLowerCase()) return false;
       if (c.status === "rejeitado") return false;
-      // Checa campo cpfTitular (cadastros novos)
+
       if (c.cpfTitular && c.cpfTitular === params.cpfTitular) return true;
-      // Retrocompatibilidade: cadastros antigos com CPF não têm cpfTitular,
-      // mas o próprio campo cpf É o CPF do titular
+
+
       const tipo = c.tipoChave ?? "cpf";
       if (tipo === "cpf" && c.cpf === params.cpfTitular) return true;
       return false;
@@ -259,7 +259,7 @@ export async function getScreenshot(id: string): Promise<string | null> {
   try { return await dbGet(screenshotKey(id)); } catch { return null; }
 }
 
-// ─── Sessão ────────────────────────────────────────────────────────────────
+
 
 export async function getSessao(): Promise<SessaoGorjeta | null> { return loadSessao(); }
 
@@ -481,7 +481,7 @@ export async function limparHistorico(): Promise<void> {
   await saveHistorico([]);
 }
 
-// ─── Fila de Pagamentos ───────────────────────────────────────────────────────
+
 
 export interface PagamentoPendente {
   id: string;
@@ -500,7 +500,7 @@ export interface PagamentoPendente {
 const KEY_PAGAMENTOS = "gorjeta:pagamentos:v1";
 
 async function savePagamentos(list: PagamentoPendente[]): Promise<void> {
-  // Cifra a chave PIX apenas na persistência
+
   const toSave = list.map(p => ({ ...p, pixKey: encField(p.pixKey) }));
   await dbSet(KEY_PAGAMENTOS, JSON.stringify(toSave));
 }
@@ -557,7 +557,7 @@ export async function limparPagamentosFinalizados(): Promise<void> {
   await savePagamentos(list.filter(p => p.status === "pendente"));
 }
 
-// ─── Validação & Normalização ──────────────────────────────────────────────
+
 
 function validarCpf(cpf: string): boolean {
   const d = cpf.replace(/\D/g, "");

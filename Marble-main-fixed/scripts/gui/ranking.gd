@@ -1,4 +1,3 @@
-# List of participants, which is updated every frame until the end of the race
 class_name Ranking
 
 extends VBoxContainer

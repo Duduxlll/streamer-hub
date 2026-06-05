@@ -7,7 +7,6 @@ import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
 export const dynamic = "force-dynamic";
 
 export async function POST(req: NextRequest) {
-  // Anti-força-bruta do código: 30 tentativas por hora por IP.
   const limite = rateLimit(`reset:${ipFromHeaders(req.headers)}`, 30, 60 * 60 * 1000);
   if (!limite.ok) {
     return NextResponse.json({ error: "Muitas tentativas. Tente novamente mais tarde." }, { status: 429 });

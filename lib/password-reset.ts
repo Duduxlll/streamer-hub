@@ -1,18 +1,16 @@
 import { dbGet, dbSet } from "./store";
 import { scryptSync, randomBytes, randomInt, timingSafeEqual } from "node:crypto";
 
-// Código de redefinição de senha: 6 dígitos, guardado como hash, com expiração,
-// limite de tentativas e cooldown para evitar spam de e-mail.
 
 interface ResetEntry {
-  codeHash: string;   // formato "salt$hash"
+  codeHash: string;
   expiresAt: number;
   attempts: number;
   createdAt: number;
 }
 
-const TTL_MS       = 15 * 60 * 1000; // 15 min
-const COOLDOWN_MS  = 60 * 1000;      // 1 min entre envios
+const TTL_MS       = 15 * 60 * 1000;
+const COOLDOWN_MS  = 60 * 1000;
 const MAX_ATTEMPTS = 5;
 
 function key(email: string): string {
@@ -23,17 +21,14 @@ function hashCode(code: string, salt: string): string {
   return scryptSync(code, salt, 32).toString("hex");
 }
 
-/**
- * Cria (ou recria) um código de reset para o e-mail. Retorna o código em texto
- * (para enviar por e-mail) ou null se estiver em cooldown (não reenvia tão rápido).
- */
+
 export async function createResetCode(email: string): Promise<string | null> {
   const existingRaw = await dbGet(key(email));
   if (existingRaw) {
     try {
       const ex = JSON.parse(existingRaw) as ResetEntry;
-      if (Date.now() - ex.createdAt < COOLDOWN_MS) return null; // cooldown
-    } catch { /* ignora entry corrompida */ }
+      if (Date.now() - ex.createdAt < COOLDOWN_MS) return null;
+    } catch {  }
   }
 
   const code = String(randomInt(0, 1_000_000)).padStart(6, "0");
@@ -48,7 +43,7 @@ export async function createResetCode(email: string): Promise<string | null> {
   return code;
 }
 
-/** Valida o código. Em caso de sucesso, consome (apaga) o código. */
+
 export async function verifyResetCode(
   email: string, code: string,
 ): Promise<{ ok: true } | { ok: false; error: string }> {
@@ -81,6 +76,6 @@ export async function verifyResetCode(
     return { ok: false, error: restantes > 0 ? `Código incorreto. ${restantes} tentativa(s) restante(s).` : "Muitas tentativas. Solicite um novo código." };
   }
 
-  await dbSet(key(email), null); // consome o código
+  await dbSet(key(email), null);
   return { ok: true };
 }

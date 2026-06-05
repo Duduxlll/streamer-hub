@@ -36,7 +36,6 @@ func set_type(val) -> void:
 	type = val
 
 	if mesh:
-		# Change the color accordingly to the type of the power
 		match type:
 			PowerType.BOOST:
 				var material: ShaderMaterial = mesh.get_surface_override_material(0)

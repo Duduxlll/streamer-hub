@@ -29,7 +29,7 @@ export default function TorneioPage() {
     try {
       const res = await fetch("/api/torneio", { cache: "no-store" });
       setTorneio(await res.json());
-    } catch { /* ignora */ } finally { setCarregando(false); }
+    } catch {} finally { setCarregando(false); }
   }, []);
 
   useEffect(() => {
