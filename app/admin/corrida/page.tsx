@@ -194,7 +194,6 @@ export default function CorridaPage() {
     setEnviando("");
     if (allOk) {
       setEnviado(true);
-      if (modo === "fila") router.push("/admin/gorjeta/pagamentos");
     } else {
       setErroEnvio(firstError || "Algum PIX falhou. Confira a configuração da GGPix.");
     }

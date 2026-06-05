@@ -67,6 +67,12 @@ function PayBadge({ status, erro }: { status: string; erro?: string }) {
       ✓ enviado
     </span>
   );
+  if (status === "pendente") return (
+    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black whitespace-nowrap"
+      style={{ color: "#ffba00", background: "rgba(255,186,0,0.1)", border: "1px solid rgba(255,186,0,0.3)" }}>
+      • pendente
+    </span>
+  );
   const label = labelErro(erro);
   return (
     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black whitespace-nowrap" title={erro}
@@ -663,7 +669,7 @@ export default function AdminGorjetaPage() {
     const r = await apiCall({ action: "pagar-fila" });
     if (r) {
       setShowSortearModal(false);
-      router.push("/admin/gorjeta/pagamentos");
+      flash("Pagamento manual criado como pendente.", "ok");
       return true;
     }
     return false;
@@ -690,7 +696,9 @@ export default function AdminGorjetaPage() {
     if (isNaN(valor) || valor <= 0) { flash("Valor inválido", "err"); return; }
     const r = await apiCall({ action: "enviar-manual-fila", username: manualSel.username, valor });
     if (r) {
-      router.push("/admin/gorjeta/pagamentos");
+      flash("Pagamento manual criado como pendente.", "ok");
+      setManualSel(null);
+      setManualValor("");
     }
   }
 
@@ -713,7 +721,7 @@ export default function AdminGorjetaPage() {
       flash("PIX enviado! ⚡", "ok"); return true;
     }
     const r = await apiCall({ action: "enviar-manual-fila", username: crashGame.participante.username, valor });
-    if (r) { router.push("/admin/gorjeta/pagamentos"); return true; }
+    if (r) { flash("Pagamento manual criado como pendente.", "ok"); return true; }
     return false;
   }
 

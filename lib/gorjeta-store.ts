@@ -32,7 +32,7 @@ export interface TransacaoGorjeta {
   username: string;
   displayName: string;
   valor: number;
-  status: "enviado" | "falhou";
+  status: "pendente" | "enviado" | "falhou";
   tipo: "sorteio" | "manual" | "automatico";
   timestamp: number;
   txid?: string;
@@ -415,11 +415,27 @@ export async function adicionarParticipanteTeste(
 
 export async function registrarManual(
   username: string, displayName: string, valor: number,
-  result: { status: "enviado" | "falhou"; txid?: string; e2eid?: string; erro?: string },
+  result: { status: "pendente" | "enviado" | "falhou"; txid?: string; e2eid?: string; erro?: string },
   tipo: TransacaoGorjeta["tipo"] = "manual",
 ): Promise<SessaoGorjeta | null> {
   const sessao = await loadSessao();
   if (!sessao) return null;
+
+  const existing = result.txid ? sessao.transacoes.find(t => t.txid === result.txid) : null;
+  if (existing) {
+    const oldStatus = existing.status;
+    existing.status = result.status;
+    existing.tipo = tipo;
+    existing.valor = valor;
+    existing.displayName = displayName;
+    existing.e2eid = result.e2eid;
+    existing.erro = result.erro;
+    if (oldStatus !== "enviado" && result.status === "enviado") {
+      sessao.saldoRestante = Math.max(0, sessao.saldoRestante - valor);
+    }
+    await saveSessao(sessao);
+    return sessao;
+  }
 
   const t: TransacaoGorjeta = {
     id: `m_${Date.now()}_${Math.random().toString(36).slice(2)}_${username}`,
@@ -465,15 +481,19 @@ export async function getHistoricoGorjeta(): Promise<HistoricoItemGorjeta[]> { r
 
 export async function atualizarTransacaoPorTxid(
   txid: string,
-  status: "enviado" | "falhou",
+  status: "pendente" | "enviado" | "falhou",
   erro?: string,
 ): Promise<boolean> {
   const sessao = await loadSessao();
   if (sessao) {
     const t = sessao.transacoes.find(x => x.txid === txid);
     if (t) {
+      const oldStatus = t.status;
       t.status = status;
       if (erro) t.erro = erro;
+      if (oldStatus !== "enviado" && status === "enviado") {
+        sessao.saldoRestante = Math.max(0, sessao.saldoRestante - t.valor);
+      }
       await saveSessao(sessao);
       return true;
     }
