@@ -91,6 +91,7 @@ export default function HomePage() {
         </div>
       </section>
 
+      <SorteioDestaque />
 
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <style>{`
@@ -173,8 +174,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      <SorteioDestaque />
 
     </div>
   );

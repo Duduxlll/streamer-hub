@@ -1,6 +1,6 @@
 "use client";
 
-export const CHIP_LOGO_URL = "";
+export const CHIP_LOGO_URL = "/mini-logo-jonbet.png";
 
 const SUITS = ["♠", "♥", "♦", "♣"] as const;
 const VALUES = ["A", "K", "Q", "J", "10", "9", "7", "2"] as const;
