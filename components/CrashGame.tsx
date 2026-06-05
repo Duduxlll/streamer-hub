@@ -194,13 +194,13 @@ export function CrashGame({ participante, autoDisponivel, onEnviar, onClose }: {
     if (phaseRef.current === "playing") {
       const t = (now - startRef.current) / 1000;
       if (crashRef.current === 0) {
-        if (t > 1.55) {
+        if (t > 0.18) {
           multRef.current = 0; ptsRef.current.push({ t, m: 0 });
           phaseRef.current = "bust"; bustAtRef.current = now;
           setMult(0); setGanho(0); setPhase("bust");
         }
       } else {
-        const m = Math.min(crashRef.current, t * 0.34 + t * t * 0.045);
+        const m = Math.min(crashRef.current, t * 0.22 + t * t * 0.025);
         multRef.current = m; ptsRef.current.push({ t, m });
         if (m >= crashRef.current) {
           phaseRef.current = "win";
