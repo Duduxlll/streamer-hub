@@ -14,7 +14,7 @@ function fmtDuration(ms: number): string {
 
 function tipoGanhoMeta(tipo: string) {
   if (tipo === "sorteio") return { label: "Sorteio", bg: "rgba(255,186,0,0.1)", color: "#ffba00" };
-  if (tipo === "automatico") return { label: "GGPix", bg: "rgba(34,197,94,0.12)", color: "#4ade80" };
+  if (tipo === "automatico") return { label: "Automático", bg: "rgba(34,197,94,0.12)", color: "#4ade80" };
   return { label: "Manual", bg: "rgba(139,92,246,0.15)", color: "#c4b5fd" };
 }
 

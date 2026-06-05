@@ -78,7 +78,7 @@ function PayBadge({ status, erro }: { status: string; erro?: string }) {
 
 function tipoTransacaoMeta(tipo: TransacaoGorjeta["tipo"]) {
   if (tipo === "manual") return { label: "Manual", bg: "rgba(139,92,246,0.15)", color: "#c4b5fd" };
-  if (tipo === "automatico") return { label: "GGPix", bg: "rgba(34,197,94,0.12)", color: "#4ade80" };
+  if (tipo === "automatico") return { label: "Automático", bg: "rgba(34,197,94,0.12)", color: "#4ade80" };
   return { label: "Sorteio", bg: "rgba(255,186,0,0.1)", color: "#ffba00" };
 }
 
@@ -663,10 +663,25 @@ export default function AdminGorjetaPage() {
     const r = await apiCall({ action: "pagar-fila" });
     if (r) {
       setShowSortearModal(false);
-      flash("Vencedores adicionados à fila de pagamentos! 💳", "ok");
+      router.push("/admin/gorjeta/pagamentos");
       return true;
     }
     return false;
+  }
+
+  async function enviarManualAutomatico() {
+    if (!manualSel) return;
+    const valor = parseFloat(manualValor.replace(",", "."));
+    if (isNaN(valor) || valor <= 0) { flash("Valor inválido", "err"); return; }
+    const r = await apiCall({ action: "enviar-manual", username: manualSel.username, valor });
+    if (!r) return;
+    if (r.result?.status === "falhou") {
+      flash(`Falha no PIX: ${r.result.erro ?? ""}`, "err");
+      return;
+    }
+    flash("PIX automático enviado! ⚡", "ok");
+    setManualSel(null);
+    setManualValor("");
   }
 
   async function enviarManualFila() {
@@ -675,8 +690,7 @@ export default function AdminGorjetaPage() {
     if (isNaN(valor) || valor <= 0) { flash("Valor inválido", "err"); return; }
     const r = await apiCall({ action: "enviar-manual-fila", username: manualSel.username, valor });
     if (r) {
-      flash(`${manualSel.displayName} adicionado à fila de pagamentos! 💳`, "ok");
-      setManualSel(null); setManualValor("");
+      router.push("/admin/gorjeta/pagamentos");
     }
   }
 
@@ -699,7 +713,7 @@ export default function AdminGorjetaPage() {
       flash("PIX enviado! ⚡", "ok"); return true;
     }
     const r = await apiCall({ action: "enviar-manual-fila", username: crashGame.participante.username, valor });
-    if (r) { flash("Adicionado à fila de pagamentos! 💳", "ok"); return true; }
+    if (r) { router.push("/admin/gorjeta/pagamentos"); return true; }
     return false;
   }
 
@@ -988,11 +1002,20 @@ export default function AdminGorjetaPage() {
                                 className="flex-1 px-3 py-2 rounded-xl text-sm font-bold text-white placeholder-gray-600 outline-none"
                                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,186,0,0.25)" }} />
                             </div>
-                            <button onClick={enviarManualFila} disabled={busy || !manualValor}
-                              className="w-full py-2 rounded-xl text-xs font-black text-black disabled:opacity-50 transition-all hover:scale-[1.02]"
-                              style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
-                              {busy ? "..." : "💳 Pagamento manual"}
-                            </button>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <button onClick={enviarManualAutomatico} disabled={busy || !manualValor || !ggpixOk}
+                                className="w-full py-2 rounded-xl text-xs font-black disabled:opacity-50 transition-all hover:scale-[1.02]"
+                                style={ggpixOk
+                                  ? { background: "linear-gradient(135deg, #4ade80, #22c55e)", color: "#000" }
+                                  : { background: "rgba(255,255,255,0.03)", color: "#4b5563", border: "1px solid rgba(255,255,255,0.07)" }}>
+                                {!ggpixOk ? "⚡ GGPix off" : busy ? "..." : "⚡ PIX automático"}
+                              </button>
+                              <button onClick={enviarManualFila} disabled={busy || !manualValor}
+                                className="w-full py-2 rounded-xl text-xs font-black text-black disabled:opacity-50 transition-all hover:scale-[1.02]"
+                                style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>
+                                {busy ? "..." : "💳 Pagamento manual"}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       )}
@@ -1109,7 +1132,7 @@ export default function AdminGorjetaPage() {
 
                 {sessao.transacoes.length > 0 && (
                   <div className="rounded-3xl overflow-hidden" style={{ background: "rgba(6,17,10,0.8)", border: "1px solid rgba(255,255,255,0.05)" }}>
-                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest px-5 py-3 border-b border-white/5">PIX enviados nesta sessão</p>
+                    <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest px-5 py-3 border-b border-white/5">Pagamentos nesta sessão</p>
                     <div className="px-5 py-3 space-y-2 max-h-48 overflow-y-auto">
                       {[...sessao.transacoes].reverse().map(t => (
                         <div key={t.id} className="flex items-center gap-2.5 py-1">

@@ -11,8 +11,8 @@ function fmtDate(ts: number) {
 }
 
 function tipoPagamentoMeta(tipo: PagamentoPendente["tipo"]) {
-  if (tipo === "sorteio") return { label: "Sorteio manual", bg: "rgba(255,186,0,0.1)", color: "#ffba00" };
-  return { label: "Pagamento manual", bg: "rgba(139,92,246,0.15)", color: "#c4b5fd" };
+  if (tipo === "sorteio") return { label: "Manual", bg: "rgba(255,186,0,0.1)", color: "#ffba00" };
+  return { label: "Manual", bg: "rgba(139,92,246,0.15)", color: "#c4b5fd" };
 }
 
 function StatusBadge({ status }: { status: PagamentoPendente["status"] }) {

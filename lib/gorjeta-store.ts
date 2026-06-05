@@ -358,6 +358,7 @@ export async function sortearGorjeta(params?: {
 export async function salvarPagamentos(
   pagamentos: ResultadoPagamento[],
   valorUnitario: number,
+  tipo: TransacaoGorjeta["tipo"] = "automatico",
 ): Promise<SessaoGorjeta | null> {
   const sessao = await loadSessao();
   if (!sessao) return null;
@@ -368,7 +369,7 @@ export async function salvarPagamentos(
       username: p.username, displayName: p.displayName,
       valor: valorUnitario,
       status: p.status === "enviado" ? "enviado" : "falhou",
-      tipo: "sorteio",
+      tipo,
       timestamp: Date.now(),
       txid: p.txid, e2eid: p.e2eid, erro: p.erro,
     };

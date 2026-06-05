@@ -111,14 +111,12 @@ export default function CorridaPage() {
 
   const handleWinners = useCallback((raw: Array<{ place?: number; name: string }>) => {
     if (phaseRef.current === "result") return;
-    const data = raceDataRef.current;
     const ws: Winner[] = raw.map((it, i) => {
       const part = findParticipant(it.name);
       return { place: it.place ?? i + 1, username: part?.username ?? it.name, displayName: part?.displayName ?? it.name, image: part?.image ?? null };
     });
     setWinners(ws);
-    const sug = data ? Math.max(1, Math.floor(data.saldoRestante / Math.max(1, ws.length))) : 10;
-    setValores(ws.map(() => sug));
+    setValores(ws.map(() => 0));
     phaseRef.current = "result";
     setPhase("result");
   }, [findParticipant]);
@@ -166,6 +164,11 @@ export default function CorridaPage() {
 
   async function enviar(modo: "auto" | "fila") {
     if (enviado || enviando) return;
+    const totalAtual = valores.reduce((s, v) => s + (v || 0), 0);
+    if (totalAtual <= 0) {
+      setErroEnvio("Coloque o valor dos vencedores antes de pagar.");
+      return;
+    }
     setErroEnvio(null);
     setEnviando(modo);
     const action = modo === "auto" ? "enviar-manual" : "enviar-manual-fila";
@@ -200,6 +203,7 @@ export default function CorridaPage() {
   const total = valores.reduce((s, v) => s + (v || 0), 0);
   const saldo = raceData?.saldoRestante ?? 0;
   const cobre = total <= saldo;
+  const temValor = total > 0;
 
   if (erroDados) {
     return (
@@ -291,6 +295,7 @@ export default function CorridaPage() {
                 <span className="text-lg font-black" style={{ color: cobre ? "#4ade80" : "#f87171" }}>R$ {fmtBRL(total)} <span className="text-[11px] text-gray-600">/ saldo R$ {fmtBRL(saldo)}</span></span>
               </div>
               {!cobre && <p className="text-center text-xs text-red-400 font-bold">Total passa do saldo — reduza os valores.</p>}
+              {cobre && !temValor && <p className="text-center text-xs text-gray-500 font-bold">Digite o valor dos vencedores antes de pagar.</p>}
               {erroEnvio && (
                 <div className="rounded-2xl px-4 py-3 text-xs text-red-300 font-bold leading-relaxed" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(248,113,113,0.28)" }}>
                   {erroEnvio}
@@ -305,11 +310,11 @@ export default function CorridaPage() {
               ) : (
                 <div className="space-y-2.5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <button onClick={() => enviar("auto")} disabled={!!enviando || !cobre || !ggpixOk || winners.length === 0} className="py-4 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] disabled:cursor-not-allowed"
-                      style={(ggpixOk && cobre && winners.length > 0) ? { background: "linear-gradient(135deg,#4ade80,#22c55e)", color: "#000" } : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#4b5563" }}>
+                    <button onClick={() => enviar("auto")} disabled={!!enviando || !cobre || !temValor || !ggpixOk || winners.length === 0} className="py-4 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] disabled:cursor-not-allowed"
+                      style={(ggpixOk && cobre && temValor && winners.length > 0) ? { background: "linear-gradient(135deg,#4ade80,#22c55e)", color: "#000" } : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#4b5563" }}>
                       {!ggpixOk ? "⚡ PIX automático (GGPix off)" : enviando === "auto" ? "Enviando..." : "⚡ Enviar PIX a todos"}
                     </button>
-                    <button onClick={() => enviar("fila")} disabled={!!enviando || !cobre || winners.length === 0} className="py-4 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] disabled:opacity-60" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>
+                    <button onClick={() => enviar("fila")} disabled={!!enviando || !cobre || !temValor || winners.length === 0} className="py-4 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] disabled:opacity-60" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>
                       {enviando === "fila" ? "..." : "💳 Pagamento manual"}
                     </button>
                   </div>
