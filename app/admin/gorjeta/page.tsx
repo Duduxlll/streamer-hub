@@ -17,7 +17,6 @@ function formatCpfInput(value: string): string {
   return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
 }
 function fmtBRL(v: number) { return v.toLocaleString("pt-BR", { minimumFractionDigits: 2 }); }
-const CRASH_MAX_PRIZE = 100;
 
 function Avatar({ image, name, size = 32 }: { image: string | null; name: string; size?: number }) {
   if (image) return (
@@ -97,7 +96,7 @@ function HistoricoCard({ h, num }: { h: HistoricoItem; num: number }) {
       <button className="w-full px-5 py-4 flex items-center gap-4 border-b border-white/5 hover:bg-white/[0.02] transition-colors text-left" onClick={() => setExpanded(e => !e)}>
         <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 font-black text-xs text-black" style={{ background: "linear-gradient(135deg, #ffdd55, #ffba00)" }}>#{num}</div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-black text-white">Saldo R$ {fmtBRL(h.saldoTotal)}</p>
+          <p className="text-sm font-black text-white">Total enviado R$ {fmtBRL(h.totalEnviado)}</p>
           <p className="text-[10px] text-gray-600">{new Date(h.fechadaEm).toLocaleString("pt-BR")} · {h.transacoes.length} transaç{h.transacoes.length === 1 ? "ão" : "ões"}</p>
         </div>
         <div className="flex items-center gap-3">
@@ -521,7 +520,6 @@ export default function AdminGorjetaPage() {
   const [sessao, setSessao] = useState<SessaoGorjeta | null>(null);
   const [historico, setHistorico] = useState<Array<{ id: string; saldoTotal: number; totalEnviado: number; transacoes: TransacaoGorjeta[]; abertaEm: number; fechadaEm: number }>>([]);
   const [loading, setLoading] = useState(true);
-  const [saldoInput, setSaldoInput] = useState("200");
   const [formSort, setFormSort] = useState({ valor: "10", qtd: "3" });
   const [busca, setBusca] = useState("");
   const [buscaCadastro, setBuscaCadastro] = useState("");
@@ -633,9 +631,7 @@ export default function AdminGorjetaPage() {
   async function rejeitar(id: string, motivo: string) { const r = await apiCall({ action: "rejeitar", id, motivo }); if (r) flash("Rejeitado", "ok"); }
 
   async function abrirSessao() {
-    const saldo = parseFloat(saldoInput.replace(",", "."));
-    if (isNaN(saldo) || saldo <= 0) { flash("Valor inválido", "err"); return; }
-    const r = await apiCall({ action: "abrir-sessao", saldoTotal: saldo });
+    const r = await apiCall({ action: "abrir-sessao" });
     if (r) flash("Sessão aberta! 💰", "ok");
   }
 
@@ -704,11 +700,6 @@ export default function AdminGorjetaPage() {
 
   function iniciarCrash() {
     if (!crashSel) { flash("Selecione um participante", "err"); return; }
-    const saldo = sessao?.saldoRestante ?? 0;
-    if (CRASH_MAX_PRIZE > saldo) {
-      flash(`Saldo não cobre o prêmio máximo do Crash (R$ ${fmtBRL(CRASH_MAX_PRIZE)}).`, "err");
-      return;
-    }
     setCrashGame({ participante: crashSel });
   }
 
@@ -734,15 +725,12 @@ export default function AdminGorjetaPage() {
       topN: nVenc,
       top: nVenc,
       maxVencedores: nVenc,
-      saldoRestante: sessao.saldoRestante,
     }));
     const corridaUrl = `/admin/corrida?top=${nVenc}`;
     router.push(corridaUrl);
   }
 
   async function fecharSessao() { const r = await apiCall({ action: "fechar-sessao" }); if (r) flash("Gorjeta encerrada", "ok"); }
-  async function limparSessao() { const r = await apiCall({ action: "limpar-sessao" }); if (r) flash("Removida", "ok"); }
-
   if (loading || status === "loading") return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
       <div className="w-8 h-8 rounded-full animate-spin" style={{ border: "2px solid rgba(255,186,0,0.15)", borderTopColor: "#ffba00" }} />
@@ -757,7 +745,10 @@ export default function AdminGorjetaPage() {
     !busca || p.displayName.toLowerCase().includes(busca.toLowerCase()) || p.username.toLowerCase().includes(busca.toLowerCase())
   ) ?? [];
 
-  const pctGasto = sessao ? ((sessao.saldoTotal - sessao.saldoRestante) / sessao.saldoTotal) * 100 : 0;
+  const totalEnviadoSessao = sessao?.transacoes.filter(t => t.status === "enviado").reduce((s, t) => s + t.valor, 0) ?? 0;
+  const totalPendenteSessao = sessao?.transacoes.filter(t => t.status === "pendente").reduce((s, t) => s + t.valor, 0) ?? 0;
+  const totalRegistradoSessao = totalEnviadoSessao + totalPendenteSessao;
+  const pctEnviadoSessao = totalRegistradoSessao > 0 ? Math.min(100, (totalEnviadoSessao / totalRegistradoSessao) * 100) : 0;
 
   return (
     <div className="page-enter relative min-h-[calc(100vh-4rem)]">
@@ -815,16 +806,18 @@ export default function AdminGorjetaPage() {
                   <h2 className="text-lg font-black text-white">Abrir gorjeta</h2>
                 </div>
                 <div className="px-6 py-5 space-y-4">
-                  <div>
-                    <label className="text-[10px] font-black text-gray-600 uppercase tracking-widest block mb-2">Saldo total da gorjeta (R$)</label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-[#ffba00]">R$</span>
-                      <input type="text" inputMode="decimal" value={saldoInput}
-                        onChange={e => setSaldoInput(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3.5 rounded-xl text-xl font-black text-white placeholder-gray-700 outline-none"
-                        style={{ background: "rgba(255,186,0,0.06)", border: "1px solid rgba(255,186,0,0.25)" }} />
+                  <div className="rounded-2xl px-4 py-4 space-y-3" style={{ background: "rgba(255,186,0,0.05)", border: "1px solid rgba(255,186,0,0.14)" }}>
+                    <p className="text-sm font-black text-white">Como funciona</p>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      Abra a gorjeta para liberar a entrada dos inscritos. Depois escolha sorteio, envio manual, Crash ou Corrida; o pagamento automático usa GGPix e o pagamento manual fica pendente até você confirmar.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      {["Inscritos entram", "Você escolhe o modo", "Pagamentos são registrados"].map(item => (
+                        <div key={item} className="px-3 py-2 rounded-xl text-[11px] font-black text-[#ffba00]" style={{ background: "rgba(0,0,0,0.18)", border: "1px solid rgba(255,255,255,0.05)" }}>
+                          {item}
+                        </div>
+                      ))}
                     </div>
-                    <p className="text-xs text-gray-600 mt-2">Você vai distribuir esse valor entre os participantes via sorteio ou envio manual.</p>
                   </div>
                   <button onClick={abrirSessao} disabled={busy}
                     className="w-full py-3.5 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
@@ -854,24 +847,24 @@ export default function AdminGorjetaPage() {
                   <div className="px-6 py-5 space-y-3">
                     <div className="flex items-end justify-between mb-1">
                       <div>
-                        <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Saldo restante</p>
+                        <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Total enviado</p>
                         <p className="text-3xl font-black" style={{ background: "linear-gradient(135deg, #ffba00, #ffdd55)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                          R$ {fmtBRL(sessao.saldoRestante)}
+                          R$ {fmtBRL(totalEnviadoSessao)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Total inicial</p>
-                        <p className="text-sm font-black text-gray-500">R$ {fmtBRL(sessao.saldoTotal)}</p>
+                        <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Pendente manual</p>
+                        <p className="text-sm font-black text-gray-500">R$ {fmtBRL(totalPendenteSessao)}</p>
                       </div>
                     </div>
 
                     <div className="h-2 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.05)" }}>
                       <div className="h-full rounded-full transition-all duration-500"
-                        style={{ width: `${Math.min(100, pctGasto)}%`, background: pctGasto > 80 ? "linear-gradient(90deg, #ef4444, #f87171)" : "linear-gradient(90deg, #ffba00, #ffdd55)" }} />
+                        style={{ width: `${pctEnviadoSessao}%`, background: "linear-gradient(90deg, #4ade80, #ffba00)" }} />
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-gray-600">
                       <span>{sessao.participantes.length} inscritos</span>
-                      <span>{sessao.transacoes.filter(t => t.status === "enviado").length} PIX enviados</span>
+                      <span>{sessao.transacoes.filter(t => t.status === "enviado").length} pagamentos enviados</span>
                     </div>
                   </div>
                 </div>
@@ -944,8 +937,8 @@ export default function AdminGorjetaPage() {
                         const custo = (!isNaN(v) && !isNaN(q)) ? v * q : 0;
                         return custo > 0 && (
                           <div className="flex items-center justify-between px-4 py-2.5 rounded-xl" style={{ background: "rgba(255,186,0,0.04)", border: "1px solid rgba(255,186,0,0.1)" }}>
-                            <span className="text-xs text-gray-500">Custo do sorteio</span>
-                            <span className="text-sm font-black" style={{ color: custo > (sessao?.saldoRestante ?? 0) ? "#f87171" : "#ffba00" }}>
+                            <span className="text-xs text-gray-500">Total previsto</span>
+                            <span className="text-sm font-black text-[#ffba00]">
                               R$ {fmtBRL(custo)}
                             </span>
                           </div>
@@ -1076,33 +1069,23 @@ export default function AdminGorjetaPage() {
                             <button onClick={() => setCrashSel(null)} className="text-gray-600 hover:text-gray-400 text-sm">✕</button>
                           </div>
                           <div className="px-4 py-3 space-y-2.5">
-                            {(() => {
-                              const cobre = CRASH_MAX_PRIZE <= (sessao.saldoRestante);
-                              return (
-                                <div className="space-y-2">
-                                  <div className="grid grid-cols-3 gap-2">
-                                    <div className="px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                                      <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Valor por x</p>
-                                      <p className="text-sm font-black text-[#ffba00]">R$ 10</p>
-                                    </div>
-                                    <div className="px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                                      <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Máximo</p>
-                                      <p className="text-sm font-black text-[#ffba00]">10x</p>
-                                    </div>
-                                    <div className="px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                                      <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Prêmio</p>
-                                      <p className="text-sm font-black text-[#ffba00]">R$ 100</p>
-                                    </div>
-                                  </div>
-                                  <div className="flex items-center justify-between px-3 py-2 rounded-xl text-[11px]"
-                                  style={{ background: cobre ? "rgba(255,186,0,0.04)" : "rgba(248,113,113,0.08)", border: `1px solid ${cobre ? "rgba(255,186,0,0.1)" : "rgba(248,113,113,0.25)"}` }}>
-                                    <span className="text-gray-500">Saldo precisa cobrir o máximo</span>
-                                    <span className="font-black" style={{ color: cobre ? "#ffba00" : "#f87171" }}>R$ {fmtBRL(CRASH_MAX_PRIZE)}</span>
-                                  </div>
+                            <div className="space-y-2">
+                              <div className="grid grid-cols-3 gap-2">
+                                <div className="px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                                  <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Valor por x</p>
+                                  <p className="text-sm font-black text-[#ffba00]">R$ 10</p>
                                 </div>
-                              );
-                            })()}
-                            <button onClick={iniciarCrash} disabled={busy || CRASH_MAX_PRIZE > sessao.saldoRestante}
+                                <div className="px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                                  <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Máximo</p>
+                                  <p className="text-sm font-black text-[#ffba00]">10x</p>
+                                </div>
+                                <div className="px-3 py-2 rounded-xl" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                                  <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest">Prêmio</p>
+                                  <p className="text-sm font-black text-[#ffba00]">R$ 100</p>
+                                </div>
+                              </div>
+                            </div>
+                            <button onClick={iniciarCrash} disabled={busy}
                               className="w-full py-2.5 rounded-xl text-xs font-black text-black disabled:opacity-50 transition-all hover:scale-[1.02]"
                               style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}>
                               🚀 Iniciar Crash
@@ -1157,14 +1140,9 @@ export default function AdminGorjetaPage() {
 
                 <div className="flex gap-2 flex-wrap">
                   <button onClick={fecharSessao} disabled={busy}
-                    className="flex-1 py-3 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] disabled:opacity-50"
+                    className="w-full py-3 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] disabled:opacity-50"
                     style={{ color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}>
                     Fechar gorjeta
-                  </button>
-                  <button onClick={limparSessao} disabled={busy}
-                    className="py-3 px-4 rounded-2xl font-black text-xs transition-all hover:bg-white/5 disabled:opacity-50"
-                    style={{ color: "#4b5563", border: "1px solid rgba(255,255,255,0.06)" }}>
-                    Limpar
                   </button>
                 </div>
               </div>

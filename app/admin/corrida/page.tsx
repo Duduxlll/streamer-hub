@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { isAdmin } from "@/lib/admins";
 
 interface Participant { username: string; displayName: string; image: string | null; }
-interface RaceData { participants: Participant[]; numVencedores: number; topN?: number; top?: number; maxVencedores?: number; saldoRestante: number; }
+interface RaceData { participants: Participant[]; numVencedores: number; topN?: number; top?: number; maxVencedores?: number; }
 interface Winner { place: number; username: string; displayName: string; image: string | null; }
 interface RacePayload {
   jogadores: string[];
@@ -200,8 +200,6 @@ export default function CorridaPage() {
   }
 
   const total = valores.reduce((s, v) => s + (v || 0), 0);
-  const saldo = raceData?.saldoRestante ?? 0;
-  const cobre = total <= saldo;
   const temValor = total > 0;
 
   if (erroDados) {
@@ -289,12 +287,11 @@ export default function CorridaPage() {
                 ))}
               </div>
 
-              <div className="flex items-center justify-between px-4 py-3 rounded-2xl" style={{ background: cobre ? "rgba(34,197,94,0.06)" : "rgba(248,113,113,0.08)", border: `1px solid ${cobre ? "rgba(34,197,94,0.2)" : "rgba(248,113,113,0.3)"}` }}>
+              <div className="flex items-center justify-between px-4 py-3 rounded-2xl" style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
                 <span className="text-xs font-black text-gray-400">Total a pagar</span>
-                <span className="text-lg font-black" style={{ color: cobre ? "#4ade80" : "#f87171" }}>R$ {fmtBRL(total)} <span className="text-[11px] text-gray-600">/ saldo R$ {fmtBRL(saldo)}</span></span>
+                <span className="text-lg font-black text-[#4ade80]">R$ {fmtBRL(total)}</span>
               </div>
-              {!cobre && <p className="text-center text-xs text-red-400 font-bold">Total passa do saldo — reduza os valores.</p>}
-              {cobre && !temValor && <p className="text-center text-xs text-gray-500 font-bold">Digite o valor dos vencedores antes de pagar.</p>}
+              {!temValor && <p className="text-center text-xs text-gray-500 font-bold">Digite o valor dos vencedores antes de pagar.</p>}
               {erroEnvio && (
                 <div className="rounded-2xl px-4 py-3 text-xs text-red-300 font-bold leading-relaxed" style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(248,113,113,0.28)" }}>
                   {erroEnvio}
@@ -309,11 +306,11 @@ export default function CorridaPage() {
               ) : (
                 <div className="space-y-2.5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <button onClick={() => enviar("auto")} disabled={!!enviando || !cobre || !temValor || !ggpixOk || winners.length === 0} className="py-4 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] disabled:cursor-not-allowed"
-                      style={(ggpixOk && cobre && temValor && winners.length > 0) ? { background: "linear-gradient(135deg,#4ade80,#22c55e)", color: "#000" } : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#4b5563" }}>
+                    <button onClick={() => enviar("auto")} disabled={!!enviando || !temValor || !ggpixOk || winners.length === 0} className="py-4 rounded-2xl font-black text-sm transition-all hover:scale-[1.02] disabled:cursor-not-allowed"
+                      style={(ggpixOk && temValor && winners.length > 0) ? { background: "linear-gradient(135deg,#4ade80,#22c55e)", color: "#000" } : { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#4b5563" }}>
                       {!ggpixOk ? "⚡ PIX automático (GGPix off)" : enviando === "auto" ? "Enviando..." : "⚡ Enviar PIX a todos"}
                     </button>
-                    <button onClick={() => enviar("fila")} disabled={!!enviando || !cobre || !temValor || winners.length === 0} className="py-4 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] disabled:opacity-60" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>
+                    <button onClick={() => enviar("fila")} disabled={!!enviando || !temValor || winners.length === 0} className="py-4 rounded-2xl font-black text-sm text-black transition-all hover:scale-[1.02] disabled:opacity-60" style={{ background: "linear-gradient(135deg,#ffdd55,#ffba00)" }}>
                       {enviando === "fila" ? "..." : "💳 Pagamento manual"}
                     </button>
                   </div>

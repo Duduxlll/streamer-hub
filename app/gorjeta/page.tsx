@@ -194,7 +194,7 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
     });
   }, [sessao.vencedores.map(v => v.username).join(",")]);
 
-  const saldoRestante = (sessao as SessaoGorjeta & { saldoRestante?: number }).saldoRestante ?? 0;
+  const totalEnviado = sessao.transacoes?.filter(t => t.status === "enviado").reduce((s, t) => s + t.valor, 0) ?? 0;
 
   return (
     <div className="space-y-4">
@@ -229,7 +229,7 @@ function SessaoAoVivo({ sessao, cadastro }: { sessao: SessaoGorjeta; cadastro: C
 
         <div className="grid grid-cols-3 border-t border-white/5">
           {[
-            { label: "Saldo", value: `R$ ${saldoRestante.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, gold: true },
+            { label: "Enviado", value: `R$ ${totalEnviado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`, gold: true },
             { label: "Inscritos", value: sessao.participantes.length.toString(), gold: false },
             { label: "Vencedores", value: (sessao.vencedores.length || sessao.maxVencedores || "—").toString(), gold: false },
           ].map((s, idx) => (

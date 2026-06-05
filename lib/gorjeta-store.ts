@@ -263,9 +263,7 @@ export async function getScreenshot(id: string): Promise<string | null> {
 
 export async function getSessao(): Promise<SessaoGorjeta | null> { return loadSessao(); }
 
-export async function abrirSessao(params: {
-  saldoTotal: number;
-}): Promise<{ ok: true; sessao: SessaoGorjeta } | { ok: false; error: string }> {
+export async function abrirSessao(): Promise<{ ok: true; sessao: SessaoGorjeta } | { ok: false; error: string }> {
   const atual = await loadSessao();
   if (atual && (atual.status === "aberta" || atual.status === "sorteada")) {
     return { ok: false, error: "Já existe uma sessão ativa" };
@@ -274,8 +272,8 @@ export async function abrirSessao(params: {
   const sessao: SessaoGorjeta = {
     id: Date.now().toString(),
     status: "aberta",
-    saldoTotal: Math.max(0.01, params.saldoTotal),
-    saldoRestante: Math.max(0.01, params.saldoTotal),
+    saldoTotal: 0,
+    saldoRestante: 0,
     valorUnitario: 0,
     maxVencedores: 0,
     participantes: [],
@@ -336,10 +334,6 @@ export async function sortearGorjeta(params?: {
   if (!sessao.maxVencedores || sessao.maxVencedores <= 0) return { ok: false, error: "Defina a quantidade de vencedores" };
 
   const qtd = Math.min(sessao.maxVencedores, sessao.participantes.length);
-  const custo = sessao.valorUnitario * qtd;
-  if (custo > sessao.saldoRestante) {
-    return { ok: false, error: `Saldo insuficiente. Disponível: R$ ${sessao.saldoRestante.toFixed(2)}, necessário: R$ ${custo.toFixed(2)}` };
-  }
 
   const pool = [...sessao.participantes];
   const vencedores: ParticipanteSessao[] = [];

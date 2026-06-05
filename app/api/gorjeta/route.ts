@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
   if (action === "abrir-sessao") {
     const session = await auth();
     if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
-    const result = await abrirSessao({ saldoTotal: Number(body.saldoTotal) || 100 });
+    const result = await abrirSessao();
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
     return NextResponse.json({ ok: true, sessao: result.sessao }, { headers: NO_CACHE });
   }
@@ -245,10 +245,6 @@ export async function POST(req: NextRequest) {
     const participante = sessao.participantes.find(p => p.username === String(username).toLowerCase());
     if (!participante) return NextResponse.json({ error: "Participante não encontrado na sessão" }, { status: 404 });
 
-    if (valorNum > sessao.saldoRestante) {
-      return NextResponse.json({ error: `Saldo insuficiente (disponível: R$ ${sessao.saldoRestante.toFixed(2)})` }, { status: 400 });
-    }
-
     const externalId = gerarExternalId();
     let result: { status: "enviado" | "falhou"; txid?: string; erro?: string };
     try {
@@ -320,10 +316,6 @@ export async function POST(req: NextRequest) {
 
     const participante = sessao.participantes.find(p => p.username === String(username).toLowerCase());
     if (!participante) return NextResponse.json({ error: "Participante não encontrado" }, { status: 404 });
-
-    if (valorNum > sessao.saldoRestante) {
-      return NextResponse.json({ error: `Saldo insuficiente (disponível: R$ ${sessao.saldoRestante.toFixed(2)})` }, { status: 400 });
-    }
 
     const pagamentos = await adicionarPagamentos([{
       username:    participante.username,
