@@ -19,7 +19,7 @@ export default function CriarSorteioPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Expande automaticamente qualquer imagem para 2000×400 (proporção do card):
-  // fundo borrado suave preenche as laterais + imagem nítida no centro desbotando nas bordas.
+  // produto grande e nítido no centro + as bordas (a "mesa") esticadas e borradas nas laterais.
   function expandirImagem(src: string): Promise<string> {
     return new Promise(resolve => {
       const img = new Image();
@@ -31,39 +31,20 @@ export default function CriarSorteioPage() {
         if (!ctx) return resolve(src);
         ctx.imageSmoothingQuality = "high";
 
-        // 1) fundo: imagem cobrindo todo o quadro, bem borrada (laterais suaves, sem riscos)
-        const sCover = Math.max(W / img.width, H / img.height);
-        const cw = img.width * sCover, ch = img.height * sCover;
-        ctx.filter = "blur(34px)";
-        ctx.drawImage(img, (W - cw) / 2, (H - ch) / 2, cw, ch);
-        ctx.filter = "none";
-
-        // 2) imagem nítida no centro (altura cheia), bordas laterais desbotando no fundo
+        // produto nítido no centro, ocupando a altura inteira
         const drawW = img.width * (H / img.height);
-        const x0 = (W - drawW) / 2;
-        if (drawW >= W) {
-          ctx.drawImage(img, x0, 0, drawW, H);                  // já é larga: cobre tudo
-        } else {
-          const tmp = document.createElement("canvas");
-          tmp.width = W; tmp.height = H;
-          const t = tmp.getContext("2d");
-          if (t) {
-            t.imageSmoothingQuality = "high";
-            t.drawImage(img, x0, 0, drawW, H);
-            // máscara: opaco no miolo, transparente nas pontas → funde no fundo borrado
-            t.globalCompositeOperation = "destination-in";
-            const f = 0.15;
-            const g = t.createLinearGradient(0, 0, W, 0);
-            g.addColorStop(Math.max(0, x0 / W), "rgba(0,0,0,0)");
-            g.addColorStop((x0 + drawW * f) / W, "rgba(0,0,0,1)");
-            g.addColorStop((x0 + drawW * (1 - f)) / W, "rgba(0,0,0,1)");
-            g.addColorStop(Math.min(1, (x0 + drawW) / W), "rgba(0,0,0,0)");
-            t.fillStyle = g;
-            t.fillRect(0, 0, W, H);
-            ctx.drawImage(tmp, 0, 0);
-          } else {
-            ctx.drawImage(img, x0, 0, drawW, H);
-          }
+        const x0 = Math.round((W - drawW) / 2);
+        ctx.drawImage(img, x0, 0, drawW, H);
+
+        // laterais: estica a faixa da borda (que é só fundo/mesa) com blur para ficar liso, sem riscos
+        if (x0 > 0) {
+          const xr = x0 + Math.round(drawW);
+          ctx.filter = "blur(26px)";
+          ctx.drawImage(canvas, x0, 0, 12, H, -40, 0, x0 + 40, H);          // esquerda → preenche [0, x0]
+          ctx.drawImage(canvas, xr - 12, 0, 12, H, xr, 0, W - xr + 40, H);  // direita → preenche [xr, W]
+          ctx.filter = "none";
+          // garante o produto 100% nítido por cima
+          ctx.drawImage(img, x0, 0, drawW, H);
         }
         resolve(canvas.toDataURL("image/jpeg", 0.92));
       };
