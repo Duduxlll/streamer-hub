@@ -1,6 +1,10 @@
 import TwitchStatus from "@/components/TwitchStatus";
 import SorteioDestaque from "@/components/SorteioDestaque";
 import { JONBET_URL, JONBET_LOGO } from "@/lib/partner";
+import { getSorteios } from "@/lib/sorteio-store";
+
+// Busca o sorteio no servidor para ele já vir no HTML (aparece junto com o resto)
+export const dynamic = "force-dynamic";
 
 function TwitchIcon({ className }: { className?: string }) {
   return (
@@ -10,7 +14,17 @@ function TwitchIcon({ className }: { className?: string }) {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Sorteios ativos buscados no servidor → renderizam junto com a página (sem "surgir depois")
+  const todos = await getSorteios().catch(() => []);
+  const sorteiosAtivos = todos
+    .filter(s => s.status === "ativo" || s.status === "pronto")
+    .map(s => ({
+      id: s.id, titulo: s.titulo, valor: s.valor, minutosTicket: s.minutosTicket,
+      duracaoMs: s.duracaoMs, iniciadoEm: s.iniciadoEm, status: s.status,
+      participantes: [], vencedor: null,
+    }));
+
   return (
     <div className="relative overflow-hidden">
 
@@ -91,7 +105,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <SorteioDestaque />
+      <SorteioDestaque sorteiosIniciais={sorteiosAtivos} />
 
       <section className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <style>{`

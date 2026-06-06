@@ -165,8 +165,10 @@ function SorteioCard({ s }: { s: Sorteio }) {
   );
 }
 
-export default function SorteioDestaque() {
-  const [sorteios, setSorteios] = useState<Sorteio[]>([]);
+export default function SorteioDestaque({ sorteiosIniciais = [] }: { sorteiosIniciais?: Sorteio[] }) {
+  // Começa já com os dados vindos do servidor (SSR) — aparece junto com o resto da home,
+  // sem esperar o fetch do navegador.
+  const [sorteios, setSorteios] = useState<Sorteio[]>(sorteiosIniciais);
 
   useEffect(() => {
     async function load() {
@@ -189,7 +191,7 @@ export default function SorteioDestaque() {
   return (
     <section
       className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 animate-in"
-      style={{ animationDelay: "0.15s", opacity: 0 }}
+      style={{ animationDelay: "0.05s", opacity: 0 }}
     >
       <div className="flex items-center gap-3 mb-4">
         <span className="text-[10px] font-black uppercase tracking-[0.18em] text-gray-600">🎟️ Sorteios Ativos</span>
