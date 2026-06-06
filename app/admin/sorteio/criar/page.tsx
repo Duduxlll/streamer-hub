@@ -172,8 +172,8 @@ export default function CriarSorteioPage() {
                 <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,186,0,0.25)" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={imagem} alt="preview" className="w-full max-h-44 object-cover" />
-                  {/* prévia da vinheta que vai aparecer no card */}
-                  <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 35%, rgba(8,20,13,0.85) 100%)" }} />
+                  {/* prévia do escurecimento neutro que vai aparecer no card */}
+                  <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, rgba(7,10,8,0.85) 0%, rgba(7,10,8,0.3) 55%, rgba(7,10,8,0.6) 100%)" }} />
                   <div className="absolute top-2 right-2 flex gap-2">
                     <button type="button" onClick={() => fileRef.current?.click()}
                       className="px-2.5 py-1 rounded-lg text-[11px] font-black text-white" style={{ background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.2)" }}>Trocar</button>

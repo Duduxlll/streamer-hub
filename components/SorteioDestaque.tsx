@@ -95,7 +95,8 @@ function SorteioCard({ s }: { s: Sorteio }) {
           boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
         }}
       >
-        {/* Imagem de fundo opcional, com vinheta (bordas escurecidas, centro visível) */}
+        {/* Imagem de fundo opcional — aparece à direita e desbota para a esquerda,
+            mantendo o texto legível. Sombra preta neutra (não tinge a foto). */}
         {s.temImagem && (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -104,13 +105,16 @@ function SorteioCard({ s }: { s: Sorteio }) {
               alt=""
               aria-hidden
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+              style={{ objectPosition: "center" }}
             />
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  "radial-gradient(ellipse 78% 92% at 50% 45%, rgba(8,20,13,0.22) 0%, rgba(8,20,13,0.72) 66%, rgba(8,20,13,0.96) 100%)," +
-                  "linear-gradient(90deg, rgba(8,20,13,0.9) 0%, rgba(8,20,13,0.28) 42%, rgba(8,20,13,0.28) 58%, rgba(8,20,13,0.9) 100%)",
+                  // escurece a esquerda (texto) e revela a foto à direita
+                  "linear-gradient(90deg, rgba(7,10,8,0.97) 0%, rgba(7,10,8,0.9) 28%, rgba(7,10,8,0.45) 62%, rgba(7,10,8,0.7) 100%)," +
+                  // funde topo e base no card
+                  "linear-gradient(180deg, rgba(7,10,8,0.6) 0%, rgba(7,10,8,0) 35%, rgba(7,10,8,0) 65%, rgba(7,10,8,0.75) 100%)",
               }}
             />
           </>
