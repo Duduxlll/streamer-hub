@@ -67,10 +67,6 @@ NEXT_PUBLIC_ADMIN_LOGINS=dudufpss,stainzincs
 RESEND_API_KEY=
 RESEND_FROM=stainzincs <no-reply@seudominio.com>
 
-# xAI / Grok Imagine (botão "Ajustar com IA" no sorteio: expande o fundo da imagem) — https://console.x.ai
-# Opcional. Sem essa chave, o botão "Ajustar com IA" retorna erro; o upload manual continua funcionando.
-XAI_API_KEY=
-
 # URL de produção
 NEXTAUTH_URL=https://seudominio.com
 SITE_URL=https://seudominio.com
