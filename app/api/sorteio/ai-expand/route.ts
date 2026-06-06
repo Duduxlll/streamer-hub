@@ -12,6 +12,36 @@ const PROMPT =
   "invent or change any object — keep the main subject exactly as it is, centered and untouched. " +
   "The extended background must blend seamlessly and look photorealistic. Final result must be an ultra-wide horizontal banner.";
 
+function getGrokErrorMessage(status: number, text: string): string {
+  let parsedMessage = "";
+  try {
+    const json = JSON.parse(text) as { error?: unknown; message?: unknown };
+    if (typeof json.message === "string") parsedMessage = json.message;
+    else if (typeof json.error === "string") parsedMessage = json.error;
+    else if (json.error && typeof json.error === "object" && "message" in json.error) {
+      const message = (json.error as { message?: unknown }).message;
+      if (typeof message === "string") parsedMessage = message;
+    }
+  } catch {
+    parsedMessage = text;
+  }
+
+  const msg = parsedMessage || text;
+  const lower = msg.toLowerCase();
+
+  if (status === 401) return "Chave XAI_API_KEY inválida ou sem acesso. Gere uma nova chave na console da xAI e atualize no Render.";
+  if (status === 403 && (lower.includes("credit") || lower.includes("license") || lower.includes("permission"))) {
+    return "A conta/equipe da xAI ainda não tem créditos ou licença para gerar imagem. Adicione créditos na console.x.ai e tente novamente.";
+  }
+  if (status === 422 && lower.includes("aspect_ratio")) {
+    return "O Grok recusou o formato da imagem. Use uma imagem comum e tente novamente.";
+  }
+  if (status === 429) return "A xAI limitou muitas tentativas agora. Espere um pouco e tente de novo.";
+  if (status >= 500) return "A xAI ficou instável agora. Tente novamente em alguns instantes.";
+
+  return `Grok recusou (${status}): ${msg.slice(0, 220)}`;
+}
+
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!(await isVerifiedAdminSession(session))) {
@@ -46,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     const text = await r.text();
     if (!r.ok) {
-      return NextResponse.json({ error: `Grok recusou (${r.status}): ${text.slice(0, 400)}` }, { status: 502 });
+      return NextResponse.json({ error: getGrokErrorMessage(r.status, text) }, { status: 502 });
     }
 
     let json: unknown;
