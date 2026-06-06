@@ -111,10 +111,10 @@ function SorteioCard({ s }: { s: Sorteio }) {
               className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  // escurece a esquerda (texto) e revela a foto à direita
-                  "linear-gradient(90deg, rgba(7,10,8,0.97) 0%, rgba(7,10,8,0.9) 28%, rgba(7,10,8,0.45) 62%, rgba(7,10,8,0.7) 100%)," +
-                  // funde topo e base no card
-                  "linear-gradient(180deg, rgba(7,10,8,0.6) 0%, rgba(7,10,8,0) 35%, rgba(7,10,8,0) 65%, rgba(7,10,8,0.75) 100%)",
+                  // vinheta: centro claro (mostra a imagem) e bordas escuras
+                  "radial-gradient(ellipse 62% 135% at 50% 50%, rgba(7,10,8,0.04) 0%, rgba(7,10,8,0.5) 52%, rgba(7,10,8,0.97) 100%)," +
+                  // reforça esquerda (texto) e direita (cronômetro) para legibilidade
+                  "linear-gradient(90deg, rgba(7,10,8,0.9) 0%, rgba(7,10,8,0.12) 34%, rgba(7,10,8,0.12) 66%, rgba(7,10,8,0.9) 100%)",
               }}
             />
           </>
