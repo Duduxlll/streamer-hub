@@ -18,11 +18,47 @@ export default function CriarSorteioPage() {
   const [imagemNome, setImagemNome] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // Expande automaticamente qualquer imagem para 2000×400 (proporção do card),
+  // centralizando o conteúdo e esticando as bordas para preencher as laterais.
+  function expandirImagem(src: string): Promise<string> {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const W = 2000, H = 400;
+        const canvas = document.createElement("canvas");
+        canvas.width = W; canvas.height = H;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(src);
+
+        // escala para preencher a altura, mantendo a proporção; centraliza na horizontal
+        const drawW = Math.round(img.width * (H / img.height));
+        const x0 = Math.round((W - drawW) / 2);
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, x0, 0, drawW, H);
+
+        // se sobrou espaço nos lados, estica a coluna da borda para preencher
+        if (x0 > 0) {
+          ctx.drawImage(canvas, x0, 0, 2, H, 0, 0, x0 + 1, H);                 // lateral esquerda
+          const xr = x0 + drawW - 2;
+          ctx.drawImage(canvas, xr, 0, 2, H, xr, 0, W - xr, H);                // lateral direita
+        }
+        resolve(canvas.toDataURL("image/jpeg", 0.9));
+      };
+      img.onerror = () => resolve(src);
+      img.src = src;
+    });
+  }
+
   function handleImagem(file: File) {
     if (!file.type.startsWith("image/")) { toast("Envie uma imagem (PNG, JPG...)", "warning"); return; }
     if (file.size > 2 * 1024 * 1024) { toast("Imagem muito grande (máx 2MB)", "warning"); return; }
     const reader = new FileReader();
-    reader.onload = e => { setImagem(e.target?.result as string ?? ""); setImagemNome(file.name); };
+    reader.onload = async e => {
+      const src = e.target?.result as string ?? "";
+      const expandida = await expandirImagem(src);
+      setImagem(expandida);
+      setImagemNome(file.name);
+    };
     reader.readAsDataURL(file);
   }
 
