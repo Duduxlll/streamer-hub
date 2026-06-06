@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -14,6 +14,17 @@ export default function CriarSorteioPage() {
 
   const [form, setForm] = useState({ titulo: "", valor: "", minutosTicket: "10", dias: "0", horas: "1", minutos: "0", segundos: "0" });
   const [criando, setCriando] = useState(false);
+  const [imagem, setImagem] = useState("");
+  const [imagemNome, setImagemNome] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  function handleImagem(file: File) {
+    if (!file.type.startsWith("image/")) { toast("Envie uma imagem (PNG, JPG...)", "warning"); return; }
+    if (file.size > 2 * 1024 * 1024) { toast("Imagem muito grande (máx 2MB)", "warning"); return; }
+    const reader = new FileReader();
+    reader.onload = e => { setImagem(e.target?.result as string ?? ""); setImagemNome(file.name); };
+    reader.readAsDataURL(file);
+  }
 
   useEffect(() => {
     if (status === "unauthenticated") router.replace("/login");
@@ -51,6 +62,7 @@ export default function CriarSorteioPage() {
           valor: form.valor,
           minutosTicket: Number(form.minutosTicket),
           duracaoMs,
+          imagem: imagem || undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -142,6 +154,35 @@ export default function CriarSorteioPage() {
                 onChange={e => setForm(f => ({ ...f, minutosTicket: e.target.value }))}
                 className="w-full px-4 py-3 rounded-xl text-sm text-white font-semibold focus:outline-none"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }} />
+            </div>
+
+            {/* Imagem de fundo (opcional) */}
+            <div>
+              <label className="text-[10px] text-gray-600 font-bold uppercase tracking-wide block mb-1.5">Imagem de fundo <span className="text-gray-700 normal-case font-bold">(opcional)</span></label>
+              <input ref={fileRef} type="file" accept="image/*" className="hidden"
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleImagem(f); }} />
+              {!imagem ? (
+                <button type="button" onClick={() => fileRef.current?.click()}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all hover:bg-white/[0.03]"
+                  style={{ background: "rgba(255,255,255,0.02)", border: "1px dashed rgba(255,186,0,0.3)" }}>
+                  <span className="text-xl">🖼️</span>
+                  <span className="text-gray-500">Clique para enviar uma imagem (fica de fundo no card)</span>
+                </button>
+              ) : (
+                <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,186,0,0.25)" }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imagem} alt="preview" className="w-full max-h-44 object-cover" />
+                  {/* prévia da vinheta que vai aparecer no card */}
+                  <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse at center, transparent 35%, rgba(8,20,13,0.85) 100%)" }} />
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    <button type="button" onClick={() => fileRef.current?.click()}
+                      className="px-2.5 py-1 rounded-lg text-[11px] font-black text-white" style={{ background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.2)" }}>Trocar</button>
+                    <button type="button" onClick={() => { setImagem(""); setImagemNome(""); }}
+                      className="px-2.5 py-1 rounded-lg text-[11px] font-black text-red-300" style={{ background: "rgba(0,0,0,0.6)", border: "1px solid rgba(248,113,113,0.3)" }}>Remover</button>
+                  </div>
+                  <p className="absolute bottom-1.5 left-2 text-[10px] text-white/70 truncate max-w-[70%]">{imagemNome}</p>
+                </div>
+              )}
             </div>
             <button onClick={criar} disabled={criando || !form.titulo.trim()}
               className="w-full py-3.5 rounded-xl font-black text-sm text-black disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-100"

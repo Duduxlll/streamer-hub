@@ -95,9 +95,30 @@ function SorteioCard({ s }: { s: Sorteio }) {
           boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
         }}
       >
+        {/* Imagem de fundo opcional, com vinheta (bordas escurecidas, centro visível) */}
+        {s.temImagem && (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/sorteio?imagem=${s.id}`}
+              alt=""
+              aria-hidden
+              className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+            />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(ellipse 78% 92% at 50% 45%, rgba(8,20,13,0.22) 0%, rgba(8,20,13,0.72) 66%, rgba(8,20,13,0.96) 100%)," +
+                  "linear-gradient(90deg, rgba(8,20,13,0.9) 0%, rgba(8,20,13,0.28) 42%, rgba(8,20,13,0.28) 58%, rgba(8,20,13,0.9) 100%)",
+              }}
+            />
+          </>
+        )}
+
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ffba00]/30 to-transparent" />
 
-        <div className="relative flex flex-col sm:flex-row items-center sm:items-stretch gap-0">
+        <div className="relative z-10 flex flex-col sm:flex-row items-center sm:items-stretch gap-0">
 
           <div className="flex-1 px-6 sm:px-8 py-6 sm:py-7">
 

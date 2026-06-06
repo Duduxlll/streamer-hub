@@ -18,9 +18,15 @@ export interface Sorteio {
   status: "ativo" | "pronto" | "finalizado" | "cancelado";
   participantes: Participante[];
   vencedor: Participante | null;
+  temImagem?: boolean;   // imagem de fundo opcional (guardada em key separada)
 }
 
 const KEY = "streamer-hub:sorteio:v1";
+const imgKey = (id: string) => `sorteio:img:${id}`;
+
+export async function getSorteioImagem(id: string): Promise<string | null> {
+  try { return await dbGet(imgKey(id)); } catch { return null; }
+}
 
 declare global {
   var __sorteioFallback: Sorteio[] | undefined;
@@ -76,13 +82,19 @@ export async function criarSorteio(params: {
   minutosTicket: number;
   duracaoMinutos?: number;
   duracaoMs?: number;
+  imagem?: string;
 }): Promise<Sorteio> {
   const list = await load();
   const durMs = params.duracaoMs != null
     ? params.duracaoMs
     : (params.duracaoMinutos ?? 60) * 60_000;
+  const id = Date.now().toString();
+  const temImagem = !!params.imagem && params.imagem.startsWith("data:image/");
+  if (temImagem) {
+    try { await dbSet(imgKey(id), params.imagem!); } catch {}
+  }
   const s: Sorteio = {
-    id: Date.now().toString(),
+    id,
     titulo: params.titulo,
     valor: params.valor,
     minutosTicket: Math.max(1, params.minutosTicket),
@@ -91,6 +103,7 @@ export async function criarSorteio(params: {
     status: "ativo",
     participantes: [],
     vencedor: null,
+    temImagem,
   };
   await persist([s, ...list]);
   return s;

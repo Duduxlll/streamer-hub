@@ -10,6 +10,7 @@ import {
   realizarSorteio,
   cancelarSorteio,
   limparHistoricoSorteios,
+  getSorteioImagem,
 } from "@/lib/sorteio-store";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +19,18 @@ export const revalidate = 0;
 const NO_CACHE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
 export async function GET(req: NextRequest) {
+  // Serve a imagem de fundo do sorteio (?imagem=<id>) como arquivo de imagem
+  const imagemId = req.nextUrl.searchParams.get("imagem");
+  if (imagemId) {
+    const dataUrl = await getSorteioImagem(imagemId);
+    const m = dataUrl?.match(/^data:(.+?);base64,(.+)$/);
+    if (!m) return new NextResponse("", { status: 404 });
+    return new NextResponse(Buffer.from(m[2], "base64"), {
+      status: 200,
+      headers: { "Content-Type": m[1], "Cache-Control": "public, max-age=600" },
+    });
+  }
+
   const id = req.nextUrl.searchParams.get("id");
   const list = await getSorteios();
   const ativo = getAtivo(list);
@@ -38,12 +51,16 @@ export async function POST(req: NextRequest) {
     if (!(await isVerifiedAdminSession(session))) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
+    // Imagem opcional (data URL). Ignora se não for imagem ou se passar de ~2MB.
+    const imagemRaw = typeof body.imagem === "string" ? body.imagem : "";
+    const imagem = (imagemRaw.startsWith("data:image/") && imagemRaw.length <= 2_900_000) ? imagemRaw : undefined;
     const s = await criarSorteio({
       titulo: String(body.titulo || "Sorteio"),
       valor: String(body.valor || ""),
       minutosTicket: Number(body.minutosTicket) || 10,
       duracaoMs: body.duracaoMs != null ? Number(body.duracaoMs) : undefined,
       duracaoMinutos: Number(body.duracaoMinutos) || 60,
+      imagem,
     });
     const list = await getSorteios();
     return NextResponse.json({ sorteio: s, sorteios: list }, { headers: NO_CACHE });

@@ -22,7 +22,7 @@ export default async function HomePage() {
     .map(s => ({
       id: s.id, titulo: s.titulo, valor: s.valor, minutosTicket: s.minutosTicket,
       duracaoMs: s.duracaoMs, iniciadoEm: s.iniciadoEm, status: s.status,
-      participantes: [], vencedor: null,
+      participantes: [], vencedor: null, temImagem: s.temImagem,
     }));
 
   return (
