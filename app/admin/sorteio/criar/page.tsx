@@ -18,8 +18,8 @@ export default function CriarSorteioPage() {
   const [imagemNome, setImagemNome] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Expande automaticamente qualquer imagem para 2000×400 (proporção do card),
-  // centralizando o conteúdo e esticando as bordas para preencher as laterais.
+  // Expande automaticamente qualquer imagem para 2000×400 (proporção do card):
+  // fundo borrado suave preenche as laterais + imagem nítida no centro desbotando nas bordas.
   function expandirImagem(src: string): Promise<string> {
     return new Promise(resolve => {
       const img = new Image();
@@ -29,20 +29,43 @@ export default function CriarSorteioPage() {
         canvas.width = W; canvas.height = H;
         const ctx = canvas.getContext("2d");
         if (!ctx) return resolve(src);
-
-        // escala para preencher a altura, mantendo a proporção; centraliza na horizontal
-        const drawW = Math.round(img.width * (H / img.height));
-        const x0 = Math.round((W - drawW) / 2);
         ctx.imageSmoothingQuality = "high";
-        ctx.drawImage(img, x0, 0, drawW, H);
 
-        // se sobrou espaço nos lados, estica a coluna da borda para preencher
-        if (x0 > 0) {
-          ctx.drawImage(canvas, x0, 0, 2, H, 0, 0, x0 + 1, H);                 // lateral esquerda
-          const xr = x0 + drawW - 2;
-          ctx.drawImage(canvas, xr, 0, 2, H, xr, 0, W - xr, H);                // lateral direita
+        // 1) fundo: imagem cobrindo todo o quadro, bem borrada (laterais suaves, sem riscos)
+        const sCover = Math.max(W / img.width, H / img.height);
+        const cw = img.width * sCover, ch = img.height * sCover;
+        ctx.filter = "blur(34px)";
+        ctx.drawImage(img, (W - cw) / 2, (H - ch) / 2, cw, ch);
+        ctx.filter = "none";
+
+        // 2) imagem nítida no centro (altura cheia), bordas laterais desbotando no fundo
+        const drawW = img.width * (H / img.height);
+        const x0 = (W - drawW) / 2;
+        if (drawW >= W) {
+          ctx.drawImage(img, x0, 0, drawW, H);                  // já é larga: cobre tudo
+        } else {
+          const tmp = document.createElement("canvas");
+          tmp.width = W; tmp.height = H;
+          const t = tmp.getContext("2d");
+          if (t) {
+            t.imageSmoothingQuality = "high";
+            t.drawImage(img, x0, 0, drawW, H);
+            // máscara: opaco no miolo, transparente nas pontas → funde no fundo borrado
+            t.globalCompositeOperation = "destination-in";
+            const f = 0.15;
+            const g = t.createLinearGradient(0, 0, W, 0);
+            g.addColorStop(Math.max(0, x0 / W), "rgba(0,0,0,0)");
+            g.addColorStop((x0 + drawW * f) / W, "rgba(0,0,0,1)");
+            g.addColorStop((x0 + drawW * (1 - f)) / W, "rgba(0,0,0,1)");
+            g.addColorStop(Math.min(1, (x0 + drawW) / W), "rgba(0,0,0,0)");
+            t.fillStyle = g;
+            t.fillRect(0, 0, W, H);
+            ctx.drawImage(tmp, 0, 0);
+          } else {
+            ctx.drawImage(img, x0, 0, drawW, H);
+          }
         }
-        resolve(canvas.toDataURL("image/jpeg", 0.9));
+        resolve(canvas.toDataURL("image/jpeg", 0.92));
       };
       img.onerror = () => resolve(src);
       img.src = src;
