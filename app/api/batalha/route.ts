@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import {
   getBatalha, criarBatalha, iniciarBatalha,
   setJogo, setVencedor, finalizarBatalha, entrarBatalha,
@@ -13,7 +13,7 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!isAdmin(session?.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Não autorizado" }, { status: 403 });
   }
 

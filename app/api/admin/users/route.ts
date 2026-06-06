@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import {
   getUsers, banUser, desbanirUser, suspenderUser, dessuspenderUser, setPassword, removerContasSemSenha,
 } from "@/lib/users-store";
@@ -12,7 +12,7 @@ const NO_CACHE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
 async function requireAdmin() {
   const session = await auth();
-  if (!isAdmin(session?.user?.twitchLogin)) return null;
+  if (!(await isVerifiedAdminSession(session))) return null;
   return session!.user!.twitchLogin!;
 }
 

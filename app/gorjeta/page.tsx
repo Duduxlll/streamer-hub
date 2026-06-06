@@ -44,6 +44,8 @@ const CSS = `
 
 type TipoChave = "cpf" | "telefone" | "email" | "aleatoria";
 
+const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
+
 function validarCpfSimples(cpf: string): boolean {
   const d = cpf.replace(/\D/g, "");
   if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
@@ -365,7 +367,7 @@ export default function GorjetaPage() {
 
   function handleFile(file: File) {
     if (!file.type.startsWith("image/")) { setErro("Envie uma imagem (PNG, JPG, etc.)"); return; }
-    if (file.size > 2 * 1024 * 1024) { setErro("Imagem muito grande (máx 2MB)"); return; }
+    if (file.size > MAX_SCREENSHOT_BYTES) { setErro("Imagem muito grande (máx 5MB)"); return; }
     setScreenshotName(file.name);
     const reader = new FileReader();
     reader.onload = e => setForm(f => ({ ...f, screenshot: e.target?.result as string ?? "" }));

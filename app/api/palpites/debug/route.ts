@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import { getStoreDiagnostics } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ export const revalidate = 0;
 
 export async function GET() {
   const session = await auth();
-  if (!session || !isAdmin(session.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Proibido" }, { status: 403 });
   }
 

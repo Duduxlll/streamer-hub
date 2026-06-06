@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import {
   getCadastros, getCadastro, cadastrar, aprovarCadastro, rejeitarCadastro, editarCpfCadastro, editarChaveCadastro, deletarCadastro,
   getScreenshot, getSessao, abrirSessao, entrarSessao, sortearGorjeta,
@@ -15,6 +15,7 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 const NO_CACHE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
+const MAX_SCREENSHOT_DATA_URL_LENGTH = 7_100_000;
 
 function gerarExternalId(): string {
   return `gorjeta${Date.now()}${Math.random().toString(36).slice(2, 8)}`.slice(0, 35);
@@ -22,7 +23,7 @@ function gerarExternalId(): string {
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  const adminUser = isAdmin(session?.user?.twitchLogin);
+  const adminUser = await isVerifiedAdminSession(session);
   const tipo = req.nextUrl.searchParams.get("tipo");
   const screenshotId = req.nextUrl.searchParams.get("screenshot");
 
@@ -74,6 +75,9 @@ export async function POST(req: NextRequest) {
     const tiposValidos = ["cpf", "telefone", "email", "aleatoria"];
     const tipoChave = tiposValidos.includes(body.tipoChave) ? body.tipoChave : "cpf";
     const chaveRaw = String(body.chave ?? body.cpf ?? "");
+    const screenshot = String(body.screenshot ?? "");
+    if (!screenshot.startsWith("data:image/")) return NextResponse.json({ error: "Envie o print do depósito" }, { status: 400 });
+    if (screenshot.length > MAX_SCREENSHOT_DATA_URL_LENGTH) return NextResponse.json({ error: "Imagem muito grande (máx 5MB)" }, { status: 400 });
 
     let cpfTitular: string | undefined;
     const chaveNorm = normalizarChave(chaveRaw, tipoChave);
@@ -90,7 +94,7 @@ export async function POST(req: NextRequest) {
       username: login, displayName: session.user.name ?? login,
       tipoChave, chave: chaveRaw, cpfTitular,
       nomeCompleto: String(body.nomeCompleto ?? ""),
-      screenshot: String(body.screenshot ?? ""),
+      screenshot,
     });
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
     return NextResponse.json({ ok: true, cadastro: result.cadastro }, { headers: NO_CACHE });
@@ -106,6 +110,7 @@ export async function POST(req: NextRequest) {
 
     const screenshot = String(body.screenshot ?? "");
     if (!screenshot.startsWith("data:image/")) return NextResponse.json({ error: "Envie o print do depósito" }, { status: 400 });
+    if (screenshot.length > MAX_SCREENSHOT_DATA_URL_LENGTH) return NextResponse.json({ error: "Imagem muito grande (máx 5MB)" }, { status: 400 });
 
     const result = await cadastrar({
       username: login,
@@ -122,7 +127,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "aprovar") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const c = await aprovarCadastro(String(body.id ?? ""));
     if (!c) return NextResponse.json({ error: "Cadastro não encontrado" }, { status: 404 });
     return NextResponse.json({ ok: true, cadastro: c }, { headers: NO_CACHE });
@@ -130,7 +135,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "rejeitar") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const c = await rejeitarCadastro(String(body.id ?? ""), String(body.motivo ?? ""));
     if (!c) return NextResponse.json({ error: "Cadastro não encontrado" }, { status: 404 });
     return NextResponse.json({ ok: true, cadastro: c }, { headers: NO_CACHE });
@@ -138,7 +143,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "editar-cpf") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const c = await editarCpfCadastro(String(body.id ?? ""), String(body.cpf ?? ""));
     if (!c) return NextResponse.json({ error: "CPF inválido ou cadastro não encontrado" }, { status: 400 });
     return NextResponse.json({ ok: true, cadastro: c }, { headers: NO_CACHE });
@@ -146,7 +151,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "editar-chave") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const tiposValidos = ["cpf", "telefone", "email", "aleatoria"];
     const tipoChave = tiposValidos.includes(body.tipoChave) ? body.tipoChave : "cpf";
     const c = await editarChaveCadastro(String(body.id ?? ""), tipoChave, String(body.chave ?? ""));
@@ -156,7 +161,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "abrir-sessao") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const result = await abrirSessao();
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
     return NextResponse.json({ ok: true, sessao: result.sessao }, { headers: NO_CACHE });
@@ -164,21 +169,21 @@ export async function POST(req: NextRequest) {
 
   if (action === "fechar-sessao") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     await fecharSessaoSemPagar();
     return NextResponse.json({ ok: true }, { headers: NO_CACHE });
   }
 
   if (action === "limpar-sessao") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     await limparSessao();
     return NextResponse.json({ ok: true }, { headers: NO_CACHE });
   }
 
   if (action === "limpar-inscritos") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const result = await limparInscritosSessao();
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
     return NextResponse.json({ ok: true, sessao: result.sessao }, { headers: NO_CACHE });
@@ -197,7 +202,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "sortear") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const result = await sortearGorjeta({
       valorUnitario: body.valorUnitario ? Number(body.valorUnitario) : undefined,
       maxVencedores: body.maxVencedores ? Number(body.maxVencedores) : undefined,
@@ -208,7 +213,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "pagar") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const sessao = await getSessao();
     if (!sessao) return NextResponse.json({ error: "Sem sessão" }, { status: 400 });
     if (sessao.status !== "sorteada") return NextResponse.json({ error: "Sorteie primeiro" }, { status: 400 });
@@ -233,7 +238,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "enviar-manual") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const { username, valor } = body;
     if (!username || !valor) return NextResponse.json({ error: "username e valor obrigatórios" }, { status: 400 });
     const valorNum = Number(valor);
@@ -262,7 +267,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "deletar-cadastro") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const ok = await deletarCadastro(String(body.id ?? ""));
     if (!ok) return NextResponse.json({ error: "Cadastro não encontrado" }, { status: 404 });
     return NextResponse.json({ ok: true }, { headers: NO_CACHE });
@@ -270,7 +275,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "limpar-historico") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     await limparHistorico();
     return NextResponse.json({ ok: true }, { headers: NO_CACHE });
   }
@@ -280,7 +285,7 @@ export async function POST(req: NextRequest) {
   if (action === "pagar-fila") {
 
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const sessao = await getSessao();
     if (!sessao || sessao.status !== "sorteada") return NextResponse.json({ error: "Sorteie primeiro" }, { status: 400 });
     if (sessao.vencedores.length === 0) return NextResponse.json({ error: "Sem vencedores" }, { status: 400 });
@@ -305,7 +310,7 @@ export async function POST(req: NextRequest) {
   if (action === "enviar-manual-fila") {
 
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const { username, valor } = body;
     if (!username || !valor) return NextResponse.json({ error: "username e valor obrigatórios" }, { status: 400 });
     const valorNum = Number(valor);
@@ -339,7 +344,7 @@ export async function POST(req: NextRequest) {
   if (action === "fila-enviar") {
 
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const { id } = body;
     if (!id) return NextResponse.json({ error: "id obrigatório" }, { status: 400 });
 
@@ -367,7 +372,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "fila-marcar-pago") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const id = String(body.id ?? "");
     const lista = await getPagamentos();
     const pag = lista.find(p => p.id === id);
@@ -383,7 +388,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "fila-remover") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const id = String(body.id ?? "");
     const lista = await getPagamentos();
     const pag = lista.find(p => p.id === id);
@@ -398,14 +403,14 @@ export async function POST(req: NextRequest) {
 
   if (action === "fila-limpar") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     await limparPagamentosFinalizados();
     return NextResponse.json({ ok: true }, { headers: NO_CACHE });
   }
 
   if (action === "add-teste") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
+    if (!(await isVerifiedAdminSession(session))) return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     const username = String(body.username ?? `teste_${Date.now()}`);
     const displayName = String(body.displayName ?? username);
     const image = typeof body.image === "string" ? body.image : null;

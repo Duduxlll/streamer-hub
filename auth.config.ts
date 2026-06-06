@@ -36,6 +36,7 @@ export const authConfig = {
       if (user) {
         token.twitchLogin = (user as { twitchLogin?: string }).twitchLogin;
         token.twitchId    = user.id ?? undefined;
+        token.email       = user.email ?? undefined;
         if (user.name) token.name = user.name;
         token.picture = user.image ?? null;
       }
@@ -45,6 +46,8 @@ export const authConfig = {
     async session({ session, token }) {
       session.user.id          = (token.twitchId as string) ?? token.sub ?? "";
       session.user.twitchLogin = token.twitchLogin as string | undefined;
+      if (typeof token.email === "string") session.user.email = token.email;
+      if (typeof token.picture === "string") session.user.image = token.picture;
       return session;
     },
   },

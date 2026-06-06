@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import { getJackpot, setJackpot, salvarHistoricoJackpot, type Jackpot, type JackpotJogador } from "@/lib/jackpotStore";
 
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { action } = body;
 
-  if (!isAdmin(session?.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 

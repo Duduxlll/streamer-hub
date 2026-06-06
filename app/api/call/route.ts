@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import { getCall, abrirCall, fecharCall, submeterCall, removerEntry } from "@/lib/callStore";
 
 const NO_CACHE = { "Cache-Control": "no-store" };
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   }
 
   const session = await auth();
-  if (!isAdmin(session?.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 

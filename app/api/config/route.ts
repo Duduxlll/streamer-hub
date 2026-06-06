@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import { isConfigured as livepixConfigured, testConnection as testLivepix } from "@/lib/livepix";
 import {
   clearGgpixWebhookStatus,
@@ -28,7 +28,7 @@ async function getGgpixTestStatus() {
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!isAdmin(session?.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!isAdmin(session?.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 

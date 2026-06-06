@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import { getRodada, abrirRodada, travarPalpites, fecharRodada, queueChatMessage } from "@/lib/store";
 import type { ResultadoRodada } from "@/lib/store";
 
@@ -17,7 +17,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (!session || !isAdmin(session.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Proibido" }, { status: 403 });
   }
 

@@ -90,6 +90,25 @@ function verifyHmac(payload: string, signatureHeader: string | null, secret: str
   return { ok: false, reason: "formato do header HMAC inválido ou assinatura não bateu" };
 }
 
+function maskWebhookLog(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(maskWebhookLog);
+  if (!value || typeof value !== "object") return value;
+
+  const out: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(value)) {
+    const lower = key.toLowerCase();
+    if (
+      typeof item === "string" &&
+      (lower.includes("pixkey") || lower.includes("pix_key") || lower.includes("cpf") || lower.includes("document"))
+    ) {
+      out[key] = item.includes("@") ? "***@***" : "***";
+    } else {
+      out[key] = maskWebhookLog(item);
+    }
+  }
+  return out;
+}
+
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
 
@@ -139,7 +158,7 @@ export async function POST(req: NextRequest) {
       message: "Webhook GGPix recebido com autenticação válida.",
       checkedAt: Date.now(),
     });
-    console.log("[ggpix/webhook] Notificação:", JSON.stringify(body));
+    console.log("[ggpix/webhook] Notificação:", JSON.stringify(maskWebhookLog(body)));
 
     const externalId: string | undefined =
       body.externalId ?? body.external_id ?? body.data?.externalId ?? body.data?.external_id;

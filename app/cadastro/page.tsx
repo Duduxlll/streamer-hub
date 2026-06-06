@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AuthShell, AuthHeader, AuthField, AuthInput, AuthButton, AuthAlert, Icons } from "@/components/auth-ui";
 
+const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
+
 function formatCpf(value: string): string {
   const d = value.replace(/\D/g, "").slice(0, 11);
   if (d.length <= 3) return d;
@@ -32,7 +34,7 @@ export default function CadastroPage() {
 
   function handleFile(file: File) {
     if (!file.type.startsWith("image/")) { setErro("Envie uma imagem (PNG, JPG, etc.)"); return; }
-    if (file.size > 2 * 1024 * 1024) { setErro("Imagem muito grande (máx 2MB)"); return; }
+    if (file.size > MAX_SCREENSHOT_BYTES) { setErro("Imagem muito grande (máx 5MB)"); return; }
     setErro("");
     setScreenshotName(file.name);
     const reader = new FileReader();

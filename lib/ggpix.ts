@@ -130,6 +130,48 @@ const TIPO_MAP: Record<TipoChavePix, string> = {
   aleatoria: "EVP",
 };
 
+function maskPixKey(pixKey: string, pixKeyType: TipoChavePix): string {
+  if (pixKeyType === "cpf") return "***.***.***-**";
+  if (pixKeyType === "telefone") return pixKey.replace(/\d(?=\d{4})/g, "*");
+  if (pixKeyType === "email") {
+    const [local, domain] = pixKey.split("@");
+    if (!domain) return "***@***";
+    return `${local.slice(0, 1) || "*"}***@${domain}`;
+  }
+  if (pixKey.length <= 8) return "********";
+  return `${pixKey.slice(0, 4)}****${pixKey.slice(-4)}`;
+}
+
+function sanitizeGgpixLog(text: string): string {
+  try {
+    const parsed = JSON.parse(text) as unknown;
+    return JSON.stringify(maskSensitiveValues(parsed));
+  } catch {
+    return text
+      .replace(/\b\d{11}\b/g, "***.***.***-**")
+      .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, "***@***");
+  }
+}
+
+function maskSensitiveValues(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(maskSensitiveValues);
+  if (!value || typeof value !== "object") return value;
+
+  const out: Record<string, unknown> = {};
+  for (const [key, item] of Object.entries(value)) {
+    const lower = key.toLowerCase();
+    if (
+      typeof item === "string" &&
+      (lower.includes("pixkey") || lower.includes("pix_key") || lower.includes("cpf") || lower.includes("document"))
+    ) {
+      out[key] = item.includes("@") ? "***@***" : "***";
+    } else {
+      out[key] = maskSensitiveValues(item);
+    }
+  }
+  return out;
+}
+
 export async function enviarPix(
   pixKey: string,
   pixKeyType: TipoChavePix,
@@ -139,7 +181,7 @@ export async function enviarPix(
   const apiKey = await getApiKey();
   const amountCents = Math.round(valorReais * 100);
 
-  console.log(`[ggpix/enviar] pixKey="${pixKey}" tipo="${pixKeyType}" valor=R$${valorReais.toFixed(2)} externalId=${externalId}`);
+  console.log(`[ggpix/enviar] pixKey="${maskPixKey(pixKey, pixKeyType)}" tipo="${pixKeyType}" valor=R$${valorReais.toFixed(2)} externalId=${externalId}`);
 
   const res = await fetch(`${BASE_URL}/pix/out`, {
     method: "POST",
@@ -156,7 +198,7 @@ export async function enviarPix(
   });
 
   const text = await res.text();
-  console.log(`[ggpix/enviar] status=${res.status} response=${text}`);
+  console.log(`[ggpix/enviar] status=${res.status} response=${sanitizeGgpixLog(text)}`);
 
   if (!res.ok) {
     let parsed: { error?: string; message?: string; clientIp?: string } | null = null;

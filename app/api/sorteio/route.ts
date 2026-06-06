@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import {
   getSorteios,
   getAtivo,
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "criar") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) {
+    if (!(await isVerifiedAdminSession(session))) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
     const s = await criarSorteio({
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "sortear") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) {
+    if (!(await isVerifiedAdminSession(session))) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
     const result = await realizarSorteio(String(body.id ?? ""));
@@ -98,7 +98,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "cancelar") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) {
+    if (!(await isVerifiedAdminSession(session))) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
     const id = body.id ? String(body.id) : null;
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
 
   if (action === "limpar-historico") {
     const session = await auth();
-    if (!isAdmin(session?.user?.twitchLogin)) {
+    if (!(await isVerifiedAdminSession(session))) {
       return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
     }
     const list = await limparHistoricoSorteios();

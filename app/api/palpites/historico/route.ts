@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import { getHistorico, clearHistorico } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export async function GET() {
 
 export async function DELETE() {
   const session = await auth();
-  if (!session || !isAdmin(session.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Proibido" }, { status: 403 });
   }
   await clearHistorico();

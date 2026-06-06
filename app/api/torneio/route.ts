@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import {
   getTorneio, criarTorneio, fecharFase, decidirFase,
   abrirProximaFase, finalizarTorneio, setValorBonus,
@@ -13,7 +13,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (!session || !isAdmin(session.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Proibido" }, { status: 403 });
   }
 

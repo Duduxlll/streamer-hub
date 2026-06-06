@@ -7,6 +7,8 @@ import { rateLimit, ipFromHeaders } from "@/lib/rate-limit";
 
 export const dynamic = "force-dynamic";
 
+const MAX_SCREENSHOT_DATA_URL_LENGTH = 7_100_000;
+
 function getIp(req: NextRequest): string {
   return ipFromHeaders(req.headers) || "";
 }
@@ -49,8 +51,8 @@ export async function POST(req: NextRequest) {
   if (!screenshot.startsWith("data:image/")) {
     return NextResponse.json({ error: "Envie o print do seu histórico de depósito na JonBet" }, { status: 400 });
   }
-  if (screenshot.length > 2_900_000) {
-    return NextResponse.json({ error: "Imagem muito grande (máx 2MB)" }, { status: 400 });
+  if (screenshot.length > MAX_SCREENSHOT_DATA_URL_LENGTH) {
+    return NextResponse.json({ error: "Imagem muito grande (máx 5MB)" }, { status: 400 });
   }
 
   const login = twitchLogin.toLowerCase();

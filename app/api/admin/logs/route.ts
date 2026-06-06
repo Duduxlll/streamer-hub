@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import { getLogs, addLog } from "@/lib/security-log";
 
 export const dynamic = "force-dynamic";
@@ -8,7 +8,7 @@ const NO_CACHE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
 
 export async function GET() {
   const session = await auth();
-  if (!isAdmin(session?.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
   const logs = await getLogs();
@@ -17,7 +17,7 @@ export async function GET() {
 
 export async function POST() {
   const session = await auth();
-  if (!isAdmin(session?.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
   await addLog({

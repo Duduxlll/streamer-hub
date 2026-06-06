@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { isAdmin } from "@/lib/admins";
+import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import { setLivePixUserToken } from "@/lib/store";
 import { getSiteUrl } from "@/lib/site-url";
 import { getCredentials } from "@/lib/credentials";
 
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!isAdmin(session?.user?.twitchLogin)) {
+  if (!(await isVerifiedAdminSession(session))) {
     return NextResponse.json({ error: "Sem permissão" }, { status: 403 });
   }
 
