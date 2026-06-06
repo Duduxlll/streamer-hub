@@ -95,26 +95,32 @@ function SorteioCard({ s }: { s: Sorteio }) {
           boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
         }}
       >
-        {/* Imagem de fundo opcional — aparece à direita e desbota para a esquerda,
-            mantendo o texto legível. Sombra preta neutra (não tinge a foto). */}
+        {/* Imagem de fundo opcional — adapta-se a QUALQUER tamanho (estilo Spotify):
+            fundo borrado preenche o card + imagem inteira nítida no centro (nunca corta). */}
         {s.temImagem && (
           <>
+            {/* fundo borrado (preenche sem barras pretas, qualquer proporção) */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/api/sorteio?imagem=${s.id}`}
-              alt=""
-              aria-hidden
+              alt="" aria-hidden
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-              style={{ objectPosition: "center" }}
+              style={{ filter: "blur(26px) brightness(0.4) saturate(1.15)", transform: "scale(1.18)" }}
             />
+            {/* imagem inteira, nítida, centralizada — nunca corta o produto */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/api/sorteio?imagem=${s.id}`}
+              alt="" aria-hidden
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+            />
+            {/* vinheta: pontas escuras (texto à esquerda e cronômetro à direita ficam legíveis) */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  // vinheta: centro claro (mostra a imagem) e bordas escuras
-                  "radial-gradient(ellipse 62% 135% at 50% 50%, rgba(7,10,8,0.04) 0%, rgba(7,10,8,0.5) 52%, rgba(7,10,8,0.97) 100%)," +
-                  // reforça esquerda (texto) e direita (cronômetro) para legibilidade
-                  "linear-gradient(90deg, rgba(7,10,8,0.9) 0%, rgba(7,10,8,0.12) 34%, rgba(7,10,8,0.12) 66%, rgba(7,10,8,0.9) 100%)",
+                  "linear-gradient(90deg, rgba(7,10,8,0.92) 0%, rgba(7,10,8,0.12) 33%, rgba(7,10,8,0.12) 67%, rgba(7,10,8,0.92) 100%)," +
+                  "radial-gradient(ellipse 72% 130% at 50% 50%, transparent 42%, rgba(7,10,8,0.55) 100%)",
               }}
             />
           </>
