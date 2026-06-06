@@ -7,6 +7,11 @@ import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import { useToast, ToastContainer } from "@/components/toast";
 
+const BANNER_W = 2000;
+const BANNER_H = 400;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_IMAGE_DATA_URL_LENGTH = 2_850_000;
+
 export default function CriarSorteioPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -18,35 +23,87 @@ export default function CriarSorteioPage() {
   const [imagemNome, setImagemNome] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  // Expande automaticamente qualquer imagem para 2000×400 (proporção do card):
-  // produto grande e nítido no centro + as bordas (a "mesa") esticadas e borradas nas laterais.
   function expandirImagem(src: string): Promise<string> {
     return new Promise(resolve => {
       const img = new Image();
       img.onload = () => {
-        const W = 2000, H = 400;
         const canvas = document.createElement("canvas");
-        canvas.width = W; canvas.height = H;
+        canvas.width = BANNER_W; canvas.height = BANNER_H;
         const ctx = canvas.getContext("2d");
         if (!ctx) return resolve(src);
         ctx.imageSmoothingQuality = "high";
 
-        // produto nítido no centro, ocupando a altura inteira
-        const drawW = img.width * (H / img.height);
-        const x0 = Math.round((W - drawW) / 2);
-        ctx.drawImage(img, x0, 0, drawW, H);
+        ctx.fillStyle = "#20241f";
+        ctx.fillRect(0, 0, BANNER_W, BANNER_H);
 
-        // laterais: estica a faixa da borda (que é só fundo/mesa) com blur para ficar liso, sem riscos
-        if (x0 > 0) {
-          const xr = x0 + Math.round(drawW);
-          ctx.filter = "blur(26px)";
-          ctx.drawImage(canvas, x0, 0, 12, H, -40, 0, x0 + 40, H);          // esquerda → preenche [0, x0]
-          ctx.drawImage(canvas, xr - 12, 0, 12, H, xr, 0, W - xr + 40, H);  // direita → preenche [xr, W]
-          ctx.filter = "none";
-          // garante o produto 100% nítido por cima
-          ctx.drawImage(img, x0, 0, drawW, H);
+        const coverScale = Math.max(BANNER_W / img.width, BANNER_H / img.height);
+        const coverW = img.width * coverScale;
+        const coverH = img.height * coverScale;
+        const coverX = (BANNER_W - coverW) / 2;
+        const coverY = (BANNER_H - coverH) / 2;
+
+        ctx.save();
+        ctx.filter = "blur(34px) saturate(0.92) brightness(0.72)";
+        ctx.drawImage(img, coverX - 80, coverY - 80, coverW + 160, coverH + 160);
+        ctx.restore();
+
+        const wash = ctx.createLinearGradient(0, 0, BANNER_W, 0);
+        wash.addColorStop(0, "rgba(18,22,18,0.52)");
+        wash.addColorStop(0.18, "rgba(28,31,27,0.24)");
+        wash.addColorStop(0.5, "rgba(255,255,255,0.03)");
+        wash.addColorStop(0.82, "rgba(28,31,27,0.24)");
+        wash.addColorStop(1, "rgba(18,22,18,0.52)");
+        ctx.fillStyle = wash;
+        ctx.fillRect(0, 0, BANNER_W, BANNER_H);
+
+        const centerMaxW = Math.min(760, BANNER_W * 0.42);
+        const centerMaxH = BANNER_H * 0.9;
+        const containScale = Math.min(centerMaxW / img.width, centerMaxH / img.height);
+        const drawW = Math.round(img.width * containScale);
+        const drawH = Math.round(img.height * containScale);
+        const x0 = Math.round((BANNER_W - drawW) / 2);
+        const y0 = Math.round((BANNER_H - drawH) / 2);
+
+        const sharp = document.createElement("canvas");
+        sharp.width = BANNER_W; sharp.height = BANNER_H;
+        const sctx = sharp.getContext("2d");
+        if (sctx) {
+          sctx.imageSmoothingQuality = "high";
+          sctx.drawImage(img, x0, y0, drawW, drawH);
+
+          const mask = document.createElement("canvas");
+          mask.width = BANNER_W; mask.height = BANNER_H;
+          const mctx = mask.getContext("2d");
+          if (mctx) {
+            const feather = Math.min(96, Math.max(34, Math.floor(drawW * 0.16)));
+            const alphaX = mctx.createLinearGradient(x0, 0, x0 + drawW, 0);
+            alphaX.addColorStop(0, "rgba(0,0,0,0)");
+            alphaX.addColorStop(Math.min(0.5, feather / drawW), "rgba(0,0,0,1)");
+            alphaX.addColorStop(Math.max(0.5, 1 - feather / drawW), "rgba(0,0,0,1)");
+            alphaX.addColorStop(1, "rgba(0,0,0,0)");
+            mctx.fillStyle = alphaX;
+            mctx.fillRect(x0, y0, drawW, drawH);
+
+            const alphaY = mctx.createLinearGradient(0, y0, 0, y0 + drawH);
+            alphaY.addColorStop(0, "rgba(0,0,0,0)");
+            alphaY.addColorStop(Math.min(0.5, feather / drawH), "rgba(0,0,0,1)");
+            alphaY.addColorStop(Math.max(0.5, 1 - feather / drawH), "rgba(0,0,0,1)");
+            alphaY.addColorStop(1, "rgba(0,0,0,0)");
+            mctx.globalCompositeOperation = "source-in";
+            mctx.fillStyle = alphaY;
+            mctx.fillRect(x0, y0, drawW, drawH);
+
+            sctx.globalCompositeOperation = "destination-in";
+            sctx.drawImage(mask, 0, 0);
+            sctx.globalCompositeOperation = "source-over";
+          }
+          ctx.drawImage(sharp, 0, 0);
         }
-        resolve(canvas.toDataURL("image/jpeg", 0.92));
+
+        let out = canvas.toDataURL("image/jpeg", 0.9);
+        if (out.length > MAX_IMAGE_DATA_URL_LENGTH) out = canvas.toDataURL("image/jpeg", 0.82);
+        if (out.length > MAX_IMAGE_DATA_URL_LENGTH) out = canvas.toDataURL("image/jpeg", 0.74);
+        resolve(out.length <= MAX_IMAGE_DATA_URL_LENGTH ? out : src);
       };
       img.onerror = () => resolve(src);
       img.src = src;
@@ -55,7 +112,7 @@ export default function CriarSorteioPage() {
 
   function handleImagem(file: File) {
     if (!file.type.startsWith("image/")) { toast("Envie uma imagem (PNG, JPG...)", "warning"); return; }
-    if (file.size > 2 * 1024 * 1024) { toast("Imagem muito grande (máx 2MB)", "warning"); return; }
+    if (file.size > MAX_IMAGE_BYTES) { toast("Imagem muito grande (máx 5MB)", "warning"); return; }
     const reader = new FileReader();
     reader.onload = async e => {
       const src = e.target?.result as string ?? "";
