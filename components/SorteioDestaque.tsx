@@ -99,32 +99,21 @@ function SorteioCard({ s }: { s: Sorteio }) {
             fundo borrado preenche o card + imagem inteira nítida no centro (nunca corta). */}
         {s.temImagem && (
           <>
-            {/* fundo borrado da MESMA imagem (brilho médio) — a foto nítida dissolve nele sem marcar */}
+            {/* imagem cobrindo de canto a canto (gere-a já larga, com folga nas laterais via uncrop) */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/api/sorteio?imagem=${s.id}`}
               alt="" aria-hidden
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
-              style={{ filter: "blur(34px) brightness(0.62) saturate(1.2)", transform: "scale(1.28)" }}
+              style={{ objectPosition: "center" }}
             />
-            {/* imagem nítida, centralizada — bordas bem dissolvidas (fade amplo e cedo) */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/api/sorteio?imagem=${s.id}`}
-              alt="" aria-hidden
-              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
-              style={{
-                WebkitMaskImage: "radial-gradient(ellipse 72% 78% at 50% 50%, #000 28%, rgba(0,0,0,0.5) 62%, transparent 88%)",
-                maskImage: "radial-gradient(ellipse 72% 78% at 50% 50%, #000 28%, rgba(0,0,0,0.5) 62%, transparent 88%)",
-              }}
-            />
-            {/* escurece SÓ as pontas (texto à esquerda, cronômetro à direita); centro livre pra foto fundir */}
+            {/* preto por cima das pontas (texto à esquerda, cronômetro à direita); centro livre */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(90deg, rgba(7,10,8,0.96) 0%, rgba(7,10,8,0.8) 16%, rgba(7,10,8,0.25) 34%, transparent 46%, transparent 54%, rgba(7,10,8,0.25) 66%, rgba(7,10,8,0.8) 84%, rgba(7,10,8,0.96) 100%)," +
-                  "linear-gradient(180deg, rgba(7,10,8,0.45) 0%, transparent 26%, transparent 74%, rgba(7,10,8,0.5) 100%)",
+                  "linear-gradient(90deg, rgba(7,10,8,0.97) 0%, rgba(7,10,8,0.85) 15%, rgba(7,10,8,0.3) 34%, transparent 45%, transparent 55%, rgba(7,10,8,0.3) 66%, rgba(7,10,8,0.85) 85%, rgba(7,10,8,0.97) 100%)," +
+                  "linear-gradient(180deg, rgba(7,10,8,0.3) 0%, transparent 22%, transparent 78%, rgba(7,10,8,0.35) 100%)",
               }}
             />
           </>
