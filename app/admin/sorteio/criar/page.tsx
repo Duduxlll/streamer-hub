@@ -7,10 +7,7 @@ import Link from "next/link";
 import { isAdmin } from "@/lib/admins";
 import { useToast, ToastContainer } from "@/components/toast";
 
-const BANNER_W = 2000;
-const BANNER_H = 400;
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const MAX_IMAGE_DATA_URL_LENGTH = 2_850_000;
+const MAX_IMAGE_BYTES = 2 * 1024 * 1024;
 
 export default function CriarSorteioPage() {
   const { data: session, status } = useSession();
@@ -23,103 +20,11 @@ export default function CriarSorteioPage() {
   const [imagemNome, setImagemNome] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  function expandirImagem(src: string): Promise<string> {
-    return new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = BANNER_W; canvas.height = BANNER_H;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return resolve(src);
-        ctx.imageSmoothingQuality = "high";
-
-        ctx.fillStyle = "#20241f";
-        ctx.fillRect(0, 0, BANNER_W, BANNER_H);
-
-        const coverScale = Math.max(BANNER_W / img.width, BANNER_H / img.height);
-        const coverW = img.width * coverScale;
-        const coverH = img.height * coverScale;
-        const coverX = (BANNER_W - coverW) / 2;
-        const coverY = (BANNER_H - coverH) / 2;
-
-        ctx.save();
-        ctx.filter = "blur(34px) saturate(0.92) brightness(0.72)";
-        ctx.drawImage(img, coverX - 80, coverY - 80, coverW + 160, coverH + 160);
-        ctx.restore();
-
-        const wash = ctx.createLinearGradient(0, 0, BANNER_W, 0);
-        wash.addColorStop(0, "rgba(18,22,18,0.52)");
-        wash.addColorStop(0.18, "rgba(28,31,27,0.24)");
-        wash.addColorStop(0.5, "rgba(255,255,255,0.03)");
-        wash.addColorStop(0.82, "rgba(28,31,27,0.24)");
-        wash.addColorStop(1, "rgba(18,22,18,0.52)");
-        ctx.fillStyle = wash;
-        ctx.fillRect(0, 0, BANNER_W, BANNER_H);
-
-        const centerMaxW = Math.min(760, BANNER_W * 0.42);
-        const centerMaxH = BANNER_H * 0.9;
-        const containScale = Math.min(centerMaxW / img.width, centerMaxH / img.height);
-        const drawW = Math.round(img.width * containScale);
-        const drawH = Math.round(img.height * containScale);
-        const x0 = Math.round((BANNER_W - drawW) / 2);
-        const y0 = Math.round((BANNER_H - drawH) / 2);
-
-        const sharp = document.createElement("canvas");
-        sharp.width = BANNER_W; sharp.height = BANNER_H;
-        const sctx = sharp.getContext("2d");
-        if (sctx) {
-          sctx.imageSmoothingQuality = "high";
-          sctx.drawImage(img, x0, y0, drawW, drawH);
-
-          const mask = document.createElement("canvas");
-          mask.width = BANNER_W; mask.height = BANNER_H;
-          const mctx = mask.getContext("2d");
-          if (mctx) {
-            const feather = Math.min(96, Math.max(34, Math.floor(drawW * 0.16)));
-            const alphaX = mctx.createLinearGradient(x0, 0, x0 + drawW, 0);
-            alphaX.addColorStop(0, "rgba(0,0,0,0)");
-            alphaX.addColorStop(Math.min(0.5, feather / drawW), "rgba(0,0,0,1)");
-            alphaX.addColorStop(Math.max(0.5, 1 - feather / drawW), "rgba(0,0,0,1)");
-            alphaX.addColorStop(1, "rgba(0,0,0,0)");
-            mctx.fillStyle = alphaX;
-            mctx.fillRect(x0, y0, drawW, drawH);
-
-            const alphaY = mctx.createLinearGradient(0, y0, 0, y0 + drawH);
-            alphaY.addColorStop(0, "rgba(0,0,0,0)");
-            alphaY.addColorStop(Math.min(0.5, feather / drawH), "rgba(0,0,0,1)");
-            alphaY.addColorStop(Math.max(0.5, 1 - feather / drawH), "rgba(0,0,0,1)");
-            alphaY.addColorStop(1, "rgba(0,0,0,0)");
-            mctx.globalCompositeOperation = "source-in";
-            mctx.fillStyle = alphaY;
-            mctx.fillRect(x0, y0, drawW, drawH);
-
-            sctx.globalCompositeOperation = "destination-in";
-            sctx.drawImage(mask, 0, 0);
-            sctx.globalCompositeOperation = "source-over";
-          }
-          ctx.drawImage(sharp, 0, 0);
-        }
-
-        let out = canvas.toDataURL("image/jpeg", 0.9);
-        if (out.length > MAX_IMAGE_DATA_URL_LENGTH) out = canvas.toDataURL("image/jpeg", 0.82);
-        if (out.length > MAX_IMAGE_DATA_URL_LENGTH) out = canvas.toDataURL("image/jpeg", 0.74);
-        resolve(out.length <= MAX_IMAGE_DATA_URL_LENGTH ? out : src);
-      };
-      img.onerror = () => resolve(src);
-      img.src = src;
-    });
-  }
-
   function handleImagem(file: File) {
     if (!file.type.startsWith("image/")) { toast("Envie uma imagem (PNG, JPG...)", "warning"); return; }
-    if (file.size > MAX_IMAGE_BYTES) { toast("Imagem muito grande (máx 5MB)", "warning"); return; }
+    if (file.size > MAX_IMAGE_BYTES) { toast("Imagem muito grande (máx 2MB)", "warning"); return; }
     const reader = new FileReader();
-    reader.onload = async e => {
-      const src = e.target?.result as string ?? "";
-      const expandida = await expandirImagem(src);
-      setImagem(expandida);
-      setImagemNome(file.name);
-    };
+    reader.onload = e => { setImagem(e.target?.result as string ?? ""); setImagemNome(file.name); };
     reader.readAsDataURL(file);
   }
 
