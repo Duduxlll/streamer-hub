@@ -18,6 +18,7 @@ export default function CriarSorteioPage() {
   const [criando, setCriando] = useState(false);
   const [imagem, setImagem] = useState("");
   const [imagemNome, setImagemNome] = useState("");
+  const [ajustando, setAjustando] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   function handleImagem(file: File) {
@@ -26,6 +27,49 @@ export default function CriarSorteioPage() {
     const reader = new FileReader();
     reader.onload = e => { setImagem(e.target?.result as string ?? ""); setImagemNome(file.name); };
     reader.readAsDataURL(file);
+  }
+
+  // Apenas reduz o tamanho do arquivo (largura máx. 2000) para caber no banco — não altera o conteúdo.
+  function comprimirParaBanco(src: string): Promise<string> {
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 2000;
+        const scale = img.width > maxW ? maxW / img.width : 1;
+        const w = Math.round(img.width * scale), h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(src);
+        ctx.imageSmoothingQuality = "high";
+        ctx.drawImage(img, 0, 0, w, h);
+        let out = canvas.toDataURL("image/jpeg", 0.88);
+        if (out.length > 2_800_000) out = canvas.toDataURL("image/jpeg", 0.78);
+        resolve(out.length <= 2_800_000 ? out : src);
+      };
+      img.onerror = () => resolve(src);
+      img.src = src;
+    });
+  }
+
+  async function ajustarComIA() {
+    if (!imagem || ajustando) return;
+    setAjustando(true);
+    try {
+      const res = await fetch("/api/sorteio/ai-expand", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imagem }),
+      });
+      const data = await res.json();
+      if (!res.ok) { toast(data.error || "Erro ao ajustar com IA", "error"); return; }
+      const final = await comprimirParaBanco(data.imagem);
+      setImagem(final);
+      toast("Imagem ajustada pela IA! ✨", "success");
+    } catch {
+      toast("Erro de conexão ao ajustar a imagem.", "error");
+    } finally {
+      setAjustando(false);
+    }
   }
 
   useEffect(() => {
@@ -184,8 +228,22 @@ export default function CriarSorteioPage() {
                       className="px-2.5 py-1 rounded-lg text-[11px] font-black text-red-300" style={{ background: "rgba(0,0,0,0.6)", border: "1px solid rgba(248,113,113,0.3)" }}>Remover</button>
                   </div>
                   <p className="absolute bottom-1.5 left-2 text-[10px] text-white/70 truncate max-w-[70%]">{imagemNome}</p>
+                  {ajustando && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2" style={{ background: "rgba(7,10,8,0.78)" }}>
+                      <div className="w-7 h-7 rounded-full border-2 border-[#ffba00] border-t-transparent animate-spin" />
+                      <span className="text-xs font-black text-[#ffba00]">Ajustando com IA...</span>
+                    </div>
+                  )}
                 </div>
               )}
+              {imagem && (
+                <button type="button" onClick={ajustarComIA} disabled={ajustando}
+                  className="w-full mt-2 flex items-center justify-center gap-2 py-2.5 rounded-xl font-black text-xs transition-all hover:scale-[1.01] active:scale-100 disabled:opacity-50"
+                  style={{ background: "linear-gradient(135deg, rgba(168,85,247,0.18), rgba(99,102,241,0.18))", border: "1px solid rgba(168,85,247,0.4)", color: "#c4b5fd" }}>
+                  ✨ {ajustando ? "Ajustando..." : "Ajustar com IA (expandir fundo)"}
+                </button>
+              )}
+              <p className="text-[11px] text-gray-600 mt-1.5">Ideal: imagem deitada em <strong className="text-gray-500">2000×400</strong>. Ou clique em <strong className="text-gray-500">Ajustar com IA</strong> pra expandir o fundo automaticamente.</p>
             </div>
             <button onClick={criar} disabled={criando || !form.titulo.trim()}
               className="w-full py-3.5 rounded-xl font-black text-sm text-black disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-100"
