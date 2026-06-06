@@ -34,6 +34,8 @@ interface ConfigStatus {
     hasClientId: boolean;
     hasClientSecret: boolean;
     hasWebhookSecret: boolean;
+    webhookSecretWeak: boolean;
+    webhookSecretMinLength: number;
     webhookUrl: string;
     callbackUrl: string;
   };
@@ -262,6 +264,14 @@ function Divider() {
   return <div style={{ height: 1, background: "rgba(255,255,255,0.06)" }} />;
 }
 
+function generateLivePixSecret() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  let raw = "";
+  bytes.forEach((byte) => { raw += String.fromCharCode(byte); });
+  return btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
 
 function AccordionSection({
   icon, title, subtitle, ok, open, onToggle, children,
@@ -459,7 +469,11 @@ export default function AdminConfigPage() {
       const body: Record<string, string> = { type: "livepix" };
       if (liveClientId.trim())     body.clientId     = liveClientId.trim();
       if (liveClientSecret.trim()) body.clientSecret = liveClientSecret.trim();
-      body.webhookSecret = liveWebhookSec.trim();
+      if (liveWebhookSec.trim()) {
+        body.webhookSecret = liveWebhookSec.trim();
+      } else if (!config?.livepix.hasWebhookSecret) {
+        body.webhookSecretAction = "generate";
+      }
 
       const res = await fetch("/api/config", {
         method: "POST",
@@ -468,11 +482,13 @@ export default function AdminConfigPage() {
       });
 
       if (res.ok) {
-        const d = await res.json().catch(() => ({})) as { test?: { ok: boolean; error?: string } };
+        const d = await res.json().catch(() => ({})) as { test?: { ok: boolean; error?: string }; generatedWebhookSecret?: boolean };
         const test = d.test ?? null;
         setLiveTest(test);
         if (test && !test.ok) {
           showMsg(setLiveMsg, liveMsgTimer, { ok: false, text: `Salvo, mas a conexão falhou: ${test.error}` });
+        } else if (d.generatedWebhookSecret) {
+          showMsg(setLiveMsg, liveMsgTimer, { ok: true, text: "Secret seguro gerado. Copie a nova URL do Webhook e salve no LivePix." });
         } else {
           showMsg(setLiveMsg, liveMsgTimer, { ok: true, text: "Credenciais salvas e conexão funcionando! ✓" });
         }
@@ -595,7 +611,7 @@ export default function AdminConfigPage() {
                 <Step n={2}>No painel, vá em <strong className="text-gray-300">Configurações → API → Aplicações</strong> e clique em <strong className="text-gray-300">Nova Aplicação</strong>.</Step>
                 <Step n={3}>Nomeie sua aplicação e informe a <strong className="text-gray-300">URL de Callback</strong> abaixo como Redirect URI.</Step>
                 <Step n={4}>Copie o <strong className="text-gray-300">Client ID</strong> e o <strong className="text-gray-300">Client Secret</strong> gerados e cole nos campos abaixo.</Step>
-                <Step n={5}>Na seção de Webhooks, informe a <strong className="text-gray-300">URL do Webhook</strong> abaixo. Se definir um Webhook Secret, a URL já será gerada com ele automaticamente.</Step>
+                <Step n={5}>Na seção <strong className="text-gray-300">URL de notificações</strong>, cole a <strong className="text-gray-300">URL do Webhook</strong> abaixo. Use sempre a URL com secret.</Step>
               </div>
             </div>
 
@@ -612,6 +628,19 @@ export default function AdminConfigPage() {
                   label={`URL do Webhook${config?.livepix.hasWebhookSecret || liveWebhookSec.trim() ? " (com secret)" : ""}`}
                   url={livepixWebhookDisplay}
                 />
+              )}
+              {config && (!config.livepix.hasWebhookSecret || config.livepix.webhookSecretWeak) && (
+                <div
+                  className="px-4 py-3 rounded-xl text-xs"
+                  style={{ background: "rgba(234,179,8,0.08)", border: "1px solid rgba(234,179,8,0.24)" }}
+                >
+                  <p className="font-black text-yellow-300 mb-1">Webhook precisa de secret forte</p>
+                  <p className="text-yellow-100/75 leading-relaxed">
+                    {!config.livepix.hasWebhookSecret
+                      ? "Gere um secret seguro, salve e copie a URL nova para o campo URL de notificações no LivePix."
+                      : `O secret atual está curto. Gere um novo com pelo menos ${config.livepix.webhookSecretMinLength} caracteres, salve e atualize a URL no LivePix.`}
+                  </p>
+                </div>
               )}
             </div>
 
@@ -636,14 +665,37 @@ export default function AdminConfigPage() {
                 configured={config?.livepix.hasClientSecret}
               />
               <FieldInput
-                label="Webhook Secret (opcional, mas recomendado)"
+                label="Webhook Secret (obrigatório para notificações)"
                 placeholder="Uma senha para validar as notificações recebidas"
                 value={liveWebhookSec}
                 onChange={setLiveWebhookSec}
                 type="password"
                 configured={config?.livepix.hasWebhookSecret}
-                hint="Ao digitar o secret aqui, a URL do Webhook acima é atualizada em tempo real — copie antes de salvar."
+                hint="Ao digitar ou gerar um secret aqui, a URL do Webhook acima é atualizada em tempo real."
               />
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLiveWebhookSec(generateLivePixSecret())}
+                  className="px-3 py-2 rounded-lg text-[11px] font-black transition-all hover:scale-[1.02] active:scale-100"
+                  style={{ background: "rgba(255,186,0,0.12)", color: "#ffba00", border: "1px solid rgba(255,186,0,0.28)" }}
+                >
+                  {config?.livepix.hasWebhookSecret ? "Gerar novo secret" : "Gerar secret seguro"}
+                </button>
+                {liveWebhookSec && (
+                  <button
+                    type="button"
+                    onClick={() => setLiveWebhookSec("")}
+                    className="px-3 py-2 rounded-lg text-[11px] font-black transition-colors hover:text-gray-300"
+                    style={{ background: "rgba(255,255,255,0.04)", color: "#6b7280", border: "1px solid rgba(255,255,255,0.08)" }}
+                  >
+                    Usar secret salvo
+                  </button>
+                )}
+              </div>
+              <p className="text-[10px] text-gray-600 leading-relaxed">
+                Se essa URL antiga já apareceu em print, live ou log, gere um novo secret, salve e atualize a URL no painel do LivePix.
+              </p>
             </div>
 
             {liveMsg && (

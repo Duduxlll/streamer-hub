@@ -1,9 +1,12 @@
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
 import { getCredentials } from "./credentials";
 
 interface TokenCache {
   access_token: string;
   expires_at: number;
 }
+
+export const LIVEPIX_WEBHOOK_SECRET_MIN_LENGTH = 32;
 
 declare global {
   var __livepix_token: TokenCache | undefined;
@@ -121,6 +124,22 @@ export async function getMessage(messageId: string): Promise<LivePixMessage> {
 
 export async function getWebhookSecret(): Promise<string> {
   const creds = await getCredentials();
-  if (creds.livepix.webhookSecret) return creds.livepix.webhookSecret;
-  return process.env.LIVEPIX_WEBHOOK_SECRET ?? "";
+  if (creds.livepix.webhookSecret) return creds.livepix.webhookSecret.trim();
+  return (process.env.LIVEPIX_WEBHOOK_SECRET ?? "").trim();
+}
+
+export function generateWebhookSecret() {
+  return randomBytes(32).toString("base64url");
+}
+
+export function isWebhookSecretStrong(secret: string) {
+  return secret.trim().length >= LIVEPIX_WEBHOOK_SECRET_MIN_LENGTH;
+}
+
+export function safeCompareWebhookSecret(candidate: string, secret: string) {
+  if (!candidate || !secret) return false;
+
+  const candidateHash = createHash("sha256").update(candidate, "utf8").digest();
+  const secretHash = createHash("sha256").update(secret, "utf8").digest();
+  return timingSafeEqual(candidateHash, secretHash);
 }

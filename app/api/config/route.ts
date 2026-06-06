@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isVerifiedAdminSession } from "@/lib/admin-identity";
-import { isConfigured as livepixConfigured, testConnection as testLivepix } from "@/lib/livepix";
+import {
+  LIVEPIX_WEBHOOK_SECRET_MIN_LENGTH,
+  generateWebhookSecret,
+  isConfigured as livepixConfigured,
+  isWebhookSecretStrong,
+  testConnection as testLivepix,
+} from "@/lib/livepix";
 import {
   clearGgpixWebhookStatus,
   getGgpixServerIp,
@@ -54,6 +60,7 @@ export async function GET(req: NextRequest) {
 
   const hasWebhookSecret = !!(creds.livepix.webhookSecret || process.env.LIVEPIX_WEBHOOK_SECRET);
   const webhookSecret    = creds.livepix.webhookSecret || process.env.LIVEPIX_WEBHOOK_SECRET || "";
+  const webhookSecretWeak = hasWebhookSecret && !isWebhookSecretStrong(webhookSecret);
 
   const livepixWebhookBase = `${siteUrl}/api/livepix/webhook`;
   const livepixWebhookUrl  = webhookSecret
@@ -78,6 +85,8 @@ export async function GET(req: NextRequest) {
       hasClientId:      !!(creds.livepix.clientId    || process.env.LIVEPIX_CLIENT_ID),
       hasClientSecret:  !!(creds.livepix.clientSecret || process.env.LIVEPIX_CLIENT_SECRET),
       hasWebhookSecret,
+      webhookSecretWeak,
+      webhookSecretMinLength: LIVEPIX_WEBHOOK_SECRET_MIN_LENGTH,
       webhookUrl:       livepixWebhookUrl,
       callbackUrl:      `${siteUrl}/api/livepix/callback`,
     },
@@ -103,13 +112,34 @@ export async function POST(req: NextRequest) {
     const patch: Partial<{ clientId: string; clientSecret: string; webhookSecret: string }> = {};
     if (typeof body.clientId      === "string" && body.clientId.trim())      patch.clientId      = body.clientId.trim();
     if (typeof body.clientSecret  === "string" && body.clientSecret.trim())  patch.clientSecret  = body.clientSecret.trim();
-    if (typeof body.webhookSecret === "string")                               patch.webhookSecret = body.webhookSecret.trim();
+
+    const existingCreds = await getCredentials();
+    const existingWebhookSecret = existingCreds.livepix.webhookSecret || process.env.LIVEPIX_WEBHOOK_SECRET || "";
+    const webhookSecretAction = typeof body.webhookSecretAction === "string" ? body.webhookSecretAction : "";
+    const providedWebhookSecret = typeof body.webhookSecret === "string" ? body.webhookSecret.trim() : "";
+    let generatedWebhookSecret = false;
+
+    if (webhookSecretAction === "generate") {
+      patch.webhookSecret = generateWebhookSecret();
+      generatedWebhookSecret = true;
+    } else if (providedWebhookSecret) {
+      if (!isWebhookSecretStrong(providedWebhookSecret)) {
+        return NextResponse.json({
+          error: `Webhook Secret precisa ter pelo menos ${LIVEPIX_WEBHOOK_SECRET_MIN_LENGTH} caracteres`,
+        }, { status: 400 });
+      }
+      patch.webhookSecret = providedWebhookSecret;
+    } else if (!existingWebhookSecret) {
+      patch.webhookSecret = generateWebhookSecret();
+      generatedWebhookSecret = true;
+    }
+
     await patchLivePix(patch);
     globalThis.__livepix_token = undefined;
     await addLog({ admin: session!.user!.twitchLogin!, action: "config_livepix", detail: "Credenciais LivePix atualizadas" });
 
     const test = await testLivepix();
-    return NextResponse.json({ ok: true, test }, { headers: NO_CACHE });
+    return NextResponse.json({ ok: true, test, generatedWebhookSecret }, { headers: NO_CACHE });
   }
 
   if (type === "ggpix") {

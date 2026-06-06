@@ -129,7 +129,7 @@ Login é por conta própria (**e-mail + senha**), via NextAuth com provider Cred
 
 Os admins são definidos pelos nicks da Twitch em `NEXT_PUBLIC_ADMIN_LOGINS` (fallback em `lib/admins.ts`). Quem cria a conta com um nick admin vira admin automaticamente. Só o admin acessa as rotas `/admin/*`; quem não é admin é redirecionado.
 
-O webhook do LivePix valida a assinatura com `crypto.timingSafeEqual` e tem idempotência por `messageId`, então requisições duplicadas são ignoradas sem problema.
+O webhook do LivePix usa um secret forte na URL de notificações e compara esse secret com verificação segura. Também tem idempotência por `messageId`, então requisições duplicadas são ignoradas sem problema.
 
 ---
 

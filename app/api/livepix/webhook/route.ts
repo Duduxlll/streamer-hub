@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { timingSafeEqual } from "crypto";
-import { getMessage, getWebhookSecret } from "@/lib/livepix";
+import { getMessage, getWebhookSecret, safeCompareWebhookSecret } from "@/lib/livepix";
 import { getJackpot, setJackpot, type JackpotJogador } from "@/lib/jackpotStore";
 import { dbGet, dbSet } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
@@ -13,19 +15,15 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const secret = await getWebhookSecret();
 
-  if (secret) {
-    const candidate = req.nextUrl.searchParams.get("secret") ?? "";
-    let ok = false;
-    try {
-      if (candidate.length > 0 && candidate.length === secret.length) {
-        ok = timingSafeEqual(Buffer.from(candidate), Buffer.from(secret));
-      }
-    } catch { ok = false; }
+  if (!secret) {
+    console.error("[livepix/webhook] ❌ Webhook Secret não configurado");
+    return NextResponse.json({ error: "Webhook not configured" }, { status: 503 });
+  }
 
-    if (!ok) {
-      console.error("[livepix/webhook] ❌ Secret inválido ou ausente na URL");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const candidate = req.nextUrl.searchParams.get("secret") ?? "";
+  if (!safeCompareWebhookSecret(candidate, secret)) {
+    console.error("[livepix/webhook] ❌ Secret inválido ou ausente na URL");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body: { event?: string; resource?: { id?: string; type?: string; reference?: string } };
