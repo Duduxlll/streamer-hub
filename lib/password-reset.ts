@@ -79,3 +79,8 @@ export async function verifyResetCode(
   await dbSet(key(email), null);
   return { ok: true };
 }
+
+export async function clearResetCode(email: string): Promise<void> {
+  if (!email) return;
+  try { await dbSet(key(email), null); } catch {}
+}

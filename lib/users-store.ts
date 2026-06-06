@@ -297,6 +297,16 @@ export async function setPassword(login: string, novaSenha: string): Promise<boo
   return true;
 }
 
+export async function excluirUser(twitchLogin: string): Promise<SiteUser | null> {
+  const list = await loadUsers();
+  const idx = list.findIndex(u => u.twitchLogin === twitchLogin.toLowerCase());
+  if (idx < 0) return null;
+  const [removido] = list.splice(idx, 1);
+  await saveUsers(list);
+  await rebuildBlocklists(list);
+  return removido;
+}
+
 export async function removerContasSemSenha(): Promise<number> {
   const list = await loadUsers();
   const restantes = list.filter(u => !!u.passwordHash);

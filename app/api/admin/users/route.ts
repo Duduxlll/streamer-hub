@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import {
-  getUsers, banUser, desbanirUser, suspenderUser, dessuspenderUser, setPassword, removerContasSemSenha,
+  getUsers, banUser, desbanirUser, suspenderUser, dessuspenderUser, setPassword, removerContasSemSenha, excluirUser,
 } from "@/lib/users-store";
 import { addLog } from "@/lib/security-log";
-import { getHistoricoGorjeta } from "@/lib/gorjeta-store";
+import { getHistoricoGorjeta, excluirCadastroUsuario } from "@/lib/gorjeta-store";
+import { clearResetCode } from "@/lib/password-reset";
 
 export const dynamic = "force-dynamic";
 const NO_CACHE = { "Cache-Control": "no-store, no-cache, must-revalidate" };
@@ -86,6 +87,18 @@ export async function POST(req: NextRequest) {
     const ok = await dessuspenderUser(twitchLogin);
     if (ok) await addLog({ admin: adminLogin, action: "unsuspend", target: twitchLogin });
     return NextResponse.json({ ok }, { headers: NO_CACHE });
+  }
+
+  if (action === "excluir") {
+    if (twitchLogin.toLowerCase() === adminLogin.toLowerCase()) {
+      return NextResponse.json({ ok: false, error: "Você não pode excluir a sua própria conta." }, { status: 400 });
+    }
+    const removido = await excluirUser(twitchLogin);
+    if (!removido) return NextResponse.json({ ok: false, error: "Usuário não encontrado" }, { status: 404, headers: NO_CACHE });
+    await excluirCadastroUsuario(twitchLogin);
+    if (removido.email) await clearResetCode(removido.email);
+    await addLog({ admin: adminLogin, action: "excluir_conta", target: twitchLogin, detail: "Conta excluída permanentemente (dados + print + cadastro de gorjeta)" });
+    return NextResponse.json({ ok: true }, { headers: NO_CACHE });
   }
 
   return NextResponse.json({ error: "Ação inválida" }, { status: 400 });

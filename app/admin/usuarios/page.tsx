@@ -108,6 +108,7 @@ type ModalState =
   | { type: "suspend"; user: SiteUser }
   | { type: "history"; user: SiteUser }
   | { type: "reset";   user: SiteUser }
+  | { type: "excluir"; user: SiteUser }
   | null;
 
 function ResetSenhaModal({ user, onClose, onSave }: { user: SiteUser; onClose: () => void; onSave: (novaSenha: string) => Promise<void> }) {
@@ -235,7 +236,51 @@ function SuspendModal({ user, onClose, onSave }: { user: SiteUser; onClose: () =
   );
 }
 
-type AcaoUser = "ban" | "unban" | "suspend" | "unsuspend" | "history" | "reset";
+type AcaoUser = "ban" | "unban" | "suspend" | "unsuspend" | "history" | "reset" | "excluir";
+
+function ExcluirContaModal({ user, onClose, onConfirm }: {
+  user: SiteUser; onClose: () => void; onConfirm: () => Promise<void>;
+}) {
+  const [txt, setTxt] = useState("");
+  const [saving, setSaving] = useState(false);
+  const confirmavel = txt.trim().toLowerCase() === user.twitchLogin.toLowerCase();
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+      <div className="w-full max-w-sm rounded-2xl overflow-hidden" onClick={e => e.stopPropagation()}
+        style={{ background: "rgba(15,6,6,0.98)", border: "1px solid rgba(239,68,68,0.35)", boxShadow: "0 20px 60px rgba(0,0,0,0.6)" }}>
+        <div className="px-5 py-4 border-b border-white/5">
+          <p className="text-sm font-black text-red-400">⚠️ Excluir conta permanentemente</p>
+          <p className="text-[11px] text-gray-500 mt-0.5">@{user.twitchLogin}</p>
+        </div>
+        <div className="px-5 py-4 space-y-3">
+          <p className="text-[12px] text-gray-400 leading-relaxed">
+            Isso apaga <strong className="text-white">tudo</strong> dessa conta de forma <strong className="text-red-300">permanente</strong>:
+            dados pessoais, CPF, cadastro de gorjeta e o print do depósito. <strong className="text-white">Não dá pra desfazer.</strong>
+          </p>
+          <div>
+            <p className="text-[11px] text-gray-500 mb-1.5">Para confirmar, digite <strong className="text-red-300">{user.twitchLogin}</strong>:</p>
+            <input type="text" value={txt} onChange={e => setTxt(e.target.value)} autoCapitalize="none" autoCorrect="off"
+              placeholder={user.twitchLogin}
+              className="w-full px-3 py-2.5 rounded-xl text-sm text-white placeholder-gray-700 outline-none"
+              style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.25)" }} />
+          </div>
+          <div className="flex gap-2">
+            <button onClick={onClose}
+              className="flex-1 py-2.5 rounded-xl text-xs font-black transition-all hover:bg-white/5"
+              style={{ color: "#6b7280", border: "1px solid rgba(255,255,255,0.07)" }}>
+              Cancelar
+            </button>
+            <button disabled={!confirmavel || saving} onClick={async () => { setSaving(true); await onConfirm(); }}
+              className="flex-1 py-2.5 rounded-xl text-xs font-black text-white disabled:opacity-40 transition-all hover:scale-[1.02]"
+              style={{ background: "rgba(239,68,68,0.85)", border: "1px solid rgba(239,68,68,0.5)" }}>
+              {saving ? "Excluindo..." : "🗑️ Excluir tudo"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function GerenciarModal({ user, onClose, onAction, busy = false }: {
   user: SiteUser; onClose: () => void;
@@ -325,6 +370,13 @@ function GerenciarModal({ user, onClose, onAction, busy = false }: {
               ✓ <span>{busy ? "..." : "Desbanir"}</span>
             </button>
           )}
+
+          <div className="pt-2 mt-1 border-t border-white/[0.06]">
+            <button onClick={() => onAction("excluir")} className={`${btnBase} hover:scale-[1.02]`}
+              style={{ color: "#f87171", border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.04)" }}>
+              🗑️ <span>Excluir conta permanentemente</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -411,6 +463,7 @@ export default function UsuariosPage() {
     if (type === "reset")   { setModal({ type: "reset",   user: u }); return; }
     if (type === "ban")     { setModal({ type: "ban",     user: u }); return; }
     if (type === "suspend") { setModal({ type: "suspend", user: u }); return; }
+    if (type === "excluir") { setModal({ type: "excluir", user: u }); return; }
     if (type === "unban") {
       setBusyUser(u.twitchId);
       apiAction("unban", u.twitchLogin)
@@ -469,6 +522,13 @@ export default function UsuariosPage() {
         <ResetSenhaModal user={modal.user} onClose={() => setModal(null)} onSave={async (novaSenha) => {
           const ok = await apiAction("reset-senha", modal.user.twitchLogin, { novaSenha });
           flash(ok ? `Senha de @${modal.user.twitchLogin} redefinida.` : "Erro ao redefinir senha", ok);
+          setModal(null);
+        }} />
+      )}
+      {modal?.type === "excluir" && (
+        <ExcluirContaModal user={modal.user} onClose={() => setModal(null)} onConfirm={async () => {
+          const ok = await apiAction("excluir", modal.user.twitchLogin);
+          flash(ok ? `Conta de @${modal.user.twitchLogin} excluída permanentemente.` : "Erro ao excluir a conta", ok);
           setModal(null);
         }} />
       )}

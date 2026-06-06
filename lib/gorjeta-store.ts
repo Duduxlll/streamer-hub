@@ -157,6 +157,18 @@ export async function getCadastro(username: string): Promise<CadastroGorjeta | n
   return list.find(c => c.username.toLowerCase() === username.toLowerCase()) ?? null;
 }
 
+// Remove permanentemente o(s) cadastro(s) de gorjeta do usuário e os prints associados.
+export async function excluirCadastroUsuario(username: string): Promise<boolean> {
+  const list = await loadCadastros();
+  const u = username.toLowerCase();
+  const alvos = list.filter(c => c.username.toLowerCase() === u);
+  if (alvos.length === 0) return false;
+  const restantes = list.filter(c => c.username.toLowerCase() !== u);
+  await saveCadastros(restantes);
+  for (const c of alvos) { try { await dbSet(screenshotKey(c.id), null); } catch {} }
+  return true;
+}
+
 export async function cadastrar(params: {
   username: string; displayName: string;
   tipoChave: TipoChavePix; chave: string;
