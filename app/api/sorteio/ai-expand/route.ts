@@ -10,7 +10,7 @@ const PROMPT =
   "Expand and extend this image into a wide horizontal banner. Only continue the existing " +
   "background outward to fill the new empty space on the left and right sides. Do NOT add, remove, " +
   "invent or change any object — keep the main subject exactly as it is, centered and untouched. " +
-  "The extended background must blend seamlessly and look photorealistic.";
+  "The extended background must blend seamlessly and look photorealistic. Final result must be an ultra-wide horizontal banner.";
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -37,7 +37,8 @@ export async function POST(req: NextRequest) {
         model: "grok-imagine-image-quality",
         prompt: PROMPT,
         image: { url: imagem, type: "image_url" },
-        aspect_ratio: "21:9",
+        aspect_ratio: "20:9",
+        resolution: "2k",
         n: 1,
         response_format: "b64_json",
       }),
