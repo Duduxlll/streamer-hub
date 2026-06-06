@@ -107,20 +107,24 @@ function SorteioCard({ s }: { s: Sorteio }) {
               className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               style={{ filter: "blur(26px) brightness(0.4) saturate(1.15)", transform: "scale(1.18)" }}
             />
-            {/* imagem inteira, nítida, centralizada — nunca corta o produto */}
+            {/* imagem inteira, nítida, centralizada — bordas suavizadas (fundem no fundo) */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`/api/sorteio?imagem=${s.id}`}
               alt="" aria-hidden
               className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+              style={{
+                WebkitMaskImage: "radial-gradient(ellipse 78% 82% at 50% 50%, #000 42%, rgba(0,0,0,0.4) 72%, transparent 95%)",
+                maskImage: "radial-gradient(ellipse 78% 82% at 50% 50%, #000 42%, rgba(0,0,0,0.4) 72%, transparent 95%)",
+              }}
             />
-            {/* vinheta: pontas escuras (texto à esquerda e cronômetro à direita ficam legíveis) */}
+            {/* vinheta suave: pontas escurecidas (texto à esquerda e cronômetro à direita legíveis) */}
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(90deg, rgba(7,10,8,0.92) 0%, rgba(7,10,8,0.12) 33%, rgba(7,10,8,0.12) 67%, rgba(7,10,8,0.92) 100%)," +
-                  "radial-gradient(ellipse 72% 130% at 50% 50%, transparent 42%, rgba(7,10,8,0.55) 100%)",
+                  "linear-gradient(90deg, rgba(7,10,8,0.9) 0%, rgba(7,10,8,0.1) 36%, rgba(7,10,8,0.1) 64%, rgba(7,10,8,0.9) 100%)," +
+                  "radial-gradient(ellipse 78% 135% at 50% 50%, transparent 50%, rgba(7,10,8,0.45) 100%)",
               }}
             />
           </>

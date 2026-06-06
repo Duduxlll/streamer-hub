@@ -169,11 +169,15 @@ export default function CriarSorteioPage() {
                   <span className="text-gray-500">Clique para enviar uma imagem (fica de fundo no card)</span>
                 </button>
               ) : (
-                <div className="relative rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,186,0,0.25)" }}>
+                <div className="relative rounded-xl overflow-hidden h-44" style={{ border: "1px solid rgba(255,186,0,0.25)", background: "rgba(8,20,13,0.95)" }}>
+                  {/* prévia idêntica ao card: fundo borrado + imagem nítida com bordas suavizadas */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={imagem} alt="preview" className="w-full max-h-44 object-cover" />
-                  {/* prévia da vinheta que vai aparecer no card */}
-                  <div className="absolute inset-0 pointer-events-none" style={{ background: "radial-gradient(ellipse 62% 135% at 50% 50%, rgba(7,10,8,0.04) 0%, rgba(7,10,8,0.5) 52%, rgba(7,10,8,0.96) 100%), linear-gradient(90deg, rgba(7,10,8,0.85) 0%, rgba(7,10,8,0.12) 34%, rgba(7,10,8,0.12) 66%, rgba(7,10,8,0.85) 100%)" }} />
+                  <img src={imagem} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                    style={{ filter: "blur(26px) brightness(0.4) saturate(1.15)", transform: "scale(1.18)" }} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imagem} alt="preview" className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                    style={{ WebkitMaskImage: "radial-gradient(ellipse 78% 82% at 50% 50%, #000 42%, rgba(0,0,0,0.4) 72%, transparent 95%)", maskImage: "radial-gradient(ellipse 78% 82% at 50% 50%, #000 42%, rgba(0,0,0,0.4) 72%, transparent 95%)" }} />
+                  <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, rgba(7,10,8,0.9) 0%, rgba(7,10,8,0.1) 36%, rgba(7,10,8,0.1) 64%, rgba(7,10,8,0.9) 100%), radial-gradient(ellipse 78% 135% at 50% 50%, transparent 50%, rgba(7,10,8,0.45) 100%)" }} />
                   <div className="absolute top-2 right-2 flex gap-2">
                     <button type="button" onClick={() => fileRef.current?.click()}
                       className="px-2.5 py-1 rounded-lg text-[11px] font-black text-white" style={{ background: "rgba(0,0,0,0.6)", border: "1px solid rgba(255,255,255,0.2)" }}>Trocar</button>
