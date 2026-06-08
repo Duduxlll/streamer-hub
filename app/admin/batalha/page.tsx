@@ -228,10 +228,11 @@ function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: Bat
   const { rounds } = batalha;
   const { w, h } = canvasSize(batalha.vagas);
   const totalRounds = rounds.length;
+  const contentW = w + 56; // respiro à direita para a Final não ficar colada/cortada na borda
 
   return (
     <div className="w-full overflow-x-auto overflow-y-hidden pb-4">
-      <div className="relative mb-4 flex-shrink-0" style={{ width: w, height: 20 }}>
+      <div className="relative mb-4 flex-shrink-0" style={{ width: contentW, height: 20 }}>
         {rounds.map((_, r) => {
           const x = r * (MW + CW);
           return (
@@ -246,7 +247,7 @@ function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: Bat
         })}
       </div>
 
-      <div className="relative flex-shrink-0" style={{ width: w, height: h }}>
+      <div className="relative flex-shrink-0" style={{ width: contentW, height: h }}>
         <Connectors rounds={rounds} />
         {rounds.flatMap((round, r) =>
           round.map((match, m) => {
@@ -594,7 +595,7 @@ export default function AdminBatalhaPage() {
 
             </div>
 
-            <div className="rounded-2xl border border-white/10 p-4 sm:p-6 max-w-full overflow-hidden" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
+            <div className="rounded-2xl border border-white/10 p-4 sm:p-6 max-w-full" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
               <Bracket batalha={batalha} onAction={post} />
             </div>
 
