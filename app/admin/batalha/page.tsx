@@ -84,12 +84,14 @@ function SlotRow({
   onWin,
   onJogo,
   mostrarInputs = false,
+  reservaCanto = false,
 }: {
   slot: BatalhaSlot;
   canWin: boolean;
   onWin: () => void;
   onJogo: (nome: string, valor: string) => void;
   mostrarInputs?: boolean;
+  reservaCanto?: boolean;
 }) {
   const [editNome,  setEditNome]  = useState(slot.jogoNome ?? "");
   const [editValor, setEditValor] = useState(
@@ -102,7 +104,7 @@ function SlotRow({
 
   return (
     <div className={`flex-1 min-h-0 px-3 flex flex-col justify-center gap-1.5 transition-all ${isLose ? "opacity-35" : ""}`}>
-      <div className="flex items-center gap-1.5">
+      <div className={`flex items-center gap-1.5 ${reservaCanto ? "pr-4" : ""}`}>
         {hasPlayer && slot.jogador!.image ? (
           <PlayerAvatar image={slot.jogador!.image} name={slot.jogador!.displayName} size={20} color={isWin ? "#22c55e" : "#22c55e"} />
         ) : (
@@ -217,12 +219,12 @@ function MatchCard({
         <button
           onClick={() => setEditando(e => !e)}
           title={editando ? "Fechar edição" : "Editar valores / corrigir vencedor"}
-          className="absolute top-1.5 right-1.5 z-10 w-6 h-6 rounded-md flex items-center justify-center text-[11px] transition-all hover:scale-110 active:scale-95"
+          className="absolute top-1 right-1 z-10 w-[15px] h-[15px] rounded flex items-center justify-center text-[9px] leading-none transition-all hover:scale-110 active:scale-95"
           style={editando
-            ? { background: "rgba(255,186,0,0.2)", border: "1px solid rgba(255,186,0,0.5)" }
-            : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+            ? { background: "rgba(255,186,0,0.22)", border: "1px solid rgba(255,186,0,0.5)", color: "#ffba00" }
+            : { background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "#9ca3af" }}
         >
-          {editando ? "✕" : "✏️"}
+          {editando ? "✕" : "✎"}
         </button>
       )}
 
@@ -230,6 +232,7 @@ function MatchCard({
         slot={match.slot1}
         canWin={canWin}
         mostrarInputs={mostrarInputs}
+        reservaCanto={decided && temAmbos}
         onWin={() => onAction({ action: "set-vencedor", roundIdx, matchIdx, winner: "slot1" })}
         onJogo={(n, v) => handleJogo("slot1", n, v)}
       />
