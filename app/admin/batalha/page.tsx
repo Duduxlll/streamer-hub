@@ -230,7 +230,7 @@ function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: Bat
   const totalRounds = rounds.length;
 
   return (
-    <div className="overflow-auto overscroll-contain pb-2">
+    <div className="overflow-x-auto overflow-y-hidden pb-4">
       <div className="relative mb-4 flex-shrink-0" style={{ width: w, height: 20 }}>
         {rounds.map((_, r) => {
           const x = r * (MW + CW);
