@@ -83,15 +83,13 @@ function SlotRow({
   canWin,
   onWin,
   onJogo,
-  corrigivel = false,
-  onCorrigir,
+  mostrarInputs = false,
 }: {
   slot: BatalhaSlot;
   canWin: boolean;
   onWin: () => void;
   onJogo: (nome: string, valor: string) => void;
-  corrigivel?: boolean;
-  onCorrigir?: () => void;
+  mostrarInputs?: boolean;
 }) {
   const [editNome,  setEditNome]  = useState(slot.jogoNome ?? "");
   const [editValor, setEditValor] = useState(
@@ -136,22 +134,11 @@ function SlotRow({
           <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-green-500/22 text-green-400 uppercase tracking-wide flex-shrink-0">WIN</span>
         )}
         {isLose && (
-          corrigivel && onCorrigir ? (
-            <button
-              onClick={onCorrigir}
-              title="Corrigir: tornar este o vencedor"
-              className="group/c text-[9px] font-black px-2 py-0.5 rounded-md border border-red-500/40 bg-red-500/12 text-red-500 hover:bg-green-500/20 hover:border-green-500/55 hover:text-green-400 active:scale-95 transition-all flex-shrink-0"
-            >
-              <span className="group-hover/c:hidden">LOSE</span>
-              <span className="hidden group-hover/c:inline">WIN ✓</span>
-            </button>
-          ) : (
-            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-red-500/15 text-red-500 uppercase tracking-wide flex-shrink-0">LOSE</span>
-          )
+          <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-red-500/15 text-red-500 uppercase tracking-wide flex-shrink-0">LOSE</span>
         )}
       </div>
 
-      {hasPlayer && !slot.resultado && (
+      {hasPlayer && mostrarInputs && (
         <div className="flex items-center gap-1.5 ml-6">
           <input
             type="text"
@@ -175,7 +162,7 @@ function SlotRow({
         </div>
       )}
 
-      {hasPlayer && slot.resultado && (slot.jogoNome || (slot.jogoValor != null && slot.jogoValor > 0)) && (
+      {hasPlayer && !mostrarInputs && slot.resultado && (slot.jogoNome || (slot.jogoValor != null && slot.jogoValor > 0)) && (
         <div className="flex items-center gap-2 ml-6">
           {slot.jogoNome && <span className="text-[10px] text-gray-500 truncate">{slot.jogoNome}</span>}
           {slot.jogoValor != null && slot.jogoValor > 0 && (
@@ -190,45 +177,61 @@ function SlotRow({
 }
 
 function MatchCard({
-  match, roundIdx, matchIdx, onAction, onCorrigir,
+  match, roundIdx, matchIdx, onAction,
 }: {
   match: BatalhaMatch;
   roundIdx: number;
   matchIdx: number;
   onAction: (body: BatalhaActionBody) => void | Promise<void>;
-  onCorrigir: (roundIdx: number, matchIdx: number, winner: "slot1" | "slot2") => void;
 }) {
+  const [editando, setEditando] = useState(false);
   const decided    = !!(match.slot1.resultado || match.slot2.resultado);
-  const canWin     = !decided && !!match.slot1.jogador && !!match.slot2.jogador;
-  const canCorrigir = decided && !!match.slot1.jogador && !!match.slot2.jogador;
+  const temAmbos   = !!match.slot1.jogador && !!match.slot2.jogador;
+  const canWin     = !decided && temAmbos;
   const isFinished = match.slot1.resultado === "win" || match.slot2.resultado === "win";
+  const mostrarInputs = temAmbos && (!decided || editando);
 
-  // Salva o jogo/valor e, se os DOIS slots já têm valor, declara o maior como vencedor
-  // automaticamente. Empate não decide (deixa pro admin clicar manualmente).
+  // Salva o jogo/valor e, quando os DOIS têm valor, define o vencedor pelo maior valor.
+  // Se o confronto já estava decidido (modo edição), corrige o vencedor e refaz a chave.
   async function handleJogo(slot: "slot1" | "slot2", nome: string, valorStr: string) {
     const valor = parseFloat(valorStr.replace(",", ".")) || 0;
     await onAction({ action: "set-jogo", roundIdx, matchIdx, slot, jogoNome: nome, jogoValor: valor });
     const v1 = slot === "slot1" ? valor : (match.slot1.jogoValor ?? 0);
     const v2 = slot === "slot2" ? valor : (match.slot2.jogoValor ?? 0);
-    if (canWin && v1 > 0 && v2 > 0 && v1 !== v2) {
-      await onAction({ action: "set-vencedor", roundIdx, matchIdx, winner: v1 > v2 ? "slot1" : "slot2" });
+    if (temAmbos && v1 > 0 && v2 > 0 && v1 !== v2) {
+      const winner = v1 > v2 ? "slot1" : "slot2";
+      await onAction({ action: decided ? "corrigir-vencedor" : "set-vencedor", roundIdx, matchIdx, winner });
+      setEditando(false);
     }
   }
 
   return (
     <div
-      className={`flex flex-col rounded-xl overflow-hidden border transition-all ${
+      className={`relative flex flex-col rounded-xl overflow-hidden border transition-all ${
         isFinished ? "border-white/10" : "border-white/18"
       }`}
       style={{ width: MW, height: MH, background: "rgba(6,18,11,0.97)", backdropFilter: "blur(8px)" }}
     >
+      {/* lapisinho: reabre os campos de valor para corrigir o vencedor */}
+      {decided && temAmbos && (
+        <button
+          onClick={() => setEditando(e => !e)}
+          title={editando ? "Fechar edição" : "Editar valores / corrigir vencedor"}
+          className="absolute top-1.5 right-1.5 z-10 w-6 h-6 rounded-md flex items-center justify-center text-[11px] transition-all hover:scale-110 active:scale-95"
+          style={editando
+            ? { background: "rgba(255,186,0,0.2)", border: "1px solid rgba(255,186,0,0.5)" }
+            : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
+        >
+          {editando ? "✕" : "✏️"}
+        </button>
+      )}
+
       <SlotRow
         slot={match.slot1}
         canWin={canWin}
+        mostrarInputs={mostrarInputs}
         onWin={() => onAction({ action: "set-vencedor", roundIdx, matchIdx, winner: "slot1" })}
         onJogo={(n, v) => handleJogo("slot1", n, v)}
-        corrigivel={canCorrigir}
-        onCorrigir={() => onCorrigir(roundIdx, matchIdx, "slot1")}
       />
 
       <div className="h-px bg-white/8 flex-shrink-0" />
@@ -236,19 +239,17 @@ function MatchCard({
       <SlotRow
         slot={match.slot2}
         canWin={canWin}
+        mostrarInputs={mostrarInputs}
         onWin={() => onAction({ action: "set-vencedor", roundIdx, matchIdx, winner: "slot2" })}
         onJogo={(n, v) => handleJogo("slot2", n, v)}
-        corrigivel={canCorrigir}
-        onCorrigir={() => onCorrigir(roundIdx, matchIdx, "slot2")}
       />
     </div>
   );
 }
 
-function Bracket({ batalha, onAction, onCorrigir }: {
+function Bracket({ batalha, onAction }: {
   batalha: Batalha;
   onAction: (body: BatalhaActionBody) => void | Promise<void>;
-  onCorrigir: (roundIdx: number, matchIdx: number, winner: "slot1" | "slot2") => void;
 }) {
   const { rounds } = batalha;
   const { w, h } = canvasSize(batalha.vagas);
@@ -284,7 +285,6 @@ function Bracket({ batalha, onAction, onCorrigir }: {
                   roundIdx={r}
                   matchIdx={m}
                   onAction={onAction}
-                  onCorrigir={onCorrigir}
                 />
               </div>
             );
@@ -368,16 +368,6 @@ export default function AdminBatalhaPage() {
     } catch {
       toast("Erro de conexão. Tente novamente.", "error");
     } finally { setLoading(false); }
-  }
-
-  async function corrigir(roundIdx: number, matchIdx: number, winner: "slot1" | "slot2") {
-    const ok = await confirm(
-      "Trocar o vencedor deste confronto? As partidas seguintes que dependiam dele serão refeitas.",
-      { confirmLabel: "Trocar vencedor" }
-    );
-    if (!ok) return;
-    await post({ action: "corrigir-vencedor", roundIdx, matchIdx, winner });
-    toast("Vencedor corrigido!", "success");
   }
 
   if (batalha?.status === "finalizada" && batalha.vencedorFinal && !verChave) {
@@ -632,7 +622,7 @@ export default function AdminBatalhaPage() {
             </div>
 
             <div className="rounded-2xl border border-white/10 p-4 sm:p-6 max-w-full" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
-              <Bracket batalha={batalha} onAction={post} onCorrigir={corrigir} />
+              <Bracket batalha={batalha} onAction={post} />
             </div>
 
             <p className="text-xs text-gray-700 mt-3">
