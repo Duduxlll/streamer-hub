@@ -230,7 +230,7 @@ function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: Bat
   const totalRounds = rounds.length;
 
   return (
-    <div className="overflow-x-auto overflow-y-hidden pb-4">
+    <div className="w-full overflow-x-auto overflow-y-hidden pb-4">
       <div className="relative mb-4 flex-shrink-0" style={{ width: w, height: 20 }}>
         {rounds.map((_, r) => {
           const x = r * (MW + CW);
@@ -385,9 +385,9 @@ export default function AdminBatalhaPage() {
 
 <div className="relative w-full max-w-[1600px] mx-auto px-4 sm:px-6 pt-12 pb-24">
 
-        <div className={`flex items-center justify-between flex-wrap gap-3 mb-6 ${
-          !batalha ? "max-w-lg mx-auto" :
-          batalha.status === "inscricao" ? "max-w-xl mx-auto" : ""
+        <div className={`flex items-center flex-wrap gap-3 mb-6 ${
+          !batalha ? "justify-between max-w-lg mx-auto" :
+          batalha.status === "inscricao" ? "justify-between max-w-xl mx-auto" : "justify-start"
         }`}>
           <div>
             <div>
@@ -594,7 +594,7 @@ export default function AdminBatalhaPage() {
 
             </div>
 
-            <div className="rounded-2xl border border-white/10 p-4 sm:p-6" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
+            <div className="rounded-2xl border border-white/10 p-4 sm:p-6 max-w-full overflow-hidden" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
               <Bracket batalha={batalha} onAction={post} />
             </div>
 
