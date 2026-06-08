@@ -144,6 +144,7 @@ function SlotRow({
             value={editNome}
             onChange={e => setEditNome(e.target.value)}
             onBlur={() => onJogo(editNome, editValor)}
+            onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
             className="flex-1 text-[10px] bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white placeholder-gray-700 focus:outline-none focus:border-white/28 transition-colors min-w-0"
           />
           <input
@@ -153,6 +154,7 @@ function SlotRow({
             value={editValor}
             onChange={e => setEditValor(e.target.value)}
             onBlur={() => onJogo(editNome, editValor)}
+            onKeyDown={e => { if (e.key === "Enter") e.currentTarget.blur(); }}
             className="w-[68px] flex-shrink-0 text-[10px] bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-green-300 placeholder-gray-700 focus:outline-none focus:border-green-500/40 transition-colors"
           />
         </div>
@@ -178,11 +180,23 @@ function MatchCard({
   match: BatalhaMatch;
   roundIdx: number;
   matchIdx: number;
-  onAction: (body: BatalhaActionBody) => void;
+  onAction: (body: BatalhaActionBody) => void | Promise<void>;
 }) {
   const decided    = !!(match.slot1.resultado || match.slot2.resultado);
   const canWin     = !decided && !!match.slot1.jogador && !!match.slot2.jogador;
   const isFinished = match.slot1.resultado === "win" || match.slot2.resultado === "win";
+
+  // Salva o jogo/valor e, se os DOIS slots já têm valor, declara o maior como vencedor
+  // automaticamente. Empate não decide (deixa pro admin clicar manualmente).
+  async function handleJogo(slot: "slot1" | "slot2", nome: string, valorStr: string) {
+    const valor = parseFloat(valorStr.replace(",", ".")) || 0;
+    await onAction({ action: "set-jogo", roundIdx, matchIdx, slot, jogoNome: nome, jogoValor: valor });
+    const v1 = slot === "slot1" ? valor : (match.slot1.jogoValor ?? 0);
+    const v2 = slot === "slot2" ? valor : (match.slot2.jogoValor ?? 0);
+    if (canWin && v1 > 0 && v2 > 0 && v1 !== v2) {
+      await onAction({ action: "set-vencedor", roundIdx, matchIdx, winner: v1 > v2 ? "slot1" : "slot2" });
+    }
+  }
 
   return (
     <div
@@ -195,7 +209,7 @@ function MatchCard({
         slot={match.slot1}
         canWin={canWin}
         onWin={() => onAction({ action: "set-vencedor", roundIdx, matchIdx, winner: "slot1" })}
-        onJogo={(n, v) => onAction({ action: "set-jogo", roundIdx, matchIdx, slot: "slot1", jogoNome: n, jogoValor: parseFloat(v.replace(",", ".")) || 0 })}
+        onJogo={(n, v) => handleJogo("slot1", n, v)}
       />
 
       <div className="h-px bg-white/8 flex-shrink-0" />
@@ -204,19 +218,19 @@ function MatchCard({
         slot={match.slot2}
         canWin={canWin}
         onWin={() => onAction({ action: "set-vencedor", roundIdx, matchIdx, winner: "slot2" })}
-        onJogo={(n, v) => onAction({ action: "set-jogo", roundIdx, matchIdx, slot: "slot2", jogoNome: n, jogoValor: parseFloat(v.replace(",", ".")) || 0 })}
+        onJogo={(n, v) => handleJogo("slot2", n, v)}
       />
     </div>
   );
 }
 
-function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: BatalhaActionBody) => void }) {
+function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: BatalhaActionBody) => void | Promise<void> }) {
   const { rounds } = batalha;
   const { w, h } = canvasSize(batalha.vagas);
   const totalRounds = rounds.length;
 
   return (
-    <div className="overflow-auto pb-2">
+    <div className="overflow-auto overscroll-contain pb-2">
       <div className="relative mb-4 flex-shrink-0" style={{ width: w, height: 20 }}>
         {rounds.map((_, r) => {
           const x = r * (MW + CW);
@@ -580,10 +594,8 @@ export default function AdminBatalhaPage() {
 
             </div>
 
-            <div className="overflow-x-auto max-w-full">
-              <div className="rounded-2xl border border-white/10 p-6 w-fit" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
-                <Bracket batalha={batalha} onAction={post} />
-              </div>
+            <div className="rounded-2xl border border-white/10 p-4 sm:p-6" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
+              <Bracket batalha={batalha} onAction={post} />
             </div>
 
             <p className="text-xs text-gray-700 mt-3">
