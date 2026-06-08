@@ -180,6 +180,45 @@ export async function setVencedor(
   return { ok: true, finalizado: _state.status === "finalizada" };
 }
 
+// Reseta o resultado de um match e, em cascata, desfaz tudo que dependia dele
+// (remove o vencedor que avançou e limpa os rounds seguintes). Mantém os jogadores e valores do match.
+function resetarMatchECascata(b: Batalha, roundIdx: number, matchIdx: number) {
+  const match = b.rounds[roundIdx]?.[matchIdx];
+  if (!match) return;
+  match.slot1.resultado = undefined;
+  match.slot2.resultado = undefined;
+
+  const nextR = roundIdx + 1;
+  if (nextR < b.rounds.length) {
+    const nextM = Math.floor(matchIdx / 2);
+    const nextSlot: "slot1" | "slot2" = matchIdx % 2 === 0 ? "slot1" : "slot2";
+    resetarMatchECascata(b, nextR, nextM);          // desfaz o que veio mais à frente
+    b.rounds[nextR][nextM][nextSlot] = {};          // remove o jogador que tinha avançado
+  } else {
+    b.vencedorFinal = undefined;
+    if (b.status === "finalizada") b.status = "ativa";
+  }
+}
+
+// Corrige/troca o vencedor de um confronto já decidido, refazendo a chave a partir dele.
+export async function corrigirVencedor(
+  roundIdx: number, matchIdx: number, winner: "slot1" | "slot2"
+): Promise<{ ok: boolean; finalizado?: boolean }> {
+  await ensureLoaded();
+  if (!_state) return { ok: false };
+  const match = _state.rounds[roundIdx]?.[matchIdx];
+  if (!match || !match.slot1.jogador || !match.slot2.jogador) return { ok: false };
+
+  resetarMatchECascata(_state, roundIdx, matchIdx);
+
+  const loser: "slot1" | "slot2" = winner === "slot1" ? "slot2" : "slot1";
+  match[winner].resultado = "win";
+  match[loser].resultado = "lose";
+  avancaVencedor(_state, roundIdx, matchIdx, winner);
+  await save();
+  return { ok: true, finalizado: _state.status === "finalizada" };
+}
+
 export async function finalizarBatalha(): Promise<void> {
   await ensureLoaded();
   _state = null;

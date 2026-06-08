@@ -83,11 +83,15 @@ function SlotRow({
   canWin,
   onWin,
   onJogo,
+  corrigivel = false,
+  onCorrigir,
 }: {
   slot: BatalhaSlot;
   canWin: boolean;
   onWin: () => void;
   onJogo: (nome: string, valor: string) => void;
+  corrigivel?: boolean;
+  onCorrigir?: () => void;
 }) {
   const [editNome,  setEditNome]  = useState(slot.jogoNome ?? "");
   const [editValor, setEditValor] = useState(
@@ -132,7 +136,18 @@ function SlotRow({
           <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-green-500/22 text-green-400 uppercase tracking-wide flex-shrink-0">WIN</span>
         )}
         {isLose && (
-          <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-red-500/15 text-red-500 uppercase tracking-wide flex-shrink-0">LOSE</span>
+          corrigivel && onCorrigir ? (
+            <button
+              onClick={onCorrigir}
+              title="Corrigir: tornar este o vencedor"
+              className="group/c text-[9px] font-black px-2 py-0.5 rounded-md border border-red-500/40 bg-red-500/12 text-red-500 hover:bg-green-500/20 hover:border-green-500/55 hover:text-green-400 active:scale-95 transition-all flex-shrink-0"
+            >
+              <span className="group-hover/c:hidden">LOSE</span>
+              <span className="hidden group-hover/c:inline">WIN ✓</span>
+            </button>
+          ) : (
+            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-red-500/15 text-red-500 uppercase tracking-wide flex-shrink-0">LOSE</span>
+          )
         )}
       </div>
 
@@ -175,15 +190,17 @@ function SlotRow({
 }
 
 function MatchCard({
-  match, roundIdx, matchIdx, onAction,
+  match, roundIdx, matchIdx, onAction, onCorrigir,
 }: {
   match: BatalhaMatch;
   roundIdx: number;
   matchIdx: number;
   onAction: (body: BatalhaActionBody) => void | Promise<void>;
+  onCorrigir: (roundIdx: number, matchIdx: number, winner: "slot1" | "slot2") => void;
 }) {
   const decided    = !!(match.slot1.resultado || match.slot2.resultado);
   const canWin     = !decided && !!match.slot1.jogador && !!match.slot2.jogador;
+  const canCorrigir = decided && !!match.slot1.jogador && !!match.slot2.jogador;
   const isFinished = match.slot1.resultado === "win" || match.slot2.resultado === "win";
 
   // Salva o jogo/valor e, se os DOIS slots já têm valor, declara o maior como vencedor
@@ -210,6 +227,8 @@ function MatchCard({
         canWin={canWin}
         onWin={() => onAction({ action: "set-vencedor", roundIdx, matchIdx, winner: "slot1" })}
         onJogo={(n, v) => handleJogo("slot1", n, v)}
+        corrigivel={canCorrigir}
+        onCorrigir={() => onCorrigir(roundIdx, matchIdx, "slot1")}
       />
 
       <div className="h-px bg-white/8 flex-shrink-0" />
@@ -219,12 +238,18 @@ function MatchCard({
         canWin={canWin}
         onWin={() => onAction({ action: "set-vencedor", roundIdx, matchIdx, winner: "slot2" })}
         onJogo={(n, v) => handleJogo("slot2", n, v)}
+        corrigivel={canCorrigir}
+        onCorrigir={() => onCorrigir(roundIdx, matchIdx, "slot2")}
       />
     </div>
   );
 }
 
-function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: BatalhaActionBody) => void | Promise<void> }) {
+function Bracket({ batalha, onAction, onCorrigir }: {
+  batalha: Batalha;
+  onAction: (body: BatalhaActionBody) => void | Promise<void>;
+  onCorrigir: (roundIdx: number, matchIdx: number, winner: "slot1" | "slot2") => void;
+}) {
   const { rounds } = batalha;
   const { w, h } = canvasSize(batalha.vagas);
   const totalRounds = rounds.length;
@@ -259,6 +284,7 @@ function Bracket({ batalha, onAction }: { batalha: Batalha; onAction: (body: Bat
                   roundIdx={r}
                   matchIdx={m}
                   onAction={onAction}
+                  onCorrigir={onCorrigir}
                 />
               </div>
             );
@@ -342,6 +368,16 @@ export default function AdminBatalhaPage() {
     } catch {
       toast("Erro de conexão. Tente novamente.", "error");
     } finally { setLoading(false); }
+  }
+
+  async function corrigir(roundIdx: number, matchIdx: number, winner: "slot1" | "slot2") {
+    const ok = await confirm(
+      "Trocar o vencedor deste confronto? As partidas seguintes que dependiam dele serão refeitas.",
+      { confirmLabel: "Trocar vencedor" }
+    );
+    if (!ok) return;
+    await post({ action: "corrigir-vencedor", roundIdx, matchIdx, winner });
+    toast("Vencedor corrigido!", "success");
   }
 
   if (batalha?.status === "finalizada" && batalha.vencedorFinal && !verChave) {
@@ -596,7 +632,7 @@ export default function AdminBatalhaPage() {
             </div>
 
             <div className="rounded-2xl border border-white/10 p-4 sm:p-6 max-w-full" style={{ background: "rgba(6,18,11,0.97)", backdropFilter: "blur(12px)" }}>
-              <Bracket batalha={batalha} onAction={post} />
+              <Bracket batalha={batalha} onAction={post} onCorrigir={corrigir} />
             </div>
 
             <p className="text-xs text-gray-700 mt-3">

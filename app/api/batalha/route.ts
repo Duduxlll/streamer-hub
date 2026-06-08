@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { isVerifiedAdminSession } from "@/lib/admin-identity";
 import {
   getBatalha, criarBatalha, iniciarBatalha,
-  setJogo, setVencedor, finalizarBatalha, entrarBatalha,
+  setJogo, setVencedor, corrigirVencedor, finalizarBatalha, entrarBatalha,
   type VagasOptions,
 } from "@/lib/batalhaStore";
 
@@ -44,6 +44,13 @@ export async function POST(req: NextRequest) {
     const { roundIdx, matchIdx, winner } = body;
     const result = await setVencedor(roundIdx, matchIdx, winner);
     if (!result.ok) return NextResponse.json({ error: "Não foi possível definir vencedor" }, { status: 400 });
+    return NextResponse.json(await getBatalha());
+  }
+
+  if (action === "corrigir-vencedor") {
+    const { roundIdx, matchIdx, winner } = body;
+    const result = await corrigirVencedor(roundIdx, matchIdx, winner);
+    if (!result.ok) return NextResponse.json({ error: "Não foi possível corrigir o vencedor" }, { status: 400 });
     return NextResponse.json(await getBatalha());
   }
 
