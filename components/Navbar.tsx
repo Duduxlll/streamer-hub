@@ -208,16 +208,37 @@ export default function Navbar() {
             )}
           </div>
 
-          <button
-            onClick={() => setOpen(!open)}
-            className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-[rgba(22,163,74,0.12)] transition-colors"
-          >
-            <div className="space-y-1.5">
-              <span className={`block h-0.5 w-6 bg-current transition-all duration-300 ${open ? "rotate-45 translate-y-2" : ""}`} />
-              <span className={`block h-0.5 w-6 bg-current transition-all duration-300 ${open ? "opacity-0 scale-x-0" : ""}`} />
-              <span className={`block h-0.5 w-6 bg-current transition-all duration-300 ${open ? "-rotate-45 -translate-y-2" : ""}`} />
-            </div>
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            {isLoading && (
+              <div className="w-5 h-5 rounded-full border-2 border-[#22c55e]/40 border-t-[#22c55e] animate-spin" />
+            )}
+            {!isLoading && !isLoggedIn && (
+              <Link
+                href="/login"
+                className="btn-twitch flex items-center px-4 py-1.5 rounded-full text-sm font-bold text-white"
+              >
+                Entrar
+              </Link>
+            )}
+            {!isLoading && isLoggedIn && session?.user && (
+              <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{ background: "rgba(34,197,94,0.2)", border: "1px solid rgba(34,197,94,0.4)" }}>
+                <span className="text-[11px] font-black text-[#4ade80] uppercase">
+                  {(session.user.twitchLogin ?? session.user.name ?? "U")[0]}
+                </span>
+              </div>
+            )}
+            <button
+              onClick={() => setOpen(!open)}
+              className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-[rgba(22,163,74,0.12)] transition-colors"
+            >
+              <div className="space-y-1.5">
+                <span className={`block h-0.5 w-6 bg-current transition-all duration-300 ${open ? "rotate-45 translate-y-2" : ""}`} />
+                <span className={`block h-0.5 w-6 bg-current transition-all duration-300 ${open ? "opacity-0 scale-x-0" : ""}`} />
+                <span className={`block h-0.5 w-6 bg-current transition-all duration-300 ${open ? "-rotate-45 -translate-y-2" : ""}`} />
+              </div>
+            </button>
+          </div>
         </div>
 
         {open && (
@@ -239,47 +260,28 @@ export default function Navbar() {
                 <NavLink href="/admin" label="Painel Admin" from="#ffba00" to="#ff8c00" alsoActiveOn={["/admin"]} />
               </div>
             )}
-            <a
-              href="https://twitch.tv/stainzincs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-green-300 hover:bg-[rgba(34,197,94,0.08)]"
-              onClick={() => setOpen(false)}
-            >
-              <TwitchIcon className="w-4 h-4 text-green-400" />
-              Twitch
-            </a>
-            <div className="pt-2 px-4">
-              {isLoggedIn && session.user ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 px-2 py-1.5">
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
-                      style={{ background: "rgba(34,197,94,0.5)" }}>
-                      <span className="text-[11px] font-bold text-white uppercase">
-                        {(session.user.twitchLogin ?? session.user.name ?? "U")[0]}
-                      </span>
-                    </div>
-                    <span className="text-sm font-semibold text-white">
-                      {session.user.twitchLogin ?? session.user.name}
+            {isLoggedIn && session?.user && (
+              <div className="mx-4 mt-1 pt-2 border-t border-white/5 space-y-2">
+                <div className="flex items-center gap-2 px-2 py-1.5">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ background: "rgba(34,197,94,0.2)", border: "1px solid rgba(34,197,94,0.35)" }}>
+                    <span className="text-[11px] font-black text-[#4ade80] uppercase">
+                      {(session.user.twitchLogin ?? session.user.name ?? "U")[0]}
                     </span>
                   </div>
-                  <button
-                    onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-bold text-red-400 border border-red-500/30 bg-red-500/8 hover:bg-red-500/15 transition-all"
-                  >
-                    Sair da conta
-                  </button>
+                  <span className="text-sm font-semibold text-white truncate">
+                    {session.user.twitchLogin ?? session.user.name}
+                  </span>
                 </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="btn-twitch flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-sm font-bold text-white"
-                  onClick={() => setOpen(false)}
+                <button
+                  onClick={() => { setOpen(false); signOut({ callbackUrl: "/" }); }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-bold text-red-400 border border-red-500/30 hover:bg-red-500/10 transition-all"
+                  style={{ background: "rgba(239,68,68,0.05)" }}
                 >
-                  Entrar
-                </Link>
-              )}
-            </div>
+                  Sair da conta
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

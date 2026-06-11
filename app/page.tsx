@@ -68,7 +68,7 @@ export default async function HomePage() {
                 href="https://twitch.tv/stainzincs"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#22c55e]/15 border border-[#22c55e]/40 hover:bg-[#22c55e]/25 hover:border-[#22c55e]/70 transition-all shadow-lg shadow-purple-950/30"
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-[#22c55e]/15 border border-[#22c55e]/40 hover:bg-[#22c55e]/25 hover:border-[#22c55e]/70 transition-all"
               >
                 <TwitchIcon className="w-5 h-5 text-[#22c55e]" />
               </a>
