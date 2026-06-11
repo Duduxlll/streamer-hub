@@ -209,12 +209,13 @@ export default function CadastroPage() {
             @keyframes jbShimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
           `}</style>
 
-          <div className="relative w-full sm:max-w-[380px] sm:mx-4 rounded-t-3xl sm:rounded-2xl overflow-hidden"
+          <div className="relative w-full sm:max-w-[380px] sm:mx-4 rounded-t-3xl sm:rounded-2xl overflow-hidden flex flex-col"
             style={{
               background: "linear-gradient(170deg, rgba(5,20,10,1) 0%, rgba(2,11,5,1) 100%)",
               border: "1px solid rgba(34,197,94,0.2)",
               boxShadow: "0 -8px 80px rgba(34,197,94,0.18), 0 0 0 1px rgba(34,197,94,0.04)",
               animation: "jbUp 0.42s cubic-bezier(0.16,1,0.3,1) both",
+              maxHeight: "90dvh",
             }}>
 
             {/* animated top glow line */}
@@ -228,12 +229,12 @@ export default function CadastroPage() {
               style={{ background: "radial-gradient(ellipse, rgba(34,197,94,0.35), transparent 70%)", filter: "blur(16px)" }} />
 
             {/* drag handle */}
-            <div className="flex justify-center pt-3 pb-1 sm:hidden">
+            <div className="flex justify-center pt-3 pb-1 sm:hidden flex-shrink-0">
               <div className="w-9 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }} />
             </div>
 
             {/* header */}
-            <div className="flex items-center justify-between px-5 pt-4 pb-3.5">
+            <div className="flex items-center justify-between px-5 pt-4 pb-3.5 flex-shrink-0">
               <div>
                 <p className="text-[15px] font-black text-white tracking-tight leading-tight">
                   Onde encontrar o histórico?
@@ -248,10 +249,10 @@ export default function CadastroPage() {
               </button>
             </div>
 
-            <div className="h-px mx-5" style={{ background: "linear-gradient(90deg, transparent, rgba(34,197,94,0.1), transparent)" }} />
+            <div className="h-px mx-5 flex-shrink-0" style={{ background: "linear-gradient(90deg, transparent, rgba(34,197,94,0.1), transparent)" }} />
 
             {/* timeline */}
-            <div className="px-5 py-4 overflow-y-auto" style={{ maxHeight: "min(420px, 55vh)", scrollbarWidth: "none" }}>
+            <div className="px-5 py-4 overflow-y-auto flex-1 min-h-0" style={{ scrollbarWidth: "none" }}>
               {([
                 {
                   label: "Acesse a JonBet pelo link do Stainzin",
@@ -314,7 +315,7 @@ export default function CadastroPage() {
             </div>
 
             {/* footer button */}
-            <div className="px-5 pb-7 pt-1">
+            <div className="px-5 pb-7 pt-1 flex-shrink-0">
               <div className="h-px mb-4" style={{ background: "linear-gradient(90deg, transparent, rgba(34,197,94,0.1), transparent)" }} />
               <a
                 href={JONBET_URL}
