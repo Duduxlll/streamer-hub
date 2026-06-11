@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { AuthShell, AuthHeader, AuthField, AuthInput, AuthButton, AuthAlert, Icons } from "@/components/auth-ui";
+import { JONBET_URL } from "@/lib/partner";
 
 const MAX_SCREENSHOT_BYTES = 5 * 1024 * 1024;
 
@@ -149,8 +150,43 @@ export default function CadastroPage() {
               <img src={screenshot} alt="preview" className="w-full max-h-40 object-cover" />
             </div>
           )}
-          <p className="text-[11px] text-gray-600 mt-1">Obrigatório para aprovação. Envie o print do seu histórico de depósito.</p>
         </AuthField>
+
+        <div className="auth-fade relative overflow-hidden rounded-xl" style={{ animationDelay: "255ms", border: "1px solid rgba(255,186,0,0.28)", background: "linear-gradient(135deg, rgba(20,14,2,0.98), rgba(28,20,4,0.98))", boxShadow: "0 2px 20px rgba(255,186,0,0.07)" }}>
+          <div className="absolute top-0 left-0 right-0 h-px"
+            style={{ background: "linear-gradient(90deg, transparent, rgba(255,186,0,0.45), transparent)" }} />
+          <div className="px-4 py-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="text-base">🎰</span>
+              <p className="text-[11px] font-black text-[#ffba00] uppercase tracking-wide">Obrigatório: cadastro pelo link do Stainzinho</p>
+            </div>
+            <p className="text-[11px] text-gray-400 leading-relaxed">
+              Para ter seu cadastro aprovado, você precisa ter se cadastrado na JonBet
+              pelo <strong className="text-gray-200">link oficial do Stainzinho</strong>.
+              Se ainda não se cadastrou, siga os passos:
+            </p>
+            <div className="space-y-1.5">
+              {[
+                { n: "1", text: <>Clique no botão abaixo para abrir a <strong className="text-gray-300">JonBet</strong></> },
+                { n: "2", text: <>No site da JonBet, clique em <strong className="text-gray-300">"Cadastre-se"</strong> no canto superior direito</> },
+                { n: "3", text: "Conclua seu cadastro e volte aqui para enviar o print do depósito" },
+              ].map(item => (
+                <div key={item.n} className="flex items-start gap-2">
+                  <span className="font-black text-[#ffba00] text-[11px] flex-shrink-0 mt-0.5">{item.n}.</span>
+                  <span className="text-[11px] text-gray-500 leading-snug">{item.text}</span>
+                </div>
+              ))}
+            </div>
+            <a
+              href={JONBET_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg font-black text-xs text-black transition-all hover:scale-[1.02] active:scale-95"
+              style={{ background: "linear-gradient(135deg,#ffe55a,#ffba00)", boxShadow: "0 3px 14px rgba(255,186,0,0.32)" }}>
+              🎰 Cadastrar na JonBet pelo link do Stainzinho →
+            </a>
+          </div>
+        </div>
 
         <label className="auth-fade flex items-start gap-2.5 cursor-pointer select-none" style={{ animationDelay: "270ms" }}>
           <input type="checkbox" checked={aceito} onChange={e => setAceito(e.target.checked)}
