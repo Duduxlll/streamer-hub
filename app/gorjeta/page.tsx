@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import type { CadastroGorjeta, SessaoGorjeta, TransacaoGorjeta } from "@/lib/gorjeta-store";
+import { JONBET_URL } from "@/lib/partner";
 
 const CSS = `
   @keyframes fadeInUp {
@@ -526,6 +527,39 @@ export default function GorjetaPage() {
                   </div>
                 )}
               </div>
+
+              <div className="relative overflow-hidden rounded-xl"
+                style={{
+                  background: "linear-gradient(135deg, rgba(20,14,2,0.95) 0%, rgba(30,20,0,0.95) 100%)",
+                  border: "1px solid rgba(255,186,0,0.3)",
+                  boxShadow: "0 2px 20px rgba(255,186,0,0.08)",
+                }}>
+                <div className="absolute top-0 left-0 right-0 h-px"
+                  style={{ background: "linear-gradient(90deg, transparent, rgba(255,186,0,0.5), transparent)" }} />
+                <div className="px-4 py-4 flex items-start gap-3">
+                  <span className="text-xl flex-shrink-0 mt-0.5">🎰</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-black text-[#ffba00] mb-1">Obrigatório: cadastro pelo link do Stainzinho</p>
+                    <p className="text-[11px] text-gray-400 leading-relaxed mb-3">
+                      Para ter seu cadastro aprovado, você precisa ter se cadastrado na JonBet
+                      pelo <strong className="text-gray-300">link oficial do Stainzinho</strong>.
+                      Se ainda não se cadastrou, faça agora:
+                    </p>
+                    <a
+                      href={JONBET_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-black text-xs text-black transition-all hover:scale-[1.04] active:scale-95"
+                      style={{
+                        background: "linear-gradient(135deg,#ffe55a,#ffba00)",
+                        boxShadow: "0 3px 14px rgba(255,186,0,0.35)",
+                      }}>
+                      Cadastrar na JonBet agora →
+                    </a>
+                  </div>
+                </div>
+              </div>
+
               {erro && <p className="text-sm text-red-400 font-bold">{erro}</p>}
               <button onClick={enviar} disabled={enviando}
                 className="w-full py-3 rounded-xl font-black text-sm text-black transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-50"
