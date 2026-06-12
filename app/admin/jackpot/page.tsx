@@ -26,10 +26,10 @@ function IdleRoleta({ jogadores }: { jogadores: Jackpot["jogadores"] }) {
         }
       `}</style>
       <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20">
-        <div className="w-0 h-0" style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: "8px solid rgba(245,158,11,0.4)" }} />
+        <div className="w-0 h-0" style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: "8px solid rgba(34,197,94,0.4)" }} />
       </div>
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20">
-        <div className="w-0 h-0" style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderBottom: "8px solid rgba(245,158,11,0.4)" }} />
+        <div className="w-0 h-0" style={{ borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderBottom: "8px solid rgba(34,197,94,0.4)" }} />
       </div>
       <div className="absolute inset-y-0 left-0 w-32 z-10 pointer-events-none"
         style={{ background: "linear-gradient(90deg,rgba(8,20,13,1) 0%,transparent 100%)" }} />
@@ -91,10 +91,10 @@ function SpinRoleta({ randomPool, target, onFinished }: {
   return (
     <div className="relative overflow-hidden" style={{ height: 110, background: "rgba(8,20,13,0.98)" }}>
       <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 transition-all duration-500">
-        <div className="w-0 h-0" style={{ borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderTop: `10px solid ${finalizado ? "#f59e0b" : "rgba(245,158,11,0.5)"}` }} />
+        <div className="w-0 h-0" style={{ borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderTop: `10px solid ${finalizado ? "#22c55e" : "rgba(34,197,94,0.5)"}` }} />
       </div>
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-20 transition-all duration-500">
-        <div className="w-0 h-0" style={{ borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderBottom: `10px solid ${finalizado ? "#f59e0b" : "rgba(245,158,11,0.5)"}` }} />
+        <div className="w-0 h-0" style={{ borderLeft: "8px solid transparent", borderRight: "8px solid transparent", borderBottom: `10px solid ${finalizado ? "#22c55e" : "rgba(34,197,94,0.5)"}` }} />
       </div>
       <div className="absolute inset-y-0 left-0 w-36 z-10 pointer-events-none"
         style={{ background: "linear-gradient(90deg,rgba(8,20,13,1) 0%,rgba(8,20,13,0.7) 65%,transparent 100%)" }} />
@@ -107,9 +107,9 @@ function SpinRoleta({ randomPool, target, onFinished }: {
             return (
               <div key={i} style={{
                 width: RW, height: 80, flexShrink: 0, borderRadius: 11, padding: "10px 14px",
-                background: isWinner ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${isWinner ? "rgba(245,158,11,0.55)" : "rgba(255,255,255,0.07)"}`,
-                boxShadow: isWinner ? "0 0 28px rgba(245,158,11,0.28)" : "none",
+                background: isWinner ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.04)",
+                border: `1px solid ${isWinner ? "rgba(34,197,94,0.55)" : "rgba(255,255,255,0.07)"}`,
+                boxShadow: isWinner ? "0 0 28px rgba(34,197,94,0.28)" : "none",
                 filter: isWinner ? "none" : "blur(1px) brightness(0.55)",
                 transition: "all 0.55s ease",
                 display: "flex", flexDirection: "column", justifyContent: "center",
@@ -129,12 +129,12 @@ function StatBox({ icon, label, value, color, highlight }: { icon: string; label
   return (
     <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl flex-1 min-w-[120px]"
       style={{
-        background: highlight ? "rgba(245,158,11,0.08)" : "rgba(255,255,255,0.03)",
-        border: `1px solid ${highlight ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.07)"}`,
-        boxShadow: highlight ? "0 0 24px rgba(245,158,11,0.08)" : "none",
+        background: highlight ? "rgba(34,197,94,0.08)" : "rgba(255,255,255,0.03)",
+        border: `1px solid ${highlight ? "rgba(34,197,94,0.25)" : "rgba(255,255,255,0.07)"}`,
+        boxShadow: highlight ? "0 0 24px rgba(34,197,94,0.08)" : "none",
       }}>
       <div className="w-9 h-9 rounded-xl flex items-center justify-center text-base flex-shrink-0"
-        style={{ background: highlight ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.05)", border: `1px solid ${highlight ? "rgba(245,158,11,0.3)" : "rgba(255,255,255,0.08)"}` }}>
+        style={{ background: highlight ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.05)", border: `1px solid ${highlight ? "rgba(34,197,94,0.3)" : "rgba(255,255,255,0.08)"}` }}>
         {icon}
       </div>
       <div className="min-w-0">
@@ -206,7 +206,7 @@ export default function AdminJackpotPage() {
   if (status === "loading" || carregando || !isAdmin(session?.user?.twitchLogin)) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#f59e0b] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -242,11 +242,11 @@ export default function AdminJackpotPage() {
         {ConfirmModal}
         <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24">
           <div className="flex items-center gap-3 mb-6">
-            <Link href="/admin/jackpot/historico" className="inline-flex items-center gap-1 text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
+            <Link href="/admin/jackpot/historico" className="inline-flex items-center gap-1 text-xs text-[#4ade80] hover:text-[#4ade80] transition-colors">🏆 Histórico</Link>
           </div>
           <div className="mb-5">
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
-              style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
+              style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }}>
               🎰 PAINEL ADMIN
             </span>
             <h1 className="text-3xl font-black text-white">Jackpot</h1>
@@ -258,14 +258,14 @@ export default function AdminJackpotPage() {
                 <label className="text-xs text-gray-500 mb-1.5 block">Nome da Batalha</label>
                 <input value={formNome} onChange={e => setFormNome(e.target.value)}
                   placeholder="Nome da batalha"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#f59e0b]/50 transition-colors" />
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#22c55e]/50 transition-colors" />
               </div>
               <div>
                 <label className="text-xs text-gray-500 mb-1.5 block">Valor de Entrada (R$)</label>
                 <input value={formValor} onChange={e => setFormValor(e.target.value)}
                   placeholder="Valor de entrada"
                   onBlur={() => setFormValor(v => fmtValor(v))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#f59e0b]/50 transition-colors" />
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-3 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#22c55e]/50 transition-colors" />
               </div>
             </div>
             <button
@@ -276,7 +276,7 @@ export default function AdminJackpotPage() {
               }}
               disabled={!formNome.trim() || loading}
               className="w-full py-3.5 rounded-xl font-black text-black text-sm disabled:opacity-40 transition-all hover:scale-[1.02]"
-              style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)" }}
+              style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}
             >
               {loading ? "Criando..." : "▶ Criar Jackpot"}
             </button>
@@ -301,11 +301,11 @@ export default function AdminJackpotPage() {
         {ConfirmModal}
         <div className="page-enter max-w-lg mx-auto px-4 sm:px-6 pt-14 pb-24 space-y-4">
           <div className="flex items-center gap-3 mb-2">
-            <Link href="/admin/jackpot/historico" className="text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
+            <Link href="/admin/jackpot/historico" className="text-xs text-[#4ade80] hover:text-[#4ade80] transition-colors">🏆 Histórico</Link>
           </div>
-          <div className="rounded-2xl border border-[#f59e0b]/40 p-8 text-center" style={{ background: "rgba(245,158,11,0.06)" }}>
+          <div className="rounded-2xl border border-[#22c55e]/40 p-8 text-center" style={{ background: "rgba(34,197,94,0.06)" }}>
             <p className="text-5xl mb-3">🏆</p>
-            <p className="text-[11px] font-black text-amber-500 uppercase tracking-widest mb-2">Campeão do Jackpot</p>
+            <p className="text-[11px] font-black text-[#4ade80] uppercase tracking-widest mb-2">Campeão do Jackpot</p>
             <h2 className="text-4xl font-black text-white mb-1">{jackpot.vencedor.nome}</h2>
             {jackpot.vencedor.jogo && <p className="text-sm font-black text-gray-400 mb-4">{jackpot.vencedor.jogo}</p>}
             <div className="space-y-3">
@@ -315,9 +315,9 @@ export default function AdminJackpotPage() {
               </div>
               {premioFinal > 0 && (
                 <div className="pt-3 border-t border-white/8">
-                  <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-0.5">Prêmio Total Ganho</p>
+                  <p className="text-[10px] font-black text-[#4ade80] uppercase tracking-widest mb-0.5">Prêmio Total Ganho</p>
                   <p className="text-4xl font-black" style={{
-                    background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+                    background: "linear-gradient(135deg, #4ade80, #22c55e)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                   }}>R$ {premioFinal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</p>
@@ -333,9 +333,9 @@ export default function AdminJackpotPage() {
             <div className="max-h-44 overflow-y-auto">
               {rankingSorted.map((j, i) => (
                 <div key={j.id} className="flex items-center gap-2.5 px-4 py-2.5 border-b border-white/5 last:border-0"
-                  style={{ background: i === 0 ? "rgba(245,158,11,0.05)" : "transparent" }}>
+                  style={{ background: i === 0 ? "rgba(34,197,94,0.05)" : "transparent" }}>
                   <span className="text-xs font-black flex-shrink-0 w-6 text-center"
-                    style={{ color: i === 0 ? "#f59e0b" : "#4b5563" }}>
+                    style={{ color: i === 0 ? "#22c55e" : "#4b5563" }}>
                     {i === 0 ? "🏆" : `${i + 1}º`}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -343,7 +343,7 @@ export default function AdminJackpotPage() {
                     {j.jogo && <p className="text-[10px] text-gray-700 truncate">{j.jogo}</p>}
                   </div>
                   <p className="font-black tabular-nums text-xs flex-shrink-0"
-                    style={{ color: i === 0 ? "#f59e0b" : j.valor !== null ? "#6b7280" : "#374151" }}>
+                    style={{ color: i === 0 ? "#22c55e" : j.valor !== null ? "#6b7280" : "#374151" }}>
                     {j.valor !== null ? `R$ ${j.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"}
                   </p>
                 </div>
@@ -359,7 +359,7 @@ export default function AdminJackpotPage() {
             }}
             disabled={loading}
             className="w-full py-3.5 rounded-xl font-black text-black text-sm disabled:opacity-40 transition-all hover:scale-[1.02]"
-            style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)" }}
+            style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}
           >✚ Nova Sessão</button>
         </div>
       </div>
@@ -376,10 +376,10 @@ export default function AdminJackpotPage() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5"
-                  style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
+                  style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }}>
                   🎰 PAINEL ADMIN
                 </span>
-                <Link href="/admin/jackpot/historico" className="text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
+                <Link href="/admin/jackpot/historico" className="text-xs text-[#4ade80] hover:text-[#4ade80] transition-colors">🏆 Histórico</Link>
               </div>
               <h1 className="text-2xl font-black text-white">{jackpot.nome}</h1>
             </div>
@@ -388,7 +388,7 @@ export default function AdminJackpotPage() {
                 {total} jogador{total !== 1 ? "es" : ""}
               </span>
               {jackpot.valorEntrada > 0 && (
-                <span className="text-xs font-bold px-3 py-1.5 rounded-full" style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.3)", color: "#f59e0b" }}>
+                <span className="text-xs font-bold px-3 py-1.5 rounded-full" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)", color: "#22c55e" }}>
                   Entrada: R$ {jackpot.valorEntrada.toLocaleString("pt-BR")}
                 </span>
               )}
@@ -409,11 +409,11 @@ export default function AdminJackpotPage() {
               <input value={pNome} onChange={e => setPNome(e.target.value)}
                 placeholder="Nome do jogador"
                 onKeyDown={e => e.key === "Enter" && document.getElementById("btn-add-jogador")?.click()}
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#f59e0b]/50 transition-colors" />
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#22c55e]/50 transition-colors" />
               <input value={pJogo} onChange={e => setPJogo(e.target.value)}
                 placeholder="Jogo"
                 onKeyDown={e => e.key === "Enter" && document.getElementById("btn-add-jogador")?.click()}
-                className="w-40 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#f59e0b]/50 transition-colors" />
+                className="w-40 bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#22c55e]/50 transition-colors" />
               <button
                 id="btn-add-jogador"
                 onClick={async () => {
@@ -423,7 +423,7 @@ export default function AdminJackpotPage() {
                 }}
                 disabled={!pNome.trim() || loading}
                 className="px-4 py-2.5 rounded-xl font-black text-black text-sm disabled:opacity-40 transition-all hover:scale-[1.02] flex-shrink-0"
-                style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)" }}
+                style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}
               >+ Add</button>
             </div>
           </div>
@@ -432,7 +432,7 @@ export default function AdminJackpotPage() {
             <div className="rounded-2xl border border-white/10 overflow-hidden" style={{ background: "rgba(8,20,13,0.97)", backdropFilter: "blur(12px)" }}>
               <div className="flex items-center justify-between px-5 py-3 border-b border-white/5">
                 <p className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Jogadores ({total})</p>
-                {custo > 0 && <p className="text-xs font-black text-amber-400">Custo total: R$ {custo.toLocaleString("pt-BR")}</p>}
+                {custo > 0 && <p className="text-xs font-black text-[#4ade80]">Custo total: R$ {custo.toLocaleString("pt-BR")}</p>}
               </div>
               <div className="divide-y divide-white/5 max-h-64 overflow-y-auto">
                 {jackpot.jogadores.map((j, i) => (
@@ -441,7 +441,7 @@ export default function AdminJackpotPage() {
                       <div className="flex items-center gap-2">
                         <input
                           value={editNome} onChange={e => setEditNome(e.target.value)}
-                          className="flex-1 bg-white/5 border border-[#f59e0b]/50 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none"
+                          className="flex-1 bg-white/5 border border-[#22c55e]/50 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none"
                           autoFocus
                         />
                         <input
@@ -456,7 +456,7 @@ export default function AdminJackpotPage() {
                             setEditingId(null);
                           }}
                           className="px-2.5 py-1.5 rounded-lg text-xs font-black text-black"
-                          style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}
+                          style={{ background: "linear-gradient(135deg,#4ade80,#22c55e)" }}
                         >✓</button>
                         <button onClick={() => setEditingId(null)} className="px-2.5 py-1.5 rounded-lg text-xs text-gray-500 hover:text-white transition-colors">✕</button>
                       </div>
@@ -469,7 +469,7 @@ export default function AdminJackpotPage() {
                         </div>
                         <button
                           onClick={() => { setEditingId(j.id); setEditNome(j.nome); setEditJogo(j.jogo); }}
-                          className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-600 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                          className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-600 hover:text-[#4ade80] hover:bg-green-500/10 transition-colors"
                           title="Editar"
                         >✏️</button>
                         <button
@@ -494,7 +494,7 @@ export default function AdminJackpotPage() {
             }}
             disabled={total < 2 || loading}
             className="w-full py-3.5 rounded-xl font-black text-black text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:scale-[1.02] disabled:hover:scale-100"
-            style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)" }}
+            style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}
           >
             {loading ? "Iniciando..." : `▶ Iniciar Jackpot (${total} jogadores)`}
           </button>
@@ -525,10 +525,10 @@ export default function AdminJackpotPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
               <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5"
-                style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-[#f59e0b] animate-pulse" />EM ANDAMENTO
+                style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />EM ANDAMENTO
               </span>
-              <Link href="/admin/jackpot/historico" className="text-xs text-amber-600 hover:text-amber-400 transition-colors">🏆 Histórico</Link>
+              <Link href="/admin/jackpot/historico" className="text-xs text-[#4ade80] hover:text-[#4ade80] transition-colors">🏆 Histórico</Link>
             </div>
             <h1 className="text-3xl font-black text-white truncate">{jackpot.nome}</h1>
           </div>
@@ -545,7 +545,7 @@ export default function AdminJackpotPage() {
 
         <div className="flex items-stretch gap-2.5 flex-wrap">
           <StatBox icon="🎮" label="Jogados" value={`${jogados}/${total}`} />
-          <StatBox icon="🏆" label="Prêmio Total" highlight value={premioTotal > 0 ? `R$ ${premioTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"} color="#f59e0b" />
+          <StatBox icon="🏆" label="Prêmio Total" highlight value={premioTotal > 0 ? `R$ ${premioTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"} color="#22c55e" />
           {jackpot.valorEntrada > 0 && <StatBox icon="🎟️" label="Entrada" value={`R$ ${jackpot.valorEntrada.toLocaleString("pt-BR")}`} />}
           {jackpot.valorEntrada > 0 && <StatBox icon="💰" label="Custo Total" value={`R$ ${custo.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`} />}
         </div>
@@ -553,7 +553,7 @@ export default function AdminJackpotPage() {
 
         <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
           <div className="h-full rounded-full transition-all duration-700"
-            style={{ width: `${progPct}%`, background: "linear-gradient(90deg,#f59e0b,#fbbf24)" }} />
+            style={{ width: `${progPct}%`, background: "linear-gradient(90deg,#22c55e,#4ade80)" }} />
         </div>
 
 
@@ -567,8 +567,8 @@ export default function AdminJackpotPage() {
           className="rounded-2xl border overflow-hidden"
           style={{
             background: "rgba(8,20,13,0.98)",
-            borderColor: spinning ? "rgba(245,158,11,0.35)" : !waitingToSpin && jogadorAtual ? "rgba(34,197,94,0.3)" : "rgba(255,255,255,0.08)",
-            boxShadow: spinning ? "0 0 40px rgba(245,158,11,0.12)" : "none",
+            borderColor: spinning ? "rgba(34,197,94,0.35)" : !waitingToSpin && jogadorAtual ? "rgba(34,197,94,0.3)" : "rgba(255,255,255,0.08)",
+            boxShadow: spinning ? "0 0 40px rgba(34,197,94,0.12)" : "none",
             transition: "all 0.4s ease",
           }}
         >
@@ -588,7 +588,7 @@ export default function AdminJackpotPage() {
           {waitingToSpin && !spinning && (
             <div
               className="border-t px-6 py-8 flex flex-col items-center gap-5"
-              style={{ borderColor: "rgba(245,158,11,0.12)" }}
+              style={{ borderColor: "rgba(34,197,94,0.12)" }}
             >
               <p className="text-xs font-black text-gray-600 uppercase tracking-widest text-center">
                 {jackpot.jogadorAtualIdx === 0
@@ -599,8 +599,8 @@ export default function AdminJackpotPage() {
                 onClick={() => setSpinning(true)}
                 className="group relative flex items-center gap-3 px-14 py-4 rounded-2xl font-black text-black text-xl transition-all hover:scale-[1.06] active:scale-[0.97]"
                 style={{
-                  background: "linear-gradient(135deg, #fbbf24, #f59e0b)",
-                  boxShadow: "0 0 50px rgba(245,158,11,0.5), 0 8px 32px rgba(0,0,0,0.35)",
+                  background: "linear-gradient(135deg, #4ade80, #22c55e)",
+                  boxShadow: "0 0 50px rgba(34,197,94,0.5), 0 8px 32px rgba(0,0,0,0.35)",
                 }}
               >
                 🎰 GIRAR
@@ -610,9 +610,9 @@ export default function AdminJackpotPage() {
           {spinning && (
             <div
               className="border-t px-6 py-4 text-center"
-              style={{ borderColor: "rgba(245,158,11,0.15)" }}
+              style={{ borderColor: "rgba(34,197,94,0.15)" }}
             >
-              <p className="text-sm font-black text-amber-400 uppercase tracking-widest animate-pulse">
+              <p className="text-sm font-black text-[#4ade80] uppercase tracking-widest animate-pulse">
                 ✦ Sorteando próximo jogador... ✦
               </p>
             </div>
@@ -711,7 +711,7 @@ export default function AdminJackpotPage() {
               <button
                 onClick={() => { setAddingInRun(v => !v); setRunNome(""); setRunJogo(""); }}
                 className="w-6 h-6 rounded-lg flex items-center justify-center font-black text-lg transition-all hover:scale-110"
-                style={{ background: addingInRun ? "rgba(245,158,11,0.15)" : "rgba(255,255,255,0.06)", color: addingInRun ? "#f59e0b" : "#6b7280", border: `1px solid ${addingInRun ? "rgba(245,158,11,0.4)" : "rgba(255,255,255,0.08)"}` }}
+                style={{ background: addingInRun ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.06)", color: addingInRun ? "#22c55e" : "#6b7280", border: `1px solid ${addingInRun ? "rgba(34,197,94,0.4)" : "rgba(255,255,255,0.08)"}` }}
                 title="Adicionar jogador"
               >+</button>
             </div>
@@ -722,11 +722,11 @@ export default function AdminJackpotPage() {
                   placeholder="Nome do jogador"
                   autoFocus
                   onKeyDown={e => e.key === "Enter" && document.getElementById("btn-add-run")?.click()}
-                  className="flex-1 bg-white/5 border border-[#f59e0b]/40 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#f59e0b]/70 transition-colors" />
+                  className="flex-1 bg-white/5 border border-[#22c55e]/40 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#22c55e]/70 transition-colors" />
                 <input value={runJogo} onChange={e => setRunJogo(e.target.value)}
                   placeholder="Jogo"
                   onKeyDown={e => e.key === "Enter" && document.getElementById("btn-add-run")?.click()}
-                  className="w-28 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#f59e0b]/50 transition-colors" />
+                  className="w-28 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm placeholder-gray-700 focus:outline-none focus:border-[#22c55e]/50 transition-colors" />
                 <button
                   id="btn-add-run"
                   onClick={async () => {
@@ -736,7 +736,7 @@ export default function AdminJackpotPage() {
                   }}
                   disabled={!runNome.trim() || loading}
                   className="px-3 py-2 rounded-xl font-black text-black text-sm disabled:opacity-40 flex-shrink-0"
-                  style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}
+                  style={{ background: "linear-gradient(135deg,#4ade80,#22c55e)" }}
                 >✓</button>
               </div>
             )}
@@ -750,14 +750,14 @@ export default function AdminJackpotPage() {
                   return (
                     <div key={j.id}>
                       {editingId === j.id ? (
-                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "rgba(245,158,11,0.05)", border: "1px solid rgba(245,158,11,0.2)" }}>
+                        <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "rgba(34,197,94,0.05)", border: "1px solid rgba(34,197,94,0.2)" }}>
                           <input value={editNome} onChange={e => setEditNome(e.target.value)}
-                            className="flex-1 bg-white/5 border border-[#f59e0b]/50 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none" autoFocus />
+                            className="flex-1 bg-white/5 border border-[#22c55e]/50 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none" autoFocus />
                           <input value={editJogo} onChange={e => setEditJogo(e.target.value)}
                             placeholder="Jogo"
                             className="w-24 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none" />
                           <button onClick={async () => { if (!editNome.trim()) return; const res = await post({ action: "edit-jogador", id: j.id, nome: editNome, jogo: editJogo }); if (res) { toast("Editado!", "success"); setEditingId(null); } }}
-                            className="px-2 py-1.5 rounded-lg text-xs font-black text-black" style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}>✓</button>
+                            className="px-2 py-1.5 rounded-lg text-xs font-black text-black" style={{ background: "linear-gradient(135deg,#4ade80,#22c55e)" }}>✓</button>
                           <button onClick={() => setEditingId(null)} className="text-gray-600 hover:text-white text-xs transition-colors">✕</button>
                         </div>
                       ) : (
@@ -779,7 +779,7 @@ export default function AdminJackpotPage() {
                             : (
                               <div className="flex items-center gap-1 flex-shrink-0">
                                 <button onClick={() => { setEditingId(j.id); setEditNome(j.nome); setEditJogo(j.jogo); }}
-                                  className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-600 hover:text-amber-400 hover:bg-amber-500/10 transition-colors text-xs"
+                                  className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-600 hover:text-[#4ade80] hover:bg-green-500/10 transition-colors text-xs"
                                   title="Editar">✏️</button>
                                 <button onClick={() => post({ action: "remove-jogador", id: j.id })}
                                   className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-colors text-xs"
@@ -806,8 +806,8 @@ export default function AdminJackpotPage() {
               {sorted.map((j, i) => (
                 <div key={j.id} className="flex items-center gap-2.5 px-3 py-2 rounded-xl"
                   style={{
-                    background: i === 0 ? "rgba(245,158,11,0.08)" : "rgba(255,255,255,0.03)",
-                    border: `1px solid ${i === 0 ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.05)"}`,
+                    background: i === 0 ? "rgba(34,197,94,0.08)" : "rgba(255,255,255,0.03)",
+                    border: `1px solid ${i === 0 ? "rgba(34,197,94,0.25)" : "rgba(255,255,255,0.05)"}`,
                   }}>
                   {i === 0 && <span className="text-xs flex-shrink-0">🏆</span>}
                   <div className="flex-1 min-w-0">
@@ -818,7 +818,7 @@ export default function AdminJackpotPage() {
                     <div className="flex items-center gap-1.5 flex-shrink-0">
                       <input
                         value={editValor} onChange={e => setEditValor(e.target.value)}
-                        className="w-24 bg-white/5 border border-[#f59e0b]/50 rounded-lg px-2 py-1 text-white text-xs focus:outline-none"
+                        className="w-24 bg-white/5 border border-[#22c55e]/50 rounded-lg px-2 py-1 text-white text-xs focus:outline-none"
                         placeholder="0,00"
                         autoFocus
                       />
@@ -828,18 +828,18 @@ export default function AdminJackpotPage() {
                           setEditValorId(null);
                         }}
                         className="px-2 py-1 rounded-lg text-[10px] font-black text-black"
-                        style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}
+                        style={{ background: "linear-gradient(135deg,#4ade80,#22c55e)" }}
                       >✓</button>
                       <button onClick={() => setEditValorId(null)} className="text-gray-600 hover:text-white text-xs transition-colors">✕</button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <p className="font-black tabular-nums text-sm" style={{ color: i === 0 ? "#f59e0b" : "#22c55e" }}>
+                      <p className="font-black tabular-nums text-sm" style={{ color: i === 0 ? "#22c55e" : "#22c55e" }}>
                         R$ {j.valor!.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                       </p>
                       <button
                         onClick={() => { setEditValorId(j.id); setEditValor(String(j.valor)); }}
-                        className="text-gray-600 hover:text-amber-400 transition-colors text-xs"
+                        className="text-gray-600 hover:text-[#4ade80] transition-colors text-xs"
                         title="Editar valor"
                       >✏️</button>
                     </div>

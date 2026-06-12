@@ -23,14 +23,14 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
 
   return (
     <div className="rounded-2xl overflow-hidden transition-all"
-      style={{ background: "rgba(8,20,13,0.97)", border: "1px solid rgba(245,158,11,0.15)", backdropFilter: "blur(12px)" }}>
+      style={{ background: "rgba(8,20,13,0.97)", border: "1px solid rgba(34,197,94,0.15)", backdropFilter: "blur(12px)" }}>
 
       <button
         onClick={() => setExpanded(e => !e)}
         className="w-full px-5 py-4 flex items-center gap-4 text-left hover:bg-white/[0.02] transition-colors"
       >
         <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs text-black flex-shrink-0"
-          style={{ background: "linear-gradient(135deg,#fbbf24,#f59e0b)" }}>
+          style={{ background: "linear-gradient(135deg,#4ade80,#22c55e)" }}>
           #{num}
         </div>
         <div className="flex-1 min-w-0">
@@ -50,7 +50,7 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
           )}
           <div className="text-center">
             <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Prêmio</p>
-            <p className="text-sm font-black" style={{ color: "#f59e0b" }}>R$ {fmtBRL(item.premioTotal)}</p>
+            <p className="text-sm font-black" style={{ color: "#22c55e" }}>R$ {fmtBRL(item.premioTotal)}</p>
           </div>
         </div>
         {item.vencedor && (
@@ -58,7 +58,7 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
             <span className="text-base">🏆</span>
             <div className="min-w-0">
               <p className="text-xs font-black text-white truncate">{item.vencedor.nome}</p>
-              <p className="text-[10px] text-amber-400 font-black">R$ {fmtBRL(item.vencedor.valor ?? 0)}</p>
+              <p className="text-[10px] text-[#4ade80] font-black">R$ {fmtBRL(item.vencedor.valor ?? 0)}</p>
             </div>
           </div>
         )}
@@ -78,7 +78,7 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
         )}
         <div className="text-center flex-1">
           <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Prêmio</p>
-          <p className="text-sm font-black" style={{ color: "#f59e0b" }}>R$ {fmtBRL(item.premioTotal)}</p>
+          <p className="text-sm font-black" style={{ color: "#22c55e" }}>R$ {fmtBRL(item.premioTotal)}</p>
         </div>
       </div>
 
@@ -86,19 +86,19 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
         <div className="border-t border-white/5">
           {item.vencedor && (
             <div className="px-5 py-4 flex items-center gap-4"
-              style={{ background: "rgba(245,158,11,0.05)", borderBottom: "1px solid rgba(245,158,11,0.12)" }}>
+              style={{ background: "rgba(34,197,94,0.05)", borderBottom: "1px solid rgba(34,197,94,0.12)" }}>
               <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
-                style={{ background: "rgba(245,158,11,0.12)", border: "1px solid rgba(245,158,11,0.3)" }}>
+                style={{ background: "rgba(34,197,94,0.12)", border: "1px solid rgba(34,197,94,0.3)" }}>
                 🏆
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-black text-amber-500 uppercase tracking-widest mb-0.5">Campeão</p>
+                <p className="text-[10px] font-black text-[#4ade80] uppercase tracking-widest mb-0.5">Campeão</p>
                 <p className="text-lg font-black text-white truncate">{item.vencedor.nome}</p>
                 {item.vencedor.jogo && <p className="text-xs text-gray-500 truncate">{item.vencedor.jogo}</p>}
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="text-[9px] font-black text-gray-600 uppercase tracking-widest mb-0.5">Bônus</p>
-                <p className="text-xl font-black" style={{ color: "#f59e0b" }}>R$ {fmtBRL(item.vencedor.valor ?? 0)}</p>
+                <p className="text-xl font-black" style={{ color: "#22c55e" }}>R$ {fmtBRL(item.vencedor.valor ?? 0)}</p>
               </div>
             </div>
           )}
@@ -107,15 +107,15 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
               Todos os participantes ({item.jogadores.length})
             </p>
             <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1"
-              style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(245,158,11,0.2) transparent" }}>
+              style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(34,197,94,0.2) transparent" }}>
               {sorted.map((j, i) => (
                 <div key={j.id} className="flex items-center gap-3 px-3 py-2 rounded-xl"
                   style={{
-                    background: i === 0 ? "rgba(245,158,11,0.07)" : "rgba(255,255,255,0.02)",
-                    border: `1px solid ${i === 0 ? "rgba(245,158,11,0.2)" : "rgba(255,255,255,0.04)"}`,
+                    background: i === 0 ? "rgba(34,197,94,0.07)" : "rgba(255,255,255,0.02)",
+                    border: `1px solid ${i === 0 ? "rgba(34,197,94,0.2)" : "rgba(255,255,255,0.04)"}`,
                   }}>
                   <span className="text-xs font-black w-5 text-center flex-shrink-0"
-                    style={{ color: i === 0 ? "#f59e0b" : "#4b5563" }}>
+                    style={{ color: i === 0 ? "#22c55e" : "#4b5563" }}>
                     {i === 0 ? "🏆" : `${i + 1}º`}
                   </span>
                   <div className="flex-1 min-w-0">
@@ -123,7 +123,7 @@ function HistoricoCard({ item, num }: { item: JackpotHistoricoItem; num: number 
                     {j.jogo && <p className="text-[10px] text-gray-600 truncate">{j.jogo}</p>}
                   </div>
                   <p className="text-sm font-black tabular-nums flex-shrink-0"
-                    style={{ color: i === 0 ? "#f59e0b" : j.valor !== null ? "#6b7280" : "#374151" }}>
+                    style={{ color: i === 0 ? "#22c55e" : j.valor !== null ? "#6b7280" : "#374151" }}>
                     {j.valor !== null ? `R$ ${fmtBRL(j.valor)}` : "—"}
                   </p>
                 </div>
@@ -182,7 +182,7 @@ export default function AdminJackpotHistoricoPage() {
   if (status === "loading" || !isAdmin(session?.user?.twitchLogin)) {
     return (
       <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="w-8 h-8 rounded-full border-2 border-[#f59e0b] border-t-transparent animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
       </div>
     );
   }
@@ -197,7 +197,7 @@ export default function AdminJackpotHistoricoPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
-              style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
+              style={{ background: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }}>
               🎰 PAINEL ADMIN
             </span>
             <h1 className="text-3xl font-black text-white">Histórico de Batalhas</h1>
@@ -233,13 +233,13 @@ export default function AdminJackpotHistoricoPage() {
 
         {historico === null && (
           <div className="flex items-center justify-center py-20">
-            <div className="w-8 h-8 rounded-full border-2 border-[#f59e0b] border-t-transparent animate-spin" />
+            <div className="w-8 h-8 rounded-full border-2 border-[#22c55e] border-t-transparent animate-spin" />
           </div>
         )}
 
         {historico !== null && historico.length === 0 && (
           <div className="rounded-2xl text-center py-20 px-6"
-            style={{ background: "rgba(8,20,13,0.97)", border: "1px solid rgba(245,158,11,0.1)" }}>
+            style={{ background: "rgba(8,20,13,0.97)", border: "1px solid rgba(34,197,94,0.1)" }}>
             <p className="text-4xl mb-4">🎰</p>
             <p className="text-base font-black text-white mb-2">Nenhuma batalha ainda</p>
             <p className="text-sm text-gray-600">O histórico aparece aqui após a primeira rodada ser finalizada.</p>
