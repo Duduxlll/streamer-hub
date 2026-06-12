@@ -151,6 +151,8 @@ export default function AdminJackpotHistoricoPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [historico, setHistorico] = useState<JackpotHistoricoItem[] | null>(null);
+  const [confirmLimpar, setConfirmLimpar] = useState(false);
+  const [limpando, setLimpando] = useState(false);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -165,6 +167,17 @@ export default function AdminJackpotHistoricoPage() {
   }, []);
 
   useEffect(() => { fetchHistorico(); }, [fetchHistorico]);
+
+  async function handleLimpar() {
+    setLimpando(true);
+    try {
+      await fetch("/api/jackpot/historico", { method: "DELETE" });
+      setHistorico([]);
+      setConfirmLimpar(false);
+    } finally {
+      setLimpando(false);
+    }
+  }
 
   if (status === "loading" || !isAdmin(session?.user?.twitchLogin)) {
     return (
@@ -181,13 +194,41 @@ export default function AdminJackpotHistoricoPage() {
           <Link href="/admin/jackpot" className="hover:text-gray-400 transition-colors">← Admin · Jackpot</Link>
         </div>
 
-        <div>
-          <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
-            style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
-            🎰 PAINEL ADMIN
-          </span>
-          <h1 className="text-3xl font-black text-white">Histórico de Batalhas</h1>
-          <p className="text-sm text-gray-500 mt-1">Todas as rodadas finalizadas</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <span className="text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1.5 mb-2"
+              style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
+              🎰 PAINEL ADMIN
+            </span>
+            <h1 className="text-3xl font-black text-white">Histórico de Batalhas</h1>
+            <p className="text-sm text-gray-500 mt-1">Todas as rodadas finalizadas</p>
+          </div>
+
+          {!confirmLimpar ? (
+            <button
+              onClick={() => setConfirmLimpar(true)}
+              className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-black transition-all hover:scale-[1.04] active:scale-95 mt-1"
+              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
+              🗑️ Limpar histórico
+            </button>
+          ) : (
+            <div className="flex-shrink-0 flex items-center gap-2 mt-1">
+              <span className="text-xs text-gray-400">Tem certeza?</span>
+              <button
+                onClick={handleLimpar}
+                disabled={limpando}
+                className="px-3 py-1.5 rounded-lg text-xs font-black text-white transition-all hover:scale-[1.04] disabled:opacity-50"
+                style={{ background: "linear-gradient(135deg,#ef4444,#dc2626)" }}>
+                {limpando ? "..." : "Limpar"}
+              </button>
+              <button
+                onClick={() => setConfirmLimpar(false)}
+                className="px-3 py-1.5 rounded-lg text-xs font-black text-gray-400 hover:text-white transition-colors"
+                style={{ background: "rgba(255,255,255,0.06)" }}>
+                Cancelar
+              </button>
+            </div>
+          )}
         </div>
 
         {historico === null && (

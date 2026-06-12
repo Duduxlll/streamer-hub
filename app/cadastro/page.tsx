@@ -200,7 +200,7 @@ export default function CadastroPage() {
       </div>
 
       {modalComoFazer && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.9)", backdropFilter: "blur(16px)" }}
           onClick={e => { if (e.target === e.currentTarget) setModalComoFazer(false); }}>
           <style>{`
@@ -209,7 +209,7 @@ export default function CadastroPage() {
             @keyframes jbShimmer { 0%{background-position:-200% center} 100%{background-position:200% center} }
           `}</style>
 
-          <div className="relative w-full sm:max-w-[380px] sm:mx-4 rounded-t-3xl sm:rounded-2xl overflow-hidden flex flex-col"
+          <div className="relative w-full max-w-[380px] rounded-2xl overflow-hidden flex flex-col"
             style={{
               background: "linear-gradient(170deg, rgba(5,20,10,1) 0%, rgba(2,11,5,1) 100%)",
               border: "1px solid rgba(34,197,94,0.2)",
@@ -227,11 +227,6 @@ export default function CadastroPage() {
               }} />
             <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-56 h-10 pointer-events-none"
               style={{ background: "radial-gradient(ellipse, rgba(34,197,94,0.35), transparent 70%)", filter: "blur(16px)" }} />
-
-            {/* drag handle */}
-            <div className="flex justify-center pt-3 pb-1 sm:hidden flex-shrink-0">
-              <div className="w-9 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.12)" }} />
-            </div>
 
             {/* header */}
             <div className="flex items-center justify-between px-5 pt-4 pb-3.5 flex-shrink-0">

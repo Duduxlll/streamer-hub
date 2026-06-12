@@ -67,6 +67,10 @@ export async function getHistoricoJackpot(): Promise<JackpotHistoricoItem[]> {
   } catch { return []; }
 }
 
+export async function limparHistoricoJackpot(): Promise<void> {
+  await dbSet(HIST_KEY, JSON.stringify([]));
+}
+
 export async function salvarHistoricoJackpot(j: Jackpot): Promise<void> {
   const historico = await getHistoricoJackpot();
   const item: JackpotHistoricoItem = {
