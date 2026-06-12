@@ -245,7 +245,7 @@ client.on("message", async (_channel, tags, message, self) => {
           client.say(_channel, `@${displayName} inscrito na gorjeta! 💰`).catch(() => {});
       } else if (data.reason === "não cadastrado") {
         if (BOT_USER)
-          client.say(_channel, `@${displayName} você precisa se cadastrar em ${SITE_URL}/gorjeta para participar!`).catch(() => {});
+          client.say(_channel, `@${displayName} você precisa se cadastrar no site para participar!`).catch(() => {});
       }
     } catch (err) { console.error("❌  Erro gorjeta:", err.message); }
     return;
