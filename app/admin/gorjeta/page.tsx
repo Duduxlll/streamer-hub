@@ -526,12 +526,13 @@ export default function AdminGorjetaPage() {
   const [manualSel, setManualSel] = useState<ParticipanteSessao | null>(null);
   const [manualValor, setManualValor] = useState("");
   async function verFotoNova(id: string) {
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write('<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh"><p style="color:#aaa;font-family:sans-serif">Carregando...</p></body></html>');
     const res = await fetch(`/api/gorjeta?screenshot=${id}`);
     const { screenshot } = await res.json();
-    if (!screenshot) return;
-    const blob = await fetch(screenshot).then(r => r.blob());
-    const url = URL.createObjectURL(blob);
-    window.open(url, "_blank");
+    if (!screenshot) { win.document.body.innerHTML = '<p style="color:#aaa;font-family:sans-serif;padding:2rem">Imagem não encontrada.</p>'; return; }
+    win.document.body.innerHTML = `<img src="${screenshot}" style="max-width:100%;max-height:100vh;display:block;margin:auto;object-fit:contain">`;
   }
   const [showSortearModal, setShowSortearModal] = useState(false);
   const [sortearVencedores, setSortearVencedores] = useState<ParticipanteSessao[]>([]);
