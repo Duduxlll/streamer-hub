@@ -525,7 +525,14 @@ export default function AdminGorjetaPage() {
   const [buscaCadastro, setBuscaCadastro] = useState("");
   const [manualSel, setManualSel] = useState<ParticipanteSessao | null>(null);
   const [manualValor, setManualValor] = useState("");
-  const [screenshotModalId, setScreenshotModalId] = useState<string | null>(null);
+  async function verFotoNova(id: string) {
+    const res = await fetch(`/api/gorjeta?screenshot=${id}`);
+    const { screenshot } = await res.json();
+    if (!screenshot) return;
+    const blob = await fetch(screenshot).then(r => r.blob());
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+  }
   const [showSortearModal, setShowSortearModal] = useState(false);
   const [sortearVencedores, setSortearVencedores] = useState<ParticipanteSessao[]>([]);
   const [busy, setBusy] = useState(false);
@@ -757,7 +764,6 @@ export default function AdminGorjetaPage() {
           style={{ background: "radial-gradient(ellipse, #ffba00, transparent 70%)", filter: "blur(60px)" }} />
       </div>
 
-      {screenshotModalId && <ScreenshotModal id={screenshotModalId} onClose={() => setScreenshotModalId(null)} />}
       {confirmModal && <ConfirmModal {...confirmModal} onClose={() => setConfirmModal(null)} />}
       {showSortearModal && sessao && (
         <SortearModal
@@ -1232,7 +1238,7 @@ export default function AdminGorjetaPage() {
                       <CadastroCard key={c.id} c={c}
                         onAprovar={() => aprovar(c.id)}
                         onRejeitar={(motivo) => rejeitar(c.id, motivo)}
-                        onVerFoto={() => setScreenshotModalId(c.id)}
+                        onVerFoto={() => verFotoNova(c.id)}
                         onChaveEditada={onChaveEditada}
                         onDeletar={() => deletar(c.id)} />
                     ))}
