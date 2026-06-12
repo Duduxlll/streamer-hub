@@ -47,7 +47,7 @@ const FEATURES = [
     icon: "🎰",
     title: "Jackpot",
     description: "Disputa de bônus ao vivo. Cada jogador registra seu resultado e o maior valor vence o prêmio total.",
-    color: "#f59e0b",
+    color: "#22c55e",
     href: "/arena/jackpot",
     adminHref: "/admin/jackpot",
     available: true,
@@ -121,7 +121,7 @@ export default function ArenaPage() {
       ? [{ icon: "⚔️", label: batalha!.nome, sub: batalha!.status === "inscricao" ? "Inscrições abertas — entre pelo chat!" : "Batalha em andamento — acompanhe ao vivo!", href: "/arena/batalha", color: "#22c55e" }]
       : []),
     ...(jackpotLive
-      ? [{ icon: "🎰", label: jackpot!.nome, sub: "Jackpot em andamento — acompanhe ao vivo!", href: "/arena/jackpot", color: "#f59e0b" }]
+      ? [{ icon: "🎰", label: jackpot!.nome, sub: "Jackpot em andamento — acompanhe ao vivo!", href: "/arena/jackpot", color: "#22c55e" }]
       : []),
     ...(callLive
       ? [{ icon: "📋", label: "Call de Slot aberta!", sub: `${callInfo!.entries.length} call${callInfo!.entries.length !== 1 ? "s" : ""} recebida${callInfo!.entries.length !== 1 ? "s" : ""} · use !call [jogo] no chat`, href: "/arena/call", color: "#22c55e" }]
