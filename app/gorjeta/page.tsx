@@ -351,11 +351,7 @@ export default function GorjetaPage() {
     setSessao(s && (s.status === "aberta" || s.status === "sorteada") ? s : null);
 
     if (data.meucadastro !== undefined) {
-      setCadastro(prev => {
-
-        if (prev === null) return null;
-        return data.meucadastro ?? null;
-      });
+      setCadastro(data.meucadastro ?? null);
     }
     setLoading(false);
   }, []);
