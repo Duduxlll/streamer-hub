@@ -61,7 +61,11 @@ const clientOptions = {
 
 const client = new tmi.Client(clientOptions);
 
+let connectedAt = 0;
+let reconnecting = false;
+
 client.connect().then(() => {
+  connectedAt = Date.now();
   const modo = BOT_USER ? `autenticado como ${BOT_USER}` : "anônimo (só leitura)";
   console.log(`🤖  Bot conectado — modo: ${modo}`);
   console.log(`🔗  API: ${SITE_URL}\n`);
@@ -174,6 +178,10 @@ const chatters = new Map();
 
 client.on("message", async (_channel, tags, message, self) => {
   if (self) return;
+
+  // ignora mensagens replay da Twitch enviadas antes da última conexão
+  const msgTs = parseInt(tags["tmi-sent-ts"] ?? "0");
+  if (msgTs && msgTs < connectedAt) return;
 
   const displayName = tags["display-name"] || tags.username || "?";
   const login       = (tags.username || "").toLowerCase();
@@ -300,7 +308,18 @@ client.on("message", async (_channel, tags, message, self) => {
 
 client.on("disconnected", (reason) => {
   console.warn("⚠️   Desconectado:", reason, "— reconectando em 5s...");
-  setTimeout(() => client.connect().catch(() => {}), 5000);
+  if (reason === "Login unsuccessful") {
+    console.error("❌  Token inválido — verifique BOT_OAUTH no .env.local. Bot parado.");
+    return;
+  }
+  if (reconnecting) return;
+  reconnecting = true;
+  setTimeout(() => {
+    client.connect()
+      .then(() => { connectedAt = Date.now(); })
+      .catch(() => {})
+      .finally(() => { reconnecting = false; });
+  }, 5000);
 });
 
 async function darTickets() {
