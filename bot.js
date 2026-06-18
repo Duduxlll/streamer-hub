@@ -50,6 +50,7 @@ console.log(`📺  Canal: #${CHANNEL}`);
 console.log(`📡  Requer live: ${REQUER_LIVE ? "SIM" : "NÃO (modo teste)"}`);
 
 const clientOptions = {
+  options: { reconnect: false },
   channels: [CHANNEL],
   ...(BOT_USER && BOT_OAUTH ? {
     identity: {
