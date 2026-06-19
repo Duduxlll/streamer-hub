@@ -267,11 +267,11 @@ export default function CadastroPage() {
                 },
                 {
                   label: 'Vá em "Transações"',
-                  desc: <>No menu que abrir, selecione <strong className="text-gray-200">"Transações"</strong>.</>,
+                  desc: <>No menu que abrir, selecione <strong className="text-gray-200">&quot;Transações&quot;</strong>.</>,
                 },
                 {
                   label: 'Clique em "Depósitos"',
-                  desc: <>Na aba <strong className="text-gray-200">"Depósitos"</strong>, seus depósitos aparecerão listados com datas e valores.</>,
+                  desc: <>Na aba <strong className="text-gray-200">&quot;Depósitos&quot;</strong>, seus depósitos aparecerão listados com datas e valores.</>,
                 },
                 {
                   label: "Tire o print e envie aqui",

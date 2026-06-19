@@ -400,17 +400,22 @@ export async function drainChatMessages(): Promise<string[]> {
   const client = getTursoClient();
   if (client) {
     await ensureTursoSchema();
-    const results = await client.batch([
-      { sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`, args: [QUEUE_KEY] },
-      {
+    const result = await client.execute({
+      sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`,
+      args: [QUEUE_KEY],
+    });
+    const queue = parseQueue(result.rows[0]?.value);
+
+    if (result.rows.length > 0) {
+      await client.execute({
         sql: `INSERT INTO ${STORE_TABLE} (key, value, updated_at)
               VALUES (?, '[]', CURRENT_TIMESTAMP)
               ON CONFLICT(key) DO UPDATE SET value = '[]', updated_at = CURRENT_TIMESTAMP`,
         args: [QUEUE_KEY],
-      },
-    ], "write");
+      });
+    }
 
-    return parseQueue(results[0].rows[0]?.value);
+    return queue;
   }
 
   if (shouldUseLocalFile()) {
@@ -426,6 +431,28 @@ export async function drainChatMessages(): Promise<string[]> {
   const msgs = globalThis.__palpitesFallbackQueue ?? [];
   globalThis.__palpitesFallbackQueue = [];
   return msgs;
+}
+
+async function countChatMessages(): Promise<number> {
+  const client = getTursoClient();
+  if (client) {
+    await ensureTursoSchema();
+    const result = await client.execute({
+      sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`,
+      args: [QUEUE_KEY],
+    });
+    return parseQueue(result.rows[0]?.value).length;
+  }
+
+  if (shouldUseLocalFile()) {
+    try {
+      return parseQueue(await fs.readFile(LOCAL_QUEUE_FILE, "utf-8")).length;
+    } catch {
+      return 0;
+    }
+  }
+
+  return (globalThis.__palpitesFallbackQueue ?? []).length;
 }
 
 export async function getLivePixUserToken(): Promise<LivePixUserToken | null> {
@@ -507,7 +534,7 @@ export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
   }
 
   const state = await loadState().catch(() => emptyState());
-  const queue = await drainChatMessages().catch(() => []);
+  const queue = await countChatMessages().catch(() => 0);
 
   return {
     backend: getBackend(),
@@ -528,6 +555,6 @@ export async function getStoreDiagnostics(): Promise<StoreDiagnostics> {
       palpites: state.rodada?.palpites.length ?? 0,
     },
     historico: state.historico.length,
-    queue: queue.length,
+    queue,
   };
 }
