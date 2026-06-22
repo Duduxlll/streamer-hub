@@ -42,6 +42,7 @@ const CLIENT_ID     = process.env.TWITCH_CLIENT_ID       || "";
 const CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET   || "";
 
 const REQUER_LIVE = process.env.REQUER_LIVE !== "false";
+const SILENCIOSO = process.env.SILENCIOSO === "true";
 
 if (!BOT_SECRET) { console.error("❌  BOT_SECRET não definido no .env.local"); process.exit(1); }
 if (!SITE_URL) { console.error("❌  SITE_URL precisa apontar para o domínio atual da Vercel"); process.exit(1); }
@@ -50,7 +51,11 @@ console.log(`📺  Canal: #${CHANNEL}`);
 console.log(`📡  Requer live: ${REQUER_LIVE ? "SIM" : "NÃO (modo teste)"}`);
 
 const clientOptions = {
-  options: { reconnect: false },
+  connection: {
+    reconnect: true,
+    secure: true,
+    maxReconnectInterval: 30000,
+  },
   channels: [CHANNEL],
   ...(BOT_USER && BOT_OAUTH ? {
     identity: {
@@ -63,14 +68,42 @@ const clientOptions = {
 const client = new tmi.Client(clientOptions);
 
 let connectedAt = 0;
-let reconnecting = false;
+let chatConnected = false;
+const processedMessages = new Map();
+const recentOutgoing = new Map();
+const MESSAGE_DEDUPE_TTL = 2 * 60 * 1000;
+const OUTGOING_DEDUPE_TTL = 20 * 1000;
 
-client.connect().then(() => {
+function seenRecently(cache, key, ttl) {
+  const now = Date.now();
+  for (const [cachedKey, ts] of cache) {
+    if (now - ts > ttl) cache.delete(cachedKey);
+  }
+  if (cache.has(key)) return true;
+  cache.set(key, now);
+  return false;
+}
+
+async function sendChatMessage(channel, message) {
+  if (!BOT_USER || !chatConnected) return false;
+  try {
+    await client.say(channel, message);
+    return true;
+  } catch (err) {
+    console.warn("⚠️   Falha ao enviar mensagem:", err?.message ?? err);
+    return false;
+  }
+}
+
+client.on("connected", () => {
+  chatConnected = true;
   connectedAt = Date.now();
   const modo = BOT_USER ? `autenticado como ${BOT_USER}` : "anônimo (só leitura)";
   console.log(`🤖  Bot conectado — modo: ${modo}`);
   console.log(`🔗  API: ${SITE_URL}\n`);
-}).catch((err) => {
+});
+
+client.connect().catch((err) => {
   console.error("❌  Erro ao conectar:", err);
   process.exit(1);
 });
@@ -180,7 +213,9 @@ const chatters = new Map();
 client.on("message", async (_channel, tags, message, self) => {
   if (self) return;
 
-  // ignora mensagens replay da Twitch enviadas antes da última conexão
+  const msgId = tags.id || `${tags.username ?? ""}:${tags["tmi-sent-ts"] ?? ""}:${message}`;
+  if (seenRecently(processedMessages, msgId, MESSAGE_DEDUPE_TTL)) return;
+
   const msgTs = parseInt(tags["tmi-sent-ts"] ?? "0");
   if (msgTs && msgTs < connectedAt) return;
 
@@ -212,7 +247,7 @@ client.on("message", async (_channel, tags, message, self) => {
           const txt = data.updated
             ? `@${displayName} palpite atualizado para R$ ${valor.toLocaleString("pt-BR")} ✅`
             : `@${displayName} palpite de R$ ${valor.toLocaleString("pt-BR")} registrado! 🎯`;
-          client.say(_channel, txt).catch(() => {});
+          await sendChatMessage(_channel, txt);
         }
       }
     } catch (err) { console.error("❌  Erro palpite:", err.message); }
@@ -232,7 +267,7 @@ client.on("message", async (_channel, tags, message, self) => {
       if (res.ok && data.ok) {
         console.log(`⚔️  Batalha ${displayName}: inscrito!`);
         if (BOT_USER)
-          client.say(_channel, `@${displayName} inscrito na batalha! ⚔️`).catch(() => {});
+          await sendChatMessage(_channel, `@${displayName} inscrito na batalha! ⚔️`);
       }
     } catch (err) { console.error("❌  Erro batalha:", err.message); }
     return;
@@ -251,10 +286,10 @@ client.on("message", async (_channel, tags, message, self) => {
       if (res.ok && data.ok) {
         console.log(`💰  Gorjeta ${displayName}: inscrito!`);
         if (BOT_USER)
-          client.say(_channel, `@${displayName} inscrito na gorjeta! 💰`).catch(() => {});
+          await sendChatMessage(_channel, `@${displayName} inscrito na gorjeta! 💰`);
       } else if (data.reason === "não cadastrado") {
         if (BOT_USER)
-          client.say(_channel, `@${displayName} você precisa se cadastrar no site para participar!`).catch(() => {});
+          await sendChatMessage(_channel, `@${displayName} você precisa se cadastrar no site para participar!`);
       }
     } catch (err) { console.error("❌  Erro gorjeta:", err.message); }
     return;
@@ -276,11 +311,11 @@ client.on("message", async (_channel, tags, message, self) => {
       if (res.ok && data.ok) {
         console.log(`📋  Call ${displayName}: "${jogo}"`);
         if (BOT_USER)
-          client.say(_channel, `@${displayName} call registrada: ${jogo} ✅`).catch(() => {});
+          await sendChatMessage(_channel, `@${displayName} call registrada: ${jogo} ✅`);
       } else if (data.error) {
         console.log(`📋  Call ${displayName}: rejeitada — ${data.error}`);
         if (BOT_USER && data.error !== "Call fechada")
-          client.say(_channel, `@${displayName} ${data.error}`).catch(() => {});
+          await sendChatMessage(_channel, `@${displayName} ${data.error}`);
       }
     } catch (err) { console.error("❌  Erro call:", err.message); }
     return;
@@ -301,29 +336,25 @@ client.on("message", async (_channel, tags, message, self) => {
       const data = await res.json();
       console.log(`🏆  Torneio ${displayName}: ${data.ok ? "registrado" : data.motivo}`);
       if (BOT_USER && !SILENCIOSO && data.motivo)
-        client.say(_channel, `@${displayName} ${data.motivo}`).catch(() => {});
+        await sendChatMessage(_channel, `@${displayName} ${data.motivo}`);
     } catch (err) { console.error("❌  Erro torneio:", err.message); }
     return;
   }
 });
 
 client.on("disconnected", (reason) => {
-  console.warn("⚠️   Desconectado:", reason, "— reconectando em 5s...");
+  chatConnected = false;
+  console.warn("⚠️   Desconectado:", reason, "— tmi.js vai reconectar automaticamente...");
   if (reason === "Login unsuccessful") {
     console.error("❌  Token inválido — verifique BOT_OAUTH no .env.local. Bot parado.");
-    return;
+    process.exit(1);
   }
-  if (reconnecting) return;
-  reconnecting = true;
-  setTimeout(() => {
-    client.connect()
-      .then(() => { connectedAt = Date.now(); })
-      .catch(() => {})
-      .finally(() => { reconnecting = false; });
-  }, 5000);
 });
 
+let ticketsRunning = false;
 async function darTickets() {
+  if (ticketsRunning) return;
+  ticketsRunning = true;
   try {
     if (REQUER_LIVE) {
       const aoVivo = await canalEstaAoVivo();
@@ -380,6 +411,8 @@ async function darTickets() {
     }
   } catch (err) {
     console.error("❌  Erro na rodada de tickets:", err.message);
+  } finally {
+    ticketsRunning = false;
   }
 }
 
@@ -397,18 +430,26 @@ async function refreshBatalhaComando() {
 refreshBatalhaComando();
 setInterval(refreshBatalhaComando, 10000);
 
+let drainRunning = false;
 async function drainAndSend() {
-  if (!BOT_USER) return;
+  if (!BOT_USER || !chatConnected || drainRunning) return;
+  drainRunning = true;
   try {
     const res = await fetch(`${SITE_URL}/api/palpites/announce`, {
       headers: { "x-bot-secret": BOT_SECRET },
     });
     if (!res.ok) return;
-    const msgs = await res.json();
+    const payload = await res.json();
+    const msgs = Array.isArray(payload) ? payload : [];
     for (const msg of msgs) {
-      await client.say(`#${CHANNEL}`, msg).catch(() => {});
-      console.log(`📢  Chat: ${msg}`);
+      if (typeof msg !== "string" || !msg.trim()) continue;
+      if (seenRecently(recentOutgoing, msg, OUTGOING_DEDUPE_TTL)) continue;
+      const sent = await sendChatMessage(`#${CHANNEL}`, msg);
+      if (sent) console.log(`📢  Chat: ${msg}`);
     }
-  } catch { }
+  } catch {
+  } finally {
+    drainRunning = false;
+  }
 }
 setInterval(drainAndSend, 1000);
