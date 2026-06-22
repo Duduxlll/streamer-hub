@@ -1,6 +1,8 @@
 require("dotenv").config({ path: ".env.local" });
 
 const tmi = require("tmi.js");
+const crypto = require("crypto");
+const { createClient } = require("@libsql/client");
 
 const FALLBACK_SITE_URL = "";
 const STALE_SITE_HOSTS = new Set(["streamer-hub-delta.vercel.app"]);
@@ -73,6 +75,14 @@ const processedMessages = new Map();
 const recentOutgoing = new Map();
 const MESSAGE_DEDUPE_TTL = 2 * 60 * 1000;
 const OUTGOING_DEDUPE_TTL = 20 * 1000;
+const QUEUE_DEDUPE_TTL = 2 * 60 * 1000;
+const COMMAND_COOLDOWN_TTL = 5 * 1000;
+const BOT_LOCK_TABLE = "bot_message_locks";
+const BOT_INSTANCE_ID = `${process.pid}-${Math.random().toString(36).slice(2, 8)}`;
+const commandCooldowns = new Map();
+let lockClient = null;
+let lockSchemaReady = null;
+let lastLockCleanup = 0;
 
 function seenRecently(cache, key, ttl) {
   const now = Date.now();
@@ -84,8 +94,75 @@ function seenRecently(cache, key, ttl) {
   return false;
 }
 
-async function sendChatMessage(channel, message) {
+function hashKey(value) {
+  return crypto.createHash("sha256").update(value).digest("hex");
+}
+
+function getLockClient() {
+  const url = process.env.TURSO_DATABASE_URL;
+  if (!url) return null;
+  if (!lockClient) {
+    lockClient = createClient({ url, authToken: process.env.TURSO_AUTH_TOKEN });
+  }
+  return lockClient;
+}
+
+async function ensureLockSchema() {
+  const db = getLockClient();
+  if (!db) return null;
+  if (!lockSchemaReady) {
+    lockSchemaReady = db.execute(`
+      CREATE TABLE IF NOT EXISTS ${BOT_LOCK_TABLE} (
+        key TEXT PRIMARY KEY,
+        expires_at INTEGER NOT NULL
+      )
+    `).then(() => undefined).catch((err) => {
+      lockSchemaReady = null;
+      throw err;
+    });
+  }
+  await lockSchemaReady;
+  return db;
+}
+
+async function claimOutgoing(key, ttl) {
+  const lockKey = hashKey(`${CHANNEL}:${key}`);
+  const db = getLockClient();
+
+  if (!db) {
+    return !seenRecently(recentOutgoing, lockKey, ttl);
+  }
+
+  try {
+    await ensureLockSchema();
+    const now = Date.now();
+    if (now - lastLockCleanup > 60 * 1000) {
+      lastLockCleanup = now;
+      await db.execute({
+        sql: `DELETE FROM ${BOT_LOCK_TABLE} WHERE expires_at < ?`,
+        args: [now],
+      });
+    }
+
+    const result = await db.execute({
+      sql: `INSERT INTO ${BOT_LOCK_TABLE} (key, expires_at) VALUES (?, ?) ON CONFLICT(key) DO NOTHING`,
+      args: [lockKey, now + ttl],
+    });
+    return (result.rowsAffected ?? 0) > 0;
+  } catch (err) {
+    console.warn("⚠️   Trava anti-duplicação indisponível:", err?.message ?? err);
+    return !seenRecently(recentOutgoing, lockKey, ttl);
+  }
+}
+
+function allowCommand(key, ttl = COMMAND_COOLDOWN_TTL) {
+  return !seenRecently(commandCooldowns, key, ttl);
+}
+
+async function sendChatMessage(channel, message, dedupeKey = message, ttl = OUTGOING_DEDUPE_TTL) {
   if (!BOT_USER || !chatConnected) return false;
+  const canSend = await claimOutgoing(`${channel}:${dedupeKey}`, ttl);
+  if (!canSend) return false;
   try {
     await client.say(channel, message);
     return true;
@@ -100,6 +177,7 @@ client.on("connected", () => {
   connectedAt = Date.now();
   const modo = BOT_USER ? `autenticado como ${BOT_USER}` : "anônimo (só leitura)";
   console.log(`🤖  Bot conectado — modo: ${modo}`);
+  console.log(`🧷  Instância: ${BOT_INSTANCE_ID}`);
   console.log(`🔗  API: ${SITE_URL}\n`);
 });
 
@@ -234,6 +312,7 @@ client.on("message", async (_channel, tags, message, self) => {
   if (matchP) {
     const valor = parseFloat(matchP[1].replace(/\./g, "").replace(",", "."));
     if (isNaN(valor) || valor <= 0) return;
+    if (!allowCommand(`palpite:${login}:${valor}`, COMMAND_COOLDOWN_TTL)) return;
     try {
       const res  = await fetch(`${SITE_URL}/api/palpites`, {
         method : "POST",
@@ -247,7 +326,7 @@ client.on("message", async (_channel, tags, message, self) => {
           const txt = data.updated
             ? `@${displayName} palpite atualizado para R$ ${valor.toLocaleString("pt-BR")} ✅`
             : `@${displayName} palpite de R$ ${valor.toLocaleString("pt-BR")} registrado! 🎯`;
-          await sendChatMessage(_channel, txt);
+          await sendChatMessage(_channel, txt, `reply:${msgId}:palpite`, MESSAGE_DEDUPE_TTL);
         }
       }
     } catch (err) { console.error("❌  Erro palpite:", err.message); }
@@ -255,6 +334,7 @@ client.on("message", async (_channel, tags, message, self) => {
   }
 
   if (batalhaComando && msg.toLowerCase() === batalhaComando.toLowerCase()) {
+    if (!allowCommand(`batalha:${login}:${batalhaComando.toLowerCase()}`, 10 * 1000)) return;
     try {
       if (!avatarCache.has(login)) await getUserInfo(login);
       const image = avatarCache.get(login) ?? null;
@@ -267,13 +347,14 @@ client.on("message", async (_channel, tags, message, self) => {
       if (res.ok && data.ok) {
         console.log(`⚔️  Batalha ${displayName}: inscrito!`);
         if (BOT_USER)
-          await sendChatMessage(_channel, `@${displayName} inscrito na batalha! ⚔️`);
+          await sendChatMessage(_channel, `@${displayName} inscrito na batalha! ⚔️`, `reply:${msgId}:batalha`, MESSAGE_DEDUPE_TTL);
       }
     } catch (err) { console.error("❌  Erro batalha:", err.message); }
     return;
   }
 
   if (msg.toLowerCase() === "!gorjeta") {
+    if (!allowCommand(`gorjeta:${login}`, 10 * 1000)) return;
     try {
       if (!avatarCache.has(login)) await getUserInfo(login);
       const image = avatarCache.get(login) ?? null;
@@ -286,10 +367,10 @@ client.on("message", async (_channel, tags, message, self) => {
       if (res.ok && data.ok) {
         console.log(`💰  Gorjeta ${displayName}: inscrito!`);
         if (BOT_USER)
-          await sendChatMessage(_channel, `@${displayName} inscrito na gorjeta! 💰`);
+          await sendChatMessage(_channel, `@${displayName} inscrito na gorjeta! 💰`, `reply:${msgId}:gorjeta`, MESSAGE_DEDUPE_TTL);
       } else if (data.reason === "não cadastrado") {
         if (BOT_USER)
-          await sendChatMessage(_channel, `@${displayName} você precisa se cadastrar no site para participar!`);
+          await sendChatMessage(_channel, `@${displayName} você precisa se cadastrar no site para participar!`, `reply:${msgId}:gorjeta-cadastro`, MESSAGE_DEDUPE_TTL);
       }
     } catch (err) { console.error("❌  Erro gorjeta:", err.message); }
     return;
@@ -299,6 +380,7 @@ client.on("message", async (_channel, tags, message, self) => {
   if (matchCall) {
     const jogo = matchCall[1].trim();
     if (!jogo) return;
+    if (!allowCommand(`call:${login}:${jogo.toLowerCase()}`, 10 * 1000)) return;
     try {
       if (!avatarCache.has(login)) await getUserInfo(login);
       const image = avatarCache.get(login) ?? null;
@@ -311,11 +393,11 @@ client.on("message", async (_channel, tags, message, self) => {
       if (res.ok && data.ok) {
         console.log(`📋  Call ${displayName}: "${jogo}"`);
         if (BOT_USER)
-          await sendChatMessage(_channel, `@${displayName} call registrada: ${jogo} ✅`);
+          await sendChatMessage(_channel, `@${displayName} call registrada: ${jogo} ✅`, `reply:${msgId}:call`, MESSAGE_DEDUPE_TTL);
       } else if (data.error) {
         console.log(`📋  Call ${displayName}: rejeitada — ${data.error}`);
         if (BOT_USER && data.error !== "Call fechada")
-          await sendChatMessage(_channel, `@${displayName} ${data.error}`);
+          await sendChatMessage(_channel, `@${displayName} ${data.error}`, `reply:${msgId}:call-error`, MESSAGE_DEDUPE_TTL);
       }
     } catch (err) { console.error("❌  Erro call:", err.message); }
     return;
@@ -325,6 +407,7 @@ client.on("message", async (_channel, tags, message, self) => {
   if (matchT) {
     const time = matchT[1].trim();
     if (!time) return;
+    if (!allowCommand(`time:${login}:${time.toLowerCase()}`, 10 * 1000)) return;
     try {
       if (!avatarCache.has(login)) await getUserInfo(login);
       const image = avatarCache.get(login) ?? null;
@@ -336,7 +419,7 @@ client.on("message", async (_channel, tags, message, self) => {
       const data = await res.json();
       console.log(`🏆  Torneio ${displayName}: ${data.ok ? "registrado" : data.motivo}`);
       if (BOT_USER && !SILENCIOSO && data.motivo)
-        await sendChatMessage(_channel, `@${displayName} ${data.motivo}`);
+        await sendChatMessage(_channel, `@${displayName} ${data.motivo}`, `reply:${msgId}:torneio`, MESSAGE_DEDUPE_TTL);
     } catch (err) { console.error("❌  Erro torneio:", err.message); }
     return;
   }
@@ -443,8 +526,7 @@ async function drainAndSend() {
     const msgs = Array.isArray(payload) ? payload : [];
     for (const msg of msgs) {
       if (typeof msg !== "string" || !msg.trim()) continue;
-      if (seenRecently(recentOutgoing, msg, OUTGOING_DEDUPE_TTL)) continue;
-      const sent = await sendChatMessage(`#${CHANNEL}`, msg);
+      const sent = await sendChatMessage(`#${CHANNEL}`, msg, `queue:${msg}`, QUEUE_DEDUPE_TTL);
       if (sent) console.log(`📢  Chat: ${msg}`);
     }
   } catch {
