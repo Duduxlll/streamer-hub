@@ -401,10 +401,19 @@ export async function drainChatMessages(): Promise<string[]> {
   if (client) {
     await ensureTursoSchema();
     const result = await client.execute({
-      sql: `DELETE FROM ${STORE_TABLE} WHERE key = ? RETURNING value`,
+      sql: `SELECT value FROM ${STORE_TABLE} WHERE key = ?`,
       args: [QUEUE_KEY],
     });
-    return parseQueue(result.rows[0]?.value);
+    const queue = parseQueue(result.rows[0]?.value);
+
+    if (result.rows.length > 0) {
+      await client.execute({
+        sql: `DELETE FROM ${STORE_TABLE} WHERE key = ?`,
+        args: [QUEUE_KEY],
+      });
+    }
+
+    return queue;
   }
 
   if (shouldUseLocalFile()) {

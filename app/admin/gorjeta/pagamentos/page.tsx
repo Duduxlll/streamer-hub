@@ -70,7 +70,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 pt-24 sm:pt-20 bg-black/85 backdrop-blur-md overflow-y-auto"
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
       style={{ animation: "pixFadeIn 0.2s ease-out" }}
       onClick={onClose}>
       <style>{`
@@ -113,8 +113,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
         </div>
 
 
-        <div className="overflow-y-auto px-5 py-4 flex flex-col items-center gap-3"
-          style={{ scrollbarWidth: "thin" }}>
+        <div className="px-5 py-3 flex flex-col items-center gap-2">
 
 
           <div className="text-center">
@@ -126,17 +125,17 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
 
 
           {erro ? (
-            <div className="w-[220px] h-[220px] flex items-center justify-center text-center px-6 rounded-2xl"
+            <div className="w-[180px] h-[180px] flex items-center justify-center text-center px-6 rounded-2xl"
               style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.2)" }}>
               <p className="text-xs text-red-400">{erro}</p>
             </div>
           ) : qrUrl ? (
             <div className="rounded-2xl overflow-hidden bg-white p-2.5"
               style={{ animation: "pixQrIn 0.4s ease-out", boxShadow: "0 0 30px rgba(255,186,0,0.12)" }}>
-              <img src={qrUrl} alt="QR Code PIX" className="w-[200px] h-[200px] block" />
+              <img src={qrUrl} alt="QR Code PIX" className="w-[170px] h-[170px] block" />
             </div>
           ) : (
-            <div className="w-[220px] h-[220px] flex items-center justify-center">
+            <div className="w-[180px] h-[180px] flex items-center justify-center">
               <div className="w-8 h-8 rounded-full border-2 border-[#ffba00] border-t-transparent animate-spin" />
             </div>
           )}
@@ -172,7 +171,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
         </div>
 
 
-        <div className="px-5 pb-5 pt-3 space-y-2 flex-shrink-0 border-t border-white/5">
+        <div className="px-5 pb-4 pt-2.5 space-y-2 flex-shrink-0 border-t border-white/5">
           <button
             disabled={busy}
             onClick={onMarcarPago}

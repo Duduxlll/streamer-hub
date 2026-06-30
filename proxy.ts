@@ -59,6 +59,10 @@ export const proxy = auth(async (req) => {
   const { pathname } = req.nextUrl;
   const twitchLogin  = (req.auth?.user as { twitchLogin?: string })?.twitchLogin;
 
+  if (req.headers.has("next-action")) {
+    return new NextResponse(null, { status: 204 });
+  }
+
 
   const skipCheck =
     pathname === "/banido" ||
