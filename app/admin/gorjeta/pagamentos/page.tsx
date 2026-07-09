@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { ChevronDown } from "lucide-react";
 import QRCode from "qrcode";
 import type { PagamentoPendente } from "@/lib/gorjeta-store";
 import { generatePixPayload } from "@/lib/pix-payload";
@@ -52,6 +53,12 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
   });
 
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, []);
+
+  useEffect(() => {
     QRCode.toDataURL(payload, { width: 280, margin: 2, errorCorrectionLevel: "M" })
       .then(setQrUrl)
       .catch(() => setErro("Não foi possível gerar o QR Code — verifique se a chave PIX é válida."));
@@ -70,7 +77,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
   }
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto"
       style={{ animation: "pixFadeIn 0.2s ease-out" }}
       onClick={onClose}>
       <style>{`
@@ -81,7 +88,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
       `}</style>
 
       <div
-        className="w-full max-w-xs rounded-3xl overflow-hidden flex flex-col max-h-[92vh]"
+        className="my-auto w-full max-w-xs rounded-3xl overflow-hidden flex flex-col"
         onClick={e => e.stopPropagation()}
         style={{
           background: "rgba(6,15,9,0.99)",
@@ -266,6 +273,7 @@ export default function PagamentosPage() {
   const [msg,        setMsg]         = useState<{ text: string; ok: boolean } | null>(null);
   const [limpando,   setLimpando]   = useState(false);
   const [qrModal,    setQrModal]     = useState<PagamentoPendente | null>(null);
+  const [historicoAberto, setHistoricoAberto] = useState(false);
 
   const fetchAll = useCallback(async () => {
     const res = await fetch("/api/gorjeta?tipo=pagamentos");
@@ -394,12 +402,37 @@ export default function PagamentosPage() {
 
       {enviados.length > 0 && (
         <div className="space-y-3">
-          <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Pagos ({enviados.length})</p>
-          {enviados.map(p => (
-            <PagamentoCard key={p.id} p={p} busy={busyId === p.id}
-              onEnviar={() => setQrModal(p)}
-              onRemover={() => remover(p.id)} />
-          ))}
+          <button
+            type="button"
+            onClick={() => setHistoricoAberto(v => !v)}
+            className="w-full px-4 py-3 rounded-2xl flex items-center justify-between gap-3 text-left transition-all hover:bg-white/[0.03]"
+            style={{ background: "rgba(6,15,9,0.72)", border: "1px solid rgba(74,222,128,0.14)" }}>
+            <div className="min-w-0">
+              <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Histórico de pagamentos</p>
+              <p className="text-sm font-black text-white mt-0.5">
+                {enviados.length} pago{enviados.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <span className="text-[11px] font-black text-gray-500">
+                {historicoAberto ? "Esconder" : "Ver pagamentos"}
+              </span>
+              <ChevronDown
+                size={18}
+                className={`text-gray-500 transition-transform duration-200 ${historicoAberto ? "rotate-180" : ""}`}
+                aria-hidden="true" />
+            </div>
+          </button>
+
+          {historicoAberto && (
+            <div className="space-y-3">
+              {enviados.map(p => (
+                <PagamentoCard key={p.id} p={p} busy={busyId === p.id}
+                  onEnviar={() => setQrModal(p)}
+                  onRemover={() => remover(p.id)} />
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
