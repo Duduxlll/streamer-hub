@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import QRCode from "qrcode";
 import type { PagamentoPendente } from "@/lib/gorjeta-store";
@@ -76,8 +77,10 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto"
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md overflow-hidden"
       style={{ animation: "pixFadeIn 0.2s ease-out" }}
       onClick={onClose}>
       <style>{`
@@ -88,9 +91,10 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
       `}</style>
 
       <div
-        className="my-auto w-full max-w-xs rounded-3xl overflow-hidden flex flex-col"
+        className="w-full max-w-xs rounded-3xl overflow-hidden flex flex-col"
         onClick={e => e.stopPropagation()}
         style={{
+          maxHeight: "calc(100dvh - 24px)",
           background: "rgba(6,15,9,0.99)",
           border: "1px solid rgba(255,186,0,0.25)",
           boxShadow: "0 20px 70px rgba(0,0,0,0.75), 0 0 60px rgba(255,186,0,0.08)",
@@ -98,7 +102,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
         }}>
 
 
-        <div className="flex items-center justify-between px-5 py-4 flex-shrink-0"
+        <div className="flex items-center justify-between px-4 py-3 flex-shrink-0"
           style={{
             background: "linear-gradient(135deg, rgba(255,186,0,0.1), rgba(255,140,0,0.03))",
             borderBottom: "1px solid rgba(255,186,0,0.12)",
@@ -120,12 +124,12 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
         </div>
 
 
-        <div className="px-5 py-3 flex flex-col items-center gap-2">
+        <div className="px-4 py-2.5 flex flex-col items-center gap-1.5">
 
 
           <div className="text-center">
             <p className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Valor a pagar</p>
-            <p className="text-3xl font-black" style={{ color: "#ffba00", animation: "pixValuePulse 2.5s ease-in-out infinite" }}>
+            <p className="text-2xl font-black" style={{ color: "#ffba00", animation: "pixValuePulse 2.5s ease-in-out infinite" }}>
               R$ {fmtBRL(pagamento.valor)}
             </p>
           </div>
@@ -139,7 +143,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
           ) : qrUrl ? (
             <div className="rounded-2xl overflow-hidden bg-white p-2.5"
               style={{ animation: "pixQrIn 0.4s ease-out", boxShadow: "0 0 30px rgba(255,186,0,0.12)" }}>
-              <img src={qrUrl} alt="QR Code PIX" className="w-[170px] h-[170px] block" />
+              <img src={qrUrl} alt="QR Code PIX" className="w-[158px] h-[158px] block" />
             </div>
           ) : (
             <div className="w-[180px] h-[180px] flex items-center justify-center">
@@ -178,7 +182,7 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
         </div>
 
 
-        <div className="px-5 pb-4 pt-2.5 space-y-2 flex-shrink-0 border-t border-white/5">
+        <div className="px-4 pb-3 pt-2 space-y-1.5 flex-shrink-0 border-t border-white/5">
           <button
             disabled={busy}
             onClick={onMarcarPago}
@@ -193,7 +197,8 @@ function QrCodeModal({ pagamento, onMarcarPago, onClose, busy }: {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
